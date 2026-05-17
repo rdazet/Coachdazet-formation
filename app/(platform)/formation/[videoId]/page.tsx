@@ -200,4 +200,7 @@ export default async function VideoPage({ params }: Props) {
             nextVideoId={nextVideo?.id}
           />
         </div>
-      <
+      </div>
+    </div>
+  );
+}
