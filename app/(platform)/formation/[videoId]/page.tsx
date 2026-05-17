@@ -6,7 +6,7 @@ import CompleteButton from "@/components/video/CompleteButton";
 import type { Module, Video } from "@/types";
 
 interface Props {
-  params: { videoId: string };
+  params: Promise<{ videoId: string }>;
 }
 
 const FILE_ICONS: Record<string, string> = {
@@ -16,6 +16,7 @@ const FILE_ICONS: Record<string, string> = {
 };
 
 export default async function VideoPage({ params }: Props) {
+  const { videoId } = await params;
   const supabase = await createClient();
 
   const {
@@ -26,7 +27,7 @@ export default async function VideoPage({ params }: Props) {
   const { data: video, error } = await supabase
     .from("videos")
     .select("*, resources(*), modules(title)")
-    .eq("id", params.videoId)
+    .eq("id", videoId)
     .single();
 
   if (error || !video) {
@@ -47,7 +48,7 @@ export default async function VideoPage({ params }: Props) {
     return a.sort_order - b.sort_order;
   });
 
-  const currentIndex = sortedVideos.findIndex((v) => v.id === params.videoId);
+  const currentIndex = sortedVideos.findIndex((v) => v.id === videoId);
   const prevVideo = currentIndex > 0 ? sortedVideos[currentIndex - 1] : null;
   const nextVideo =
     currentIndex < sortedVideos.length - 1 ? sortedVideos[currentIndex + 1] : null;
@@ -57,7 +58,7 @@ export default async function VideoPage({ params }: Props) {
     .from("progress")
     .select("id")
     .eq("user_id", user!.id)
-    .eq("video_id", params.videoId)
+    .eq("video_id", videoId)
     .single();
 
   const isCompleted = !!progressRecord;
@@ -199,7 +200,4 @@ export default async function VideoPage({ params }: Props) {
             nextVideoId={nextVideo?.id}
           />
         </div>
-      </div>
-    </div>
-  );
-}
+      <

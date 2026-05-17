@@ -18,8 +18,9 @@ async function verifyAdmin(supabase: ReturnType<typeof createClient>) {
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { videoId: string } }
+  { params }: { params: Promise<{ videoId: string }> }
 ) {
+  const { videoId } = await params;
   const supabase = await createClient();
   const user = await verifyAdmin(supabase);
 
@@ -31,7 +32,7 @@ export async function DELETE(
   const { error } = await adminClient
     .from("videos")
     .delete()
-    .eq("id", params.videoId);
+    .eq("id", videoId);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -42,8 +43,9 @@ export async function DELETE(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { videoId: string } }
+  { params }: { params: Promise<{ videoId: string }> }
 ) {
+  const { videoId } = await params;
   const supabase = await createClient();
   const user = await verifyAdmin(supabase);
 
@@ -57,13 +59,9 @@ export async function PATCH(
   const { data, error } = await adminClient
     .from("videos")
     .update(body)
-    .eq("id", params.videoId)
+    .eq("id", videoId)
     .select()
     .single();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
-  return NextResponse.json({ data });
-}
+    return NextResponse.json({ error: erro
