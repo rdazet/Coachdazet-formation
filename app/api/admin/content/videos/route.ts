@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
-async function verifyAdmin(supabase: ReturnType<typeof createClient>) {
+async function verifyAdmin(supabase: SupabaseClient) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
