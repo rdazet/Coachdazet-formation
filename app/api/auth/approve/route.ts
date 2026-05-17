@@ -3,18 +3,20 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/email/send";
 import { welcomeEmail } from "@/lib/email/templates";
 
+// GET: Show confirmation page only — do NOT consume the token yet
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const token = searchParams.get("token");
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
   if (!token) {
-    return NextResponse.redirect(`${appUrl}/admin?error=invalid_token`);
+    return new NextResponse(renderPage("Lien invalide", "Token manquant.", false, null), {
+      headers: { "Content-Type": "text/html" },
+    });
   }
 
   const supabase = createAdminClient();
 
-  // Look up token
   const { data: approvalToken, error: tokenError } = await supabase
     .from("approval_tokens")
     .select("*, profiles(*)")
@@ -23,19 +25,71 @@ export async function GET(request: NextRequest) {
     .single();
 
   if (tokenError || !approvalToken) {
-    return new NextResponse(renderPage("Lien invalide", "Ce lien d'approbation est invalide ou a expiré.", false), {
+    return new NextResponse(renderPage("Lien invalide", "Ce lien d'approbation est invalide ou a expiré.", false, null), {
       headers: { "Content-Type": "text/html" },
     });
   }
 
   if (approvalToken.used) {
-    return new NextResponse(renderPage("Déjà traité", "Ce lien a déjà été utilisé.", false), {
+    return new NextResponse(renderPage("Déjà traité", "Ce lien a déjà été utilisé.", false, null), {
       headers: { "Content-Type": "text/html" },
     });
   }
 
   if (new Date(approvalToken.expires_at) < new Date()) {
-    return new NextResponse(renderPage("Lien expiré", "Ce lien d'approbation a expiré (validité 7 jours).", false), {
+    return new NextResponse(renderPage("Lien expiré", "Ce lien d'approbation a expiré (validité 7 jours).", false, null), {
+      headers: { "Content-Type": "text/html" },
+    });
+  }
+
+  const profile = approvalToken.profiles as { id: string; email: string; full_name: string };
+
+  // Show confirmation page with a POST button
+  return new NextResponse(
+    renderPage(
+      "Confirmer l'approbation",
+      `Voulez-vous approuver l'accès de <strong>${profile.full_name}</strong> (${profile.email}) ?`,
+      null,
+      token
+    ),
+    { headers: { "Content-Type": "text/html" } }
+  );
+}
+
+// POST: Actually process the approval
+export async function POST(request: NextRequest) {
+  const formData = await request.formData();
+  const token = formData.get("token") as string;
+
+  if (!token) {
+    return new NextResponse(renderPage("Lien invalide", "Token manquant.", false, null), {
+      headers: { "Content-Type": "text/html" },
+    });
+  }
+
+  const supabase = createAdminClient();
+
+  const { data: approvalToken, error: tokenError } = await supabase
+    .from("approval_tokens")
+    .select("*, profiles(*)")
+    .eq("token", token)
+    .eq("action", "approve")
+    .single();
+
+  if (tokenError || !approvalToken) {
+    return new NextResponse(renderPage("Lien invalide", "Ce lien d'approbation est invalide ou a expiré.", false, null), {
+      headers: { "Content-Type": "text/html" },
+    });
+  }
+
+  if (approvalToken.used) {
+    return new NextResponse(renderPage("Déjà traité", "Ce lien a déjà été utilisé.", false, null), {
+      headers: { "Content-Type": "text/html" },
+    });
+  }
+
+  if (new Date(approvalToken.expires_at) < new Date()) {
+    return new NextResponse(renderPage("Lien expiré", "Ce lien d'approbation a expiré (validité 7 jours).", false, null), {
       headers: { "Content-Type": "text/html" },
     });
   }
@@ -54,7 +108,7 @@ export async function GET(request: NextRequest) {
     .update({ status: "approved", approved_at: new Date().toISOString() })
     .eq("id", profile.id);
 
-  // Also invalidate the reject token for this user
+  // Invalidate reject token
   await supabase
     .from("approval_tokens")
     .update({ used: true })
@@ -62,7 +116,7 @@ export async function GET(request: NextRequest) {
     .eq("action", "reject")
     .eq("used", false);
 
-  // Send welcome email to client
+  // Send welcome email
   try {
     await sendEmail({
       to: profile.email,
@@ -77,18 +131,30 @@ export async function GET(request: NextRequest) {
     renderPage(
       "Accès approuvé ✅",
       `Le compte de <strong>${profile.full_name}</strong> (${profile.email}) a été approuvé. Un email de bienvenue lui a été envoyé.`,
-      true
+      true,
+      null
     ),
     { headers: { "Content-Type": "text/html" } }
   );
 }
 
-function renderPage(title: string, message: string, success: boolean) {
-  const iconColor = success ? "#16a34a" : "#dc2626";
-  const bgColor = success ? "#dcfce7" : "#fee2e2";
-  const icon = success
+function renderPage(title: string, message: string, success: boolean | null, confirmToken: string | null) {
+  const isConfirm = confirmToken !== null;
+  const iconColor = success === true ? "#16a34a" : success === false ? "#dc2626" : "#1B2B5E";
+  const bgColor = success === true ? "#dcfce7" : success === false ? "#fee2e2" : "#e8eaf6";
+  const icon = success === true
     ? `<svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="${iconColor}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>`
-    : `<svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="${iconColor}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>`;
+    : success === false
+    ? `<svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="${iconColor}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>`
+    : `<svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="${iconColor}"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
+
+  const confirmForm = isConfirm ? `
+    <form method="POST" action="/api/auth/approve" style="margin-top:24px;">
+      <input type="hidden" name="token" value="${confirmToken}" />
+      <button type="submit" style="background:#1B2B5E;color:white;border:none;padding:12px 32px;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;">
+        ✅ Confirmer l'approbation
+      </button>
+    </form>` : "";
 
   return `<!DOCTYPE html>
 <html lang="fr">
@@ -113,6 +179,7 @@ function renderPage(title: string, message: string, success: boolean) {
     <div class="icon-wrap">${icon}</div>
     <h1>${title}</h1>
     <p>${message}</p>
+    ${confirmForm}
   </div>
 </body>
 </html>`;
