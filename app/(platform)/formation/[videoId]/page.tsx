@@ -65,7 +65,7 @@ export default async function VideoPage({ params }: Props) {
 
   // Get signed download URLs for resources
   const resourcesWithUrls = await Promise.all(
-    (video.resources || []).map(async (resource) => {
+    (video.resources as Array<{ id: string; title: string; file_path: string; file_type: string; file_size: number | null }>|| []).map(async (resource) => {
       const { data } = await supabase.storage
         .from("resources")
         .createSignedUrl(resource.file_path, 60 * 60); // 1 hour
