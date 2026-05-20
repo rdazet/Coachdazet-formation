@@ -1,18 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Download } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import CompleteButton from "@/components/video/CompleteButton";
+import ResourceLink from "@/components/video/ResourceLink";
 
 interface Props {
   params: Promise<{ videoId: string }>;
 }
-
-const FILE_ICONS: Record<string, string> = {
-  pdf: "📄",
-  pptx: "📊",
-  xlsx: "📈",
-};
 
 export default async function VideoPage({ params }: Props) {
   const { videoId } = await params;
@@ -53,16 +48,7 @@ export default async function VideoPage({ params }: Props) {
 
   const isCompleted = !!progressRecord;
 
-  const resourcesWithUrls = await Promise.all(
-    (video.resources as Array<{ id: string; title: string; file_path: string; file_type: string; file_size: number | null }> || []).map(async (resource) => {
-      const { data } = await supabase.storage
-        .from("resources")
-        .createSignedUrl(resource.file_path, 60 * 60, {
-          download: `${resource.title}.${resource.file_type}`,
-        });
-      return { ...resource, signedUrl: data?.signedUrl || null };
-    })
-  );
+  const resources = (video.resources as Array<{ id: string; title: string; file_path: string; file_type: string; file_size: number | null }> || []);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -139,39 +125,20 @@ export default async function VideoPage({ params }: Props) {
         )}
 
         {/* Resources */}
-        {resourcesWithUrls.length > 0 && (
+        {resources.length > 0 && (
           <div className="card-orange mb-6">
             <h2 className="font-display text-lg font-semibold mb-4 pb-2 border-b border-orange-100" style={{color:"#C0603A"}}>
               Ressources à télécharger
             </h2>
             <ul className="space-y-2">
-              {resourcesWithUrls.map((resource) => (
+              {resources.map((resource) => (
                 <li key={resource.id}>
-                  {resource.signedUrl ? (
-                    <a
-                      href={resource.signedUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-navy hover:bg-[#f8f9fc] transition-all group"
-                    >
-                      <span className="text-2xl">{FILE_ICONS[resource.file_type] || "📎"}</span>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-800 group-hover:text-navy truncate">
-                          {resource.title}
-                        </p>
-                        <p className="text-xs text-gray-400 uppercase">
-                          {resource.file_type}
-                          {resource.file_size ? ` · ${(resource.file_size / 1024 / 1024).toFixed(1)} Mo` : ""}
-                        </p>
-                      </div>
-                      <Download size={16} className="text-gray-400 group-hover:text-navy shrink-0" />
-                    </a>
-                  ) : (
-                    <div className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 opacity-50 cursor-not-allowed">
-                      <span className="text-2xl">{FILE_ICONS[resource.file_type] || "📎"}</span>
-                      <p className="text-sm text-gray-500">{resource.title}</p>
-                    </div>
-                  )}
+                  <ResourceLink
+                    resourceId={resource.id}
+                    title={resource.title}
+                    fileType={resource.file_type}
+                    fileSize={resource.file_size}
+                  />
                 </li>
               ))}
             </ul>
