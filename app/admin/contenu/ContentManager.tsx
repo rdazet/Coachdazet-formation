@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ChevronDown,
@@ -14,9 +14,7 @@ import {
   Check,
   Loader2,
   Upload,
-  Save,
-  Bold,
-  Underline,
+  Save
 } from "lucide-react";
 import type { Module, Video as VideoType, Resource } from "@/types";
 
@@ -24,70 +22,30 @@ interface ContentManagerProps {
   modules: Module[];
 }
 
-// Convert plain text to HTML, preserving inline tags (<strong>, <u>, etc.)
-// Only skips conversion if content is already wrapped in <p> tags.
+// Convert plain text to HTML paragraphs
 function textToHtml(text: string): string {
   if (!text.trim()) return "";
-  if (/^\s*<p[\s>]/i.test(text.trim())) return text; // already wrapped in <p>
+  // If already wrapped in <p>, return as-is (already processed)
+  if (/^\s*<p[\s>]/i.test(text.trim())) return text;
   return text
     .split(/\n\n+/)
     .map((para) => `<p>${para.replace(/\n/g, "<br>")}</p>`)
     .join("");
 }
 
+// Convert stored HTML back to plain readable text for textarea
+function htmlToText(html: string): string {
+  if (!html) return "";
+  return html
+    .replace(/<\/p>/gi, "\n\n")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<p[^>]*>/gi, "")
+    .replace(/<[^>]+>/g, "")
+    .trim();
+}
+
 const FILE_ICONS: Record<string, string> = { pdf: "📄", pptx: "📊", xlsx: "📈" };
 
-// Formatting toolbar component
-function FormatToolbar({
-  textareaRef,
-  value,
-  onChange,
-}: {
-  textareaRef: React.RefObject<HTMLTextAreaElement | null>;
-  value: string;
-  onChange: (v: string) => void;
-}) {
-  function applyTag(tag: string) {
-    const el = textareaRef.current;
-    if (!el) return;
-    const start = el.selectionStart;
-    const end = el.selectionEnd;
-    const selected = value.slice(start, end);
-    const newValue =
-      value.slice(0, start) +
-      `<${tag}>${selected}</${tag}>` +
-      value.slice(end);
-    onChange(newValue);
-    setTimeout(() => {
-      if (el) {
-        el.focus();
-        const offset = tag.length + 2; // <tag>
-        el.setSelectionRange(start + offset, end + offset);
-      }
-    }, 0);
-  }
-
-  return (
-    <div className="flex gap-1 mb-1">
-      <button
-        type="button"
-        onMouseDown={(e) => { e.preventDefault(); applyTag("strong"); }}
-        className="flex items-center justify-center w-7 h-7 text-xs font-bold border border-gray-300 rounded hover:bg-gray-100 text-gray-700"
-        title="Gras"
-      >
-        <Bold size={13} />
-      </button>
-      <button
-        type="button"
-        onMouseDown={(e) => { e.preventDefault(); applyTag("u"); }}
-        className="flex items-center justify-center w-7 h-7 text-xs border border-gray-300 rounded hover:bg-gray-100 text-gray-700 underline"
-        title="Souligné"
-      >
-        <Underline size={13} />
-      </button>
-    </div>
-  );
-}
 
 export default function ContentManager({ modules }: ContentManagerProps) {
   const router = useRouter();
@@ -109,12 +67,6 @@ export default function ContentManager({ modules }: ContentManagerProps) {
     file: null,
   });
 
-  // Refs for formatting toolbars
-  const editSummaryRef = useRef<HTMLTextAreaElement>(null);
-  const editExercicesRef = useRef<HTMLTextAreaElement>(null);
-  const newSummaryRef = useRef<HTMLTextAreaElement>(null);
-  const newExercicesRef = useRef<HTMLTextAreaElement>(null);
-
   function toggleModule(id: string) {
     setExpandedModules((p) => ({ ...p, [id]: !p[id] }));
   }
@@ -128,8 +80,8 @@ export default function ContentManager({ modules }: ContentManagerProps) {
     setEditForm({
       title: video.title,
       bunny_url: video.bunny_url,
-      summary: video.summary || "",
-      exercices: video.exercices || "",
+      summary: htmlToText(video.summary || ""),
+      exercices: htmlToText(video.exercices || ""),
     });
     setNewResource({ title: "", file: null });
   }
@@ -287,13 +239,7 @@ export default function ContentManager({ modules }: ContentManagerProps) {
                               <label className="block text-xs text-gray-500 mb-1">
                                 Points clés <span className="text-gray-400">(affiché sous la vidéo)</span>
                               </label>
-                              <FormatToolbar
-                                textareaRef={editSummaryRef}
-                                value={editForm.summary}
-                                onChange={(v) => setEditForm((p) => ({ ...p, summary: v }))}
-                              />
                               <textarea
-                                ref={editSummaryRef}
                                 placeholder={"Résumé des points clés...\n\nHTML supporté : <strong>gras</strong>, <u>souligné</u>"}
                                 value={editForm.summary}
                                 onChange={(e) => setEditForm((p) => ({ ...p, summary: e.target.value }))}
@@ -307,13 +253,7 @@ export default function ContentManager({ modules }: ContentManagerProps) {
                               <label className="block text-xs text-gray-500 mb-1">
                                 Exercices <span className="text-gray-400">(affiché sous les points clés)</span>
                               </label>
-                              <FormatToolbar
-                                textareaRef={editExercicesRef}
-                                value={editForm.exercices}
-                                onChange={(v) => setEditForm((p) => ({ ...p, exercices: v }))}
-                              />
                               <textarea
-                                ref={editExercicesRef}
                                 placeholder={"Exercices pratiques...\n\nEx : <ul><li>Exercice 1</li><li>Exercice 2</li></ul>"}
                                 value={editForm.exercices}
                                 onChange={(e) => setEditForm((p) => ({ ...p, exercices: e.target.value }))}
@@ -437,13 +377,7 @@ export default function ContentManager({ modules }: ContentManagerProps) {
                       />
                       <div>
                         <label className="block text-xs text-gray-500 mb-1">Points clés</label>
-                        <FormatToolbar
-                          textareaRef={newSummaryRef}
-                          value={newVideo.summary}
-                          onChange={(v) => setNewVideo((p) => ({ ...p, summary: v }))}
-                        />
                         <textarea
-                          ref={newSummaryRef}
                           placeholder="Résumé / points clés (optionnel)"
                           value={newVideo.summary}
                           onChange={(e) => setNewVideo((p) => ({ ...p, summary: e.target.value }))}
@@ -453,13 +387,7 @@ export default function ContentManager({ modules }: ContentManagerProps) {
                       </div>
                       <div>
                         <label className="block text-xs text-gray-500 mb-1">Exercices</label>
-                        <FormatToolbar
-                          textareaRef={newExercicesRef}
-                          value={newVideo.exercices}
-                          onChange={(v) => setNewVideo((p) => ({ ...p, exercices: v }))}
-                        />
                         <textarea
-                          ref={newExercicesRef}
                           placeholder="Exercices pratiques (optionnel)"
                           value={newVideo.exercices}
                           onChange={(e) => setNewVideo((p) => ({ ...p, exercices: e.target.value }))}
