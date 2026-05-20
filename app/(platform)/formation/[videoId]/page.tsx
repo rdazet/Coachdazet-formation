@@ -120,8 +120,8 @@ export default async function VideoPage({ params }: Props) {
 
         {/* Points clés */}
         {video.summary && (
-          <div className="card mb-6 border-l-4 border-terracotta">
-            <h2 className="font-display text-lg font-semibold text-terracotta mb-4 pb-2 border-b border-orange-100">
+          <div className="card-orange mb-6">
+            <h2 className="font-display text-lg font-semibold mb-4 pb-2 border-b border-orange-100" style={{color:"#C0603A"}}>
               Points clés
             </h2>
             <div className="summary-content" dangerouslySetInnerHTML={{ __html: video.summary }} />
@@ -130,8 +130,8 @@ export default async function VideoPage({ params }: Props) {
 
         {/* Exercices */}
         {video.exercices && (
-          <div className="card mb-6 border-l-4 border-terracotta">
-            <h2 className="font-display text-lg font-semibold text-terracotta mb-4 pb-2 border-b border-orange-100">
+          <div className="card-orange mb-6">
+            <h2 className="font-display text-lg font-semibold mb-4 pb-2 border-b border-orange-100" style={{color:"#C0603A"}}>
               Exercices
             </h2>
             <div className="summary-content" dangerouslySetInnerHTML={{ __html: video.exercices }} />
@@ -140,8 +140,8 @@ export default async function VideoPage({ params }: Props) {
 
         {/* Resources */}
         {resourcesWithUrls.length > 0 && (
-          <div className="card mb-6 border-l-4 border-terracotta">
-            <h2 className="font-display text-lg font-semibold text-terracotta mb-4 pb-2 border-b border-orange-100">
+          <div className="card-orange mb-6">
+            <h2 className="font-display text-lg font-semibold mb-4 pb-2 border-b border-orange-100" style={{color:"#C0603A"}}>
               Ressources à télécharger
             </h2>
             <ul className="space-y-2">
