@@ -93,3 +93,23 @@
     @apply bg-gray-100 text-gray-600 text-xs font-medium px-2.5 py-0.5 rounded-full;
   }
 }
+
+  /* ── Summary content (video page) ── */
+  .summary-content {
+    @apply text-gray-700 leading-relaxed text-sm;
+  }
+  .summary-content p {
+    @apply mb-3;
+  }
+  .summary-content strong {
+    @apply font-semibold text-navy;
+  }
+  .summary-content ul {
+    @apply list-disc list-inside mb-3 space-y-1;
+  }
+  .summary-content li {
+    @apply text-gray-700;
+  }
+  .summary-content h3 {
+    @apply font-semibold text-navy text-base mt-4 mb-2;
+  }
