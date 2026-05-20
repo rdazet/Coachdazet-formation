@@ -150,7 +150,8 @@ export default async function VideoPage({ params }: Props) {
                   {resource.signedUrl ? (
                     <a
                       href={resource.signedUrl}
-                      download={`${resource.title}.${resource.file_type}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-navy hover:bg-[#f8f9fc] transition-all group"
                     >
                       <span className="text-2xl">{FILE_ICONS[resource.file_type] || "📎"}</span>
