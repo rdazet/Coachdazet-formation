@@ -53,16 +53,13 @@ export default async function VideoPage({ params }: Props) {
 
   const isCompleted = !!progressRecord;
 
-  const resourcesWithUrls = await Promise.all(
-    (video.resources as Array<{ id: string; title: string; file_path: string; file_type: string; file_size: number | null }> || []).map(async (resource) => {
-      const { data } = await supabase.storage
-        .from("resources")
-        .createSignedUrl(resource.file_path, 60 * 60, {
-          download: `${resource.title}.${resource.file_type}`,
-        });
-      return { ...resource, signedUrl: data?.signedUrl || null };
-    })
-  );
+  // Build download URLs via our API route (same-origin = download attribute works)
+  const resourcesWithUrls = (
+    video.resources as Array<{ id: string; title: string; file_path: string; file_type: string; file_size: number | null }> || []
+  ).map((resource) => ({
+    ...resource,
+    downloadUrl: `/api/download?path=${encodeURIComponent(resource.file_path)}&name=${encodeURIComponent(`${resource.title}.${resource.file_type}`)}`,
+  }));
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -147,9 +144,9 @@ export default async function VideoPage({ params }: Props) {
             <ul className="space-y-2">
               {resourcesWithUrls.map((resource) => (
                 <li key={resource.id}>
-                  {resource.signedUrl ? (
+                  {resource.downloadUrl ? (
                     <a
-                      href={resource.signedUrl}
+                      href={resource.downloadUrl}
                       download={`${resource.title}.${resource.file_type}`}
                       className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-navy hover:bg-[#f8f9fc] transition-all group"
                     >
