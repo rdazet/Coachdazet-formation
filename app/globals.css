@@ -62,6 +62,14 @@
     @apply bg-white rounded-xl border border-gray-200 p-6 shadow-sm;
   }
 
+  .card-orange {
+    @apply bg-white rounded-xl p-6 shadow-sm;
+    border-top: 1px solid #e5e7eb;
+    border-right: 1px solid #e5e7eb;
+    border-bottom: 1px solid #e5e7eb;
+    border-left: 4px solid #C0603A;
+  }
+
   /* ── Progress bar ── */
   .progress-bar {
     @apply w-full h-2 bg-gray-200 rounded-full overflow-hidden;
@@ -92,24 +100,29 @@
   .badge-disabled {
     @apply bg-gray-100 text-gray-600 text-xs font-medium px-2.5 py-0.5 rounded-full;
   }
-}
 
   /* ── Summary content (video page) ── */
   .summary-content {
     @apply text-gray-700 leading-relaxed text-sm;
   }
+
   .summary-content p {
     @apply mb-3;
   }
+
   .summary-content strong {
     @apply font-semibold text-navy;
   }
+
   .summary-content ul {
     @apply list-disc list-inside mb-3 space-y-1;
   }
+
   .summary-content li {
     @apply text-gray-700;
   }
+
   .summary-content h3 {
     @apply font-semibold text-navy text-base mt-4 mb-2;
   }
+}
