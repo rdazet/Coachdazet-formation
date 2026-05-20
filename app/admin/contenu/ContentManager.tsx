@@ -24,10 +24,11 @@ interface ContentManagerProps {
   modules: Module[];
 }
 
-// Convert plain text to simple HTML (only if no HTML tags detected)
+// Convert plain text to HTML, preserving inline tags (<strong>, <u>, etc.)
+// Only skips conversion if content is already wrapped in <p> tags.
 function textToHtml(text: string): string {
   if (!text.trim()) return "";
-  if (/<[a-z][\s\S]*>/i.test(text)) return text; // already HTML
+  if (/^\s*<p[\s>]/i.test(text.trim())) return text; // already wrapped in <p>
   return text
     .split(/\n\n+/)
     .map((para) => `<p>${para.replace(/\n/g, "<br>")}</p>`)

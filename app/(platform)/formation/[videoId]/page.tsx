@@ -120,8 +120,8 @@ export default async function VideoPage({ params }: Props) {
 
         {/* Points clés */}
         {video.summary && (
-          <div className="card mb-6">
-            <h2 className="font-display text-lg font-semibold text-navy mb-4 pb-2 border-b border-gray-100">
+          <div className="card mb-6 border-l-4 border-navy">
+            <h2 className="font-display text-lg font-semibold text-navy mb-4 pb-2 border-b border-blue-100">
               Points clés
             </h2>
             <div className="summary-content" dangerouslySetInnerHTML={{ __html: video.summary }} />
@@ -140,8 +140,8 @@ export default async function VideoPage({ params }: Props) {
 
         {/* Resources */}
         {resourcesWithUrls.length > 0 && (
-          <div className="card mb-6">
-            <h2 className="font-display text-lg font-semibold text-navy mb-4 pb-2 border-b border-gray-100">
+          <div className="card mb-6 border-l-4 border-navy">
+            <h2 className="font-display text-lg font-semibold text-navy mb-4 pb-2 border-b border-blue-100">
               Ressources à télécharger
             </h2>
             <ul className="space-y-2">
@@ -150,8 +150,7 @@ export default async function VideoPage({ params }: Props) {
                   {resource.signedUrl ? (
                     <a
                       href={resource.signedUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      download={`${resource.title}.${resource.file_type}`}
                       className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-navy hover:bg-[#f8f9fc] transition-all group"
                     >
                       <span className="text-2xl">{FILE_ICONS[resource.file_type] || "📎"}</span>
@@ -178,8 +177,8 @@ export default async function VideoPage({ params }: Props) {
           </div>
         )}
 
-        {/* Complete button */}
-        <div className="card flex justify-center">
+        {/* Complete button — no card border */}
+        <div className="flex justify-center py-4">
           <CompleteButton videoId={video.id} isCompleted={isCompleted} nextVideoId={nextVideo?.id} />
         </div>
       </div>
