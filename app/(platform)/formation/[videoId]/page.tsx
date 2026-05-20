@@ -106,7 +106,7 @@ export default async function VideoPage({ params }: Props) {
 
         {/* Points clés */}
         {video.summary && (
-          <div className="mb-6" style={{background:"white",borderRadius:"12px",padding:"24px",boxShadow:"0 1px 2px rgba(0,0,0,0.05)",borderTop:"1px solid #e5e7eb",borderRight:"1px solid #e5e7eb",borderBottom:"1px solid #e5e7eb",borderLeft:"4px solid #C0603A"}}>
+          <div className="mb-6" style={{background:"white",borderRadius:"12px",padding:"24px",boxShadow:"0 1px 2px rgba(0,0,0,0.05)",borderTop:"1px solid #C0603A",borderRight:"1px solid #C0603A",borderBottom:"1px solid #C0603A",borderLeft:"4px solid #C0603A"}}>
             <h2 className="font-display text-lg font-semibold mb-4 pb-2 border-b border-orange-100" style={{color:"#C0603A"}}>
               Points clés
             </h2>
@@ -116,7 +116,7 @@ export default async function VideoPage({ params }: Props) {
 
         {/* Exercices */}
         {video.exercices && (
-          <div className="mb-6" style={{background:"white",borderRadius:"12px",padding:"24px",boxShadow:"0 1px 2px rgba(0,0,0,0.05)",borderTop:"1px solid #e5e7eb",borderRight:"1px solid #e5e7eb",borderBottom:"1px solid #e5e7eb",borderLeft:"4px solid #C0603A"}}>
+          <div className="mb-6" style={{background:"white",borderRadius:"12px",padding:"24px",boxShadow:"0 1px 2px rgba(0,0,0,0.05)",borderTop:"1px solid #C0603A",borderRight:"1px solid #C0603A",borderBottom:"1px solid #C0603A",borderLeft:"4px solid #C0603A"}}>
             <h2 className="font-display text-lg font-semibold mb-4 pb-2 border-b border-orange-100" style={{color:"#C0603A"}}>
               Exercices
             </h2>
@@ -126,7 +126,7 @@ export default async function VideoPage({ params }: Props) {
 
         {/* Resources */}
         {resources.length > 0 && (
-          <div className="mb-6" style={{background:"white",borderRadius:"12px",padding:"24px",boxShadow:"0 1px 2px rgba(0,0,0,0.05)",borderTop:"1px solid #e5e7eb",borderRight:"1px solid #e5e7eb",borderBottom:"1px solid #e5e7eb",borderLeft:"4px solid #C0603A"}}>
+          <div className="mb-6" style={{background:"white",borderRadius:"12px",padding:"24px",boxShadow:"0 1px 2px rgba(0,0,0,0.05)",borderTop:"1px solid #C0603A",borderRight:"1px solid #C0603A",borderBottom:"1px solid #C0603A",borderLeft:"4px solid #C0603A"}}>
             <h2 className="font-display text-lg font-semibold mb-4 pb-2 border-b border-orange-100" style={{color:"#C0603A"}}>
               Ressources à télécharger
             </h2>
