@@ -29,6 +29,7 @@ export interface Video {
   title: string;
   bunny_url: string;
   summary: string | null;
+  exercices: string | null;
   sort_order: number;
   created_at: string;
   updated_at: string;

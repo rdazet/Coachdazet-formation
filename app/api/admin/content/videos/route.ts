@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { module_id, title, bunny_url, summary } = body;
+  const { module_id, title, bunny_url, summary, exercices } = body;
 
   if (!module_id || !title || !bunny_url) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -49,6 +49,7 @@ export async function POST(request: NextRequest) {
     title,
     bunny_url,
     summary: summary || null,
+    exercices: exercices || null,
     sort_order: sortOrder,
   }).select().single();
 

@@ -14,21 +14,6 @@ const FILE_ICONS: Record<string, string> = {
   xlsx: "📈",
 };
 
-function splitSummary(html: string): { pointsCles: string; exercices: string } {
-  const patterns = [
-    /<p><strong>Exercices/i,
-    /<h3[^>]*>Exercices/i,
-    /<p>Exercices/i,
-  ];
-  for (const pattern of patterns) {
-    const idx = html.search(pattern);
-    if (idx !== -1) {
-      return { pointsCles: html.slice(0, idx).trim(), exercices: html.slice(idx).trim() };
-    }
-  }
-  return { pointsCles: html, exercices: "" };
-}
-
 export default async function VideoPage({ params }: Props) {
   const { videoId } = await params;
   const supabase = await createClient();
@@ -78,8 +63,6 @@ export default async function VideoPage({ params }: Props) {
       return { ...resource, signedUrl: data?.signedUrl || null };
     })
   );
-
-  const { pointsCles, exercices } = splitSummary(video.summary || "");
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -136,22 +119,22 @@ export default async function VideoPage({ params }: Props) {
         </div>
 
         {/* Points clés */}
-        {pointsCles && (
+        {video.summary && (
           <div className="card mb-6">
             <h2 className="font-display text-lg font-semibold text-navy mb-4 pb-2 border-b border-gray-100">
               Points clés
             </h2>
-            <div className="summary-content" dangerouslySetInnerHTML={{ __html: pointsCles }} />
+            <div className="summary-content" dangerouslySetInnerHTML={{ __html: video.summary }} />
           </div>
         )}
 
         {/* Exercices */}
-        {exercices && (
+        {video.exercices && (
           <div className="card mb-6 border-l-4 border-terracotta">
             <h2 className="font-display text-lg font-semibold text-terracotta mb-4 pb-2 border-b border-orange-100">
               Exercices
             </h2>
-            <div className="summary-content" dangerouslySetInnerHTML={{ __html: exercices }} />
+            <div className="summary-content" dangerouslySetInnerHTML={{ __html: video.exercices }} />
           </div>
         )}
 
