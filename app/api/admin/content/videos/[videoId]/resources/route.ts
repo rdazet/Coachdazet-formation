@@ -31,7 +31,16 @@ export async function POST(
 
   const ext = file.name.split(".").pop()?.toLowerCase() || "";
   const fileType = ["pdf", "pptx", "xlsx"].includes(ext) ? ext : "pdf";
-  const filePath = `${videoId}/${Date.now()}-${file.name.replace(/\s+/g, "_")}`;
+
+  // Sanitize filename: remove accents and special characters
+  const safeName = file.name
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-zA-Z0-9._-]/g, "-")
+    .replace(/-+/g, "-")
+    .toLowerCase();
+
+  const filePath = `${videoId}/${Date.now()}-${safeName}`;
 
   const adminClient = createAdminClient();
   const buffer = await file.arrayBuffer();
