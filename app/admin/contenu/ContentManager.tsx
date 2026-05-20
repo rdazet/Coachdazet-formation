@@ -13,35 +13,77 @@ import {
   X,
   Check,
   Loader2,
+  Upload,
+  Save,
 } from "lucide-react";
-import type { Module, Video as VideoType } from "@/types";
+import type { Module, Video as VideoType, Resource } from "@/types";
 
 interface ContentManagerProps {
   modules: Module[];
 }
 
+// Convert plain text to simple HTML (newlines → <br> / <p>)
+function textToHtml(text: string): string {
+  if (!text.trim()) return "";
+  return text
+    .split(/\n\n+/)
+    .map((para) => `<p>${para.replace(/\n/g, "<br>")}</p>`)
+    .join("");
+}
+
+// Convert HTML back to plain text for textarea display
+function htmlToText(html: string): string {
+  return html
+    .replace(/<\/p>/gi, "\n\n")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<p>/gi, "")
+    .replace(/<[^>]+>/g, "")
+    .trim();
+}
+
+const FILE_ICONS: Record<string, string> = { pdf: "📄", pptx: "📊", xlsx: "📈" };
+
 export default function ContentManager({ modules }: ContentManagerProps) {
   const router = useRouter();
   const [expandedModules, setExpandedModules] = useState<Record<string, boolean>>({});
   const [addVideoFor, setAddVideoFor] = useState<string | null>(null);
-  const [editingVideo, setEditingVideo] = useState<string | null>(null);
+  const [editingVideoId, setEditingVideoId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [uploadingResource, setUploadingResource] = useState(false);
 
-  // New video form state
-  const [newVideo, setNewVideo] = useState({
+  // New video form
+  const [newVideo, setNewVideo] = useState({ title: "", bunny_url: "", summary: "" });
+
+  // Edit video form
+  const [editForm, setEditForm] = useState({ title: "", bunny_url: "", summary: "" });
+
+  // New resource form
+  const [newResource, setNewResource] = useState<{ title: string; file: File | null }>({
     title: "",
-    bunny_url: "",
-    summary: "",
+    file: null,
   });
 
   function toggleModule(id: string) {
     setExpandedModules((p) => ({ ...p, [id]: !p[id] }));
   }
 
+  function openEditVideo(video: VideoType) {
+    if (editingVideoId === video.id) {
+      setEditingVideoId(null);
+      return;
+    }
+    setEditingVideoId(video.id);
+    setEditForm({
+      title: video.title,
+      bunny_url: video.bunny_url,
+      summary: video.summary ? htmlToText(video.summary) : "",
+    });
+    setNewResource({ title: "", file: null });
+  }
+
   async function handleAddVideo(moduleId: string) {
     if (!newVideo.title || !newVideo.bunny_url) return;
     setLoading(true);
-
     await fetch("/api/admin/content/videos", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -49,12 +91,26 @@ export default function ContentManager({ modules }: ContentManagerProps) {
         module_id: moduleId,
         title: newVideo.title,
         bunny_url: newVideo.bunny_url,
-        summary: newVideo.summary,
+        summary: textToHtml(newVideo.summary),
       }),
     });
-
     setNewVideo({ title: "", bunny_url: "", summary: "" });
     setAddVideoFor(null);
+    setLoading(false);
+    router.refresh();
+  }
+
+  async function handleSaveVideo(videoId: string) {
+    setLoading(true);
+    await fetch(`/api/admin/content/videos/${videoId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: editForm.title,
+        bunny_url: editForm.bunny_url,
+        summary: textToHtml(editForm.summary),
+      }),
+    });
     setLoading(false);
     router.refresh();
   }
@@ -62,12 +118,34 @@ export default function ContentManager({ modules }: ContentManagerProps) {
   async function handleDeleteVideo(videoId: string) {
     if (!confirm("Supprimer cette vidéo ? Cette action est irréversible.")) return;
     setLoading(true);
-
-    await fetch(`/api/admin/content/videos/${videoId}`, {
-      method: "DELETE",
-    });
-
+    await fetch(`/api/admin/content/videos/${videoId}`, { method: "DELETE" });
+    setEditingVideoId(null);
     setLoading(false);
+    router.refresh();
+  }
+
+  async function handleUploadResource(videoId: string) {
+    if (!newResource.file || !newResource.title) return;
+    setUploadingResource(true);
+    const fd = new FormData();
+    fd.append("file", newResource.file);
+    fd.append("title", newResource.title);
+    const res = await fetch(`/api/admin/content/videos/${videoId}/resources`, {
+      method: "POST",
+      body: fd,
+    });
+    if (!res.ok) {
+      const { error } = await res.json();
+      alert(`Erreur upload : ${error}`);
+    }
+    setNewResource({ title: "", file: null });
+    setUploadingResource(false);
+    router.refresh();
+  }
+
+  async function handleDeleteResource(resourceId: string) {
+    if (!confirm("Supprimer cette ressource ?")) return;
+    await fetch(`/api/admin/content/resources/${resourceId}`, { method: "DELETE" });
     router.refresh();
   }
 
@@ -93,47 +171,165 @@ export default function ContentManager({ modules }: ContentManagerProps) {
                   <p className="text-xs text-gray-400">{videoCount} vidéo{videoCount > 1 ? "s" : ""}</p>
                 </div>
               </div>
-              {isOpen ? (
-                <ChevronDown size={18} className="text-gray-400" />
-              ) : (
-                <ChevronRight size={18} className="text-gray-400" />
-              )}
+              {isOpen ? <ChevronDown size={18} className="text-gray-400" /> : <ChevronRight size={18} className="text-gray-400" />}
             </button>
 
             {isOpen && (
               <div className="border-t border-gray-100">
-                {/* Video list */}
                 {(module.videos || []).length === 0 && (
                   <p className="px-5 py-4 text-sm text-gray-400">Aucune vidéo dans ce module.</p>
                 )}
 
                 {(module.videos || []).map((video) => (
-                  <div
-                    key={video.id}
-                    className="flex items-start gap-3 px-5 py-3 border-b border-gray-50 hover:bg-[#F9F9F9] group"
-                  >
-                    <Video size={16} className="text-gray-300 mt-0.5 shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-800 truncate">{video.title}</p>
-                      <p className="text-xs text-gray-400 truncate">{video.bunny_url}</p>
-                      {(video.resources || []).length > 0 && (
-                        <div className="flex items-center gap-1 mt-1">
-                          <FileText size={11} className="text-gray-300" />
-                          <span className="text-xs text-gray-400">
-                            {video.resources!.length} ressource{video.resources!.length > 1 ? "s" : ""}
-                          </span>
+                  <div key={video.id} className="border-b border-gray-50">
+                    {/* Video row */}
+                    <div
+                      className="flex items-start gap-3 px-5 py-3 hover:bg-[#F9F9F9] group cursor-pointer"
+                      onClick={() => openEditVideo(video)}
+                    >
+                      <Video size={16} className="text-gray-300 mt-0.5 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-800 truncate">{video.title}</p>
+                        <p className="text-xs text-gray-400 truncate">{video.bunny_url}</p>
+                        {(video.resources || []).length > 0 && (
+                          <div className="flex items-center gap-1 mt-1">
+                            <FileText size={11} className="text-gray-300" />
+                            <span className="text-xs text-gray-400">
+                              {video.resources!.length} ressource{video.resources!.length > 1 ? "s" : ""}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Pencil size={13} className={`transition-colors ${editingVideoId === video.id ? "text-navy" : "text-gray-300 group-hover:text-gray-400"}`} />
+                      </div>
+                    </div>
+
+                    {/* Edit panel */}
+                    {editingVideoId === video.id && (
+                      <div className="px-5 py-5 bg-[#F8F9FC] border-t border-gray-100 space-y-5">
+                        {/* === VIDEO INFO === */}
+                        <div>
+                          <p className="text-xs font-semibold text-navy uppercase tracking-wider mb-3">Informations de la vidéo</p>
+                          <div className="space-y-3">
+                            <input
+                              type="text"
+                              placeholder="Titre *"
+                              value={editForm.title}
+                              onChange={(e) => setEditForm((p) => ({ ...p, title: e.target.value }))}
+                              className="input text-sm py-2"
+                            />
+                            <input
+                              type="url"
+                              placeholder="URL Bunny Stream *"
+                              value={editForm.bunny_url}
+                              onChange={(e) => setEditForm((p) => ({ ...p, bunny_url: e.target.value }))}
+                              className="input text-sm py-2"
+                            />
+                            <div>
+                              <label className="block text-xs text-gray-500 mb-1">
+                                Résumé & exercices <span className="text-gray-400">(affiché sous la vidéo)</span>
+                              </label>
+                              <textarea
+                                placeholder={"Résumé des points clés...\n\nExercices :\n- Exercice 1\n- Exercice 2"}
+                                value={editForm.summary}
+                                onChange={(e) => setEditForm((p) => ({ ...p, summary: e.target.value }))}
+                                className="input text-sm py-2 resize-none w-full"
+                                rows={6}
+                              />
+                              <p className="text-xs text-gray-400 mt-1">Les sauts de ligne sont automatiquement convertis. HTML supporté pour la mise en forme avancée.</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => handleSaveVideo(video.id)}
+                                disabled={loading}
+                                className="btn-primary text-sm py-2 px-4"
+                              >
+                                {loading ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                                Enregistrer
+                              </button>
+                              <button
+                                onClick={() => handleDeleteVideo(video.id)}
+                                disabled={loading}
+                                className="btn-ghost text-sm py-2 px-3 text-red-500 hover:text-red-700"
+                              >
+                                <Trash2 size={14} />
+                                Supprimer la vidéo
+                              </button>
+                            </div>
+                          </div>
                         </div>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                      <button
-                        onClick={() => handleDeleteVideo(video.id)}
-                        className="p-1.5 text-gray-400 hover:text-red-600 transition-colors rounded"
-                        title="Supprimer"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
+
+                        {/* === RESOURCES === */}
+                        <div className="border-t border-gray-200 pt-5">
+                          <p className="text-xs font-semibold text-navy uppercase tracking-wider mb-3">Ressources téléchargeables</p>
+
+                          {/* Existing resources */}
+                          {(video.resources || []).length > 0 ? (
+                            <ul className="space-y-2 mb-4">
+                              {(video.resources || []).map((resource: Resource) => (
+                                <li key={resource.id} className="flex items-center gap-3 p-2.5 bg-white rounded-lg border border-gray-200">
+                                  <span className="text-lg">{FILE_ICONS[resource.file_type] || "📎"}</span>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium text-gray-800 truncate">{resource.title}</p>
+                                    <p className="text-xs text-gray-400 uppercase">
+                                      {resource.file_type}
+                                      {resource.file_size ? ` · ${(resource.file_size / 1024 / 1024).toFixed(1)} Mo` : ""}
+                                    </p>
+                                  </div>
+                                  <button
+                                    onClick={() => handleDeleteResource(resource.id)}
+                                    className="p-1 text-gray-400 hover:text-red-600 transition-colors"
+                                    title="Supprimer"
+                                  >
+                                    <Trash2 size={14} />
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <p className="text-sm text-gray-400 mb-4">Aucune ressource pour l'instant.</p>
+                          )}
+
+                          {/* Upload new resource */}
+                          <div className="bg-white rounded-lg border border-dashed border-gray-300 p-4 space-y-3">
+                            <p className="text-xs font-medium text-gray-600">Ajouter un fichier (PDF, PowerPoint, Excel)</p>
+                            <input
+                              type="text"
+                              placeholder="Nom de la ressource *"
+                              value={newResource.title}
+                              onChange={(e) => setNewResource((p) => ({ ...p, title: e.target.value }))}
+                              className="input text-sm py-2"
+                            />
+                            <input
+                              type="file"
+                              accept=".pdf,.pptx,.xlsx,.ppt,.xls"
+                              onChange={(e) =>
+                                setNewResource((p) => ({
+                                  ...p,
+                                  file: e.target.files?.[0] || null,
+                                  title: p.title || e.target.files?.[0]?.name.replace(/\.[^.]+$/, "") || "",
+                                }))
+                              }
+                              className="text-sm text-gray-600 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-navy file:text-white file:text-xs file:cursor-pointer"
+                            />
+                            {newResource.file && (
+                              <p className="text-xs text-gray-500">
+                                📎 {newResource.file.name} ({(newResource.file.size / 1024 / 1024).toFixed(1)} Mo)
+                              </p>
+                            )}
+                            <button
+                              onClick={() => handleUploadResource(video.id)}
+                              disabled={uploadingResource || !newResource.file || !newResource.title}
+                              className="btn-primary text-sm py-2 px-4"
+                            >
+                              {uploadingResource ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+                              Uploader
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
 
@@ -146,26 +342,20 @@ export default function ContentManager({ modules }: ContentManagerProps) {
                         type="text"
                         placeholder="Titre de la vidéo *"
                         value={newVideo.title}
-                        onChange={(e) =>
-                          setNewVideo((p) => ({ ...p, title: e.target.value }))
-                        }
+                        onChange={(e) => setNewVideo((p) => ({ ...p, title: e.target.value }))}
                         className="input text-sm py-2"
                       />
                       <input
                         type="url"
                         placeholder="URL Bunny Stream (embed) *"
                         value={newVideo.bunny_url}
-                        onChange={(e) =>
-                          setNewVideo((p) => ({ ...p, bunny_url: e.target.value }))
-                        }
+                        onChange={(e) => setNewVideo((p) => ({ ...p, bunny_url: e.target.value }))}
                         className="input text-sm py-2"
                       />
                       <textarea
                         placeholder="Résumé / points clés (optionnel)"
                         value={newVideo.summary}
-                        onChange={(e) =>
-                          setNewVideo((p) => ({ ...p, summary: e.target.value }))
-                        }
+                        onChange={(e) => setNewVideo((p) => ({ ...p, summary: e.target.value }))}
                         className="input text-sm py-2 resize-none"
                         rows={3}
                       />
@@ -175,18 +365,11 @@ export default function ContentManager({ modules }: ContentManagerProps) {
                           disabled={loading || !newVideo.title || !newVideo.bunny_url}
                           className="btn-primary text-sm py-2 px-4"
                         >
-                          {loading ? (
-                            <Loader2 size={14} className="animate-spin" />
-                          ) : (
-                            <Check size={14} />
-                          )}
+                          {loading ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
                           Ajouter
                         </button>
                         <button
-                          onClick={() => {
-                            setAddVideoFor(null);
-                            setNewVideo({ title: "", bunny_url: "", summary: "" });
-                          }}
+                          onClick={() => { setAddVideoFor(null); setNewVideo({ title: "", bunny_url: "", summary: "" }); }}
                           className="btn-ghost text-sm py-2 px-3"
                         >
                           <X size={14} />
