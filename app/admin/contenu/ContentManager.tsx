@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ChevronDown,
@@ -14,7 +14,8 @@ import {
   Check,
   Loader2,
   Upload,
-  Save
+  Save,
+  Bold,
 } from "lucide-react";
 import type { Module, Video as VideoType, Resource } from "@/types";
 
@@ -22,14 +23,19 @@ interface ContentManagerProps {
   modules: Module[];
 }
 
-// Convert plain text to HTML paragraphs
+// Convert plain text to HTML paragraphs, with **bold** support
 function textToHtml(text: string): string {
   if (!text.trim()) return "";
   // If already wrapped in <p>, return as-is (already processed)
   if (/^\s*<p[\s>]/i.test(text.trim())) return text;
   return text
     .split(/\n\n+/)
-    .map((para) => `<p>${para.replace(/\n/g, "<br>")}</p>`)
+    .map((para) => {
+      const line = para
+        .replace(/\n/g, "<br>")
+        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+      return `<p>${line}</p>`;
+    })
     .join("");
 }
 
@@ -40,6 +46,7 @@ function htmlToText(html: string): string {
     .replace(/<\/p>/gi, "\n\n")
     .replace(/<br\s*\/?>/gi, "\n")
     .replace(/<p[^>]*>/gi, "")
+    .replace(/<strong>(.*?)<\/strong>/gi, "**$1**")
     .replace(/<[^>]+>/g, "")
     .trim();
 }
@@ -66,6 +73,27 @@ export default function ContentManager({ modules }: ContentManagerProps) {
     title: "",
     file: null,
   });
+
+  // Refs for bold button
+  const editSummaryRef = useRef<HTMLTextAreaElement>(null);
+  const editExercicesRef = useRef<HTMLTextAreaElement>(null);
+  const newSummaryRef = useRef<HTMLTextAreaElement>(null);
+  const newExercicesRef = useRef<HTMLTextAreaElement>(null);
+
+  function applyBold(
+    ref: React.RefObject<HTMLTextAreaElement | null>,
+    getValue: () => string,
+    setValue: (v: string) => void
+  ) {
+    const el = ref.current;
+    if (!el) return;
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
+    const val = getValue();
+    const newVal = val.slice(0, start) + "**" + val.slice(start, end) + "**" + val.slice(end);
+    setValue(newVal);
+    setTimeout(() => { el.focus(); el.setSelectionRange(start + 2, end + 2); }, 0);
+  }
 
   function toggleModule(id: string) {
     setExpandedModules((p) => ({ ...p, [id]: !p[id] }));
@@ -239,7 +267,11 @@ export default function ContentManager({ modules }: ContentManagerProps) {
                               <label className="block text-xs text-gray-500 mb-1">
                                 Points clés <span className="text-gray-400">(affiché sous la vidéo)</span>
                               </label>
+                              <div className="flex gap-1 mb-1">
+                                <button type="button" onMouseDown={(e) => { e.preventDefault(); applyBold(editSummaryRef, () => editForm.summary, (v) => setEditForm((p) => ({ ...p, summary: v }))); }} className="flex items-center justify-center w-7 h-7 text-xs font-bold border border-gray-300 rounded hover:bg-gray-100 text-gray-700" title="Gras (**texte**)"><Bold size={13} /></button>
+                              </div>
                               <textarea
+                                ref={editSummaryRef}
                                 placeholder={"Résumé des points clés...\n\nHTML supporté : <strong>gras</strong>, <u>souligné</u>"}
                                 value={editForm.summary}
                                 onChange={(e) => setEditForm((p) => ({ ...p, summary: e.target.value }))}
@@ -253,7 +285,11 @@ export default function ContentManager({ modules }: ContentManagerProps) {
                               <label className="block text-xs text-gray-500 mb-1">
                                 Exercices <span className="text-gray-400">(affiché sous les points clés)</span>
                               </label>
+                              <div className="flex gap-1 mb-1">
+                                <button type="button" onMouseDown={(e) => { e.preventDefault(); applyBold(editExercicesRef, () => editForm.exercices, (v) => setEditForm((p) => ({ ...p, exercices: v }))); }} className="flex items-center justify-center w-7 h-7 text-xs font-bold border border-gray-300 rounded hover:bg-gray-100 text-gray-700" title="Gras (**texte**)"><Bold size={13} /></button>
+                              </div>
                               <textarea
+                                ref={editExercicesRef}
                                 placeholder={"Exercices pratiques...\n\nEx : <ul><li>Exercice 1</li><li>Exercice 2</li></ul>"}
                                 value={editForm.exercices}
                                 onChange={(e) => setEditForm((p) => ({ ...p, exercices: e.target.value }))}
@@ -377,7 +413,11 @@ export default function ContentManager({ modules }: ContentManagerProps) {
                       />
                       <div>
                         <label className="block text-xs text-gray-500 mb-1">Points clés</label>
+                        <div className="flex gap-1 mb-1">
+                          <button type="button" onMouseDown={(e) => { e.preventDefault(); applyBold(newSummaryRef, () => newVideo.summary, (v) => setNewVideo((p) => ({ ...p, summary: v }))); }} className="flex items-center justify-center w-7 h-7 text-xs font-bold border border-gray-300 rounded hover:bg-gray-100 text-gray-700" title="Gras (**texte**)"><Bold size={13} /></button>
+                        </div>
                         <textarea
+                          ref={newSummaryRef}
                           placeholder="Résumé / points clés (optionnel)"
                           value={newVideo.summary}
                           onChange={(e) => setNewVideo((p) => ({ ...p, summary: e.target.value }))}
@@ -387,7 +427,11 @@ export default function ContentManager({ modules }: ContentManagerProps) {
                       </div>
                       <div>
                         <label className="block text-xs text-gray-500 mb-1">Exercices</label>
+                        <div className="flex gap-1 mb-1">
+                          <button type="button" onMouseDown={(e) => { e.preventDefault(); applyBold(newExercicesRef, () => newVideo.exercices, (v) => setNewVideo((p) => ({ ...p, exercices: v }))); }} className="flex items-center justify-center w-7 h-7 text-xs font-bold border border-gray-300 rounded hover:bg-gray-100 text-gray-700" title="Gras (**texte**)"><Bold size={13} /></button>
+                        </div>
                         <textarea
+                          ref={newExercicesRef}
                           placeholder="Exercices pratiques (optionnel)"
                           value={newVideo.exercices}
                           onChange={(e) => setNewVideo((p) => ({ ...p, exercices: e.target.value }))}
