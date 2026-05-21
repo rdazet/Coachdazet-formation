@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
+import Image from "next/image";
 import Sidebar from "./Sidebar";
 import type { Module } from "@/types";
 
@@ -21,8 +22,14 @@ export default function MobileSidebar(props: MobileSidebarProps) {
       {/* Mobile top bar */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-navy px-4 py-3 flex items-center justify-between">
         <div>
-          <span className="font-display text-lg font-semibold text-white">Coachdazet</span>
-          <span className="font-serif italic text-terracotta text-sm ml-1">Formation</span>
+          <Image
+            src="/logo-coachdazet.png"
+            alt="Coachdazet Formation"
+            width={160}
+            height={31}
+            priority
+            className="h-8 w-auto"
+          />
         </div>
         <button
           onClick={() => setOpen(true)}
@@ -55,9 +62,4 @@ export default function MobileSidebar(props: MobileSidebarProps) {
           >
             <X size={18} />
           </button>
-          <Sidebar {...props} />
-        </div>
-      </div>
-    </>
-  );
-}
+          <Sideb

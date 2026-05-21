@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { CheckCircle, Circle, ChevronDown, ChevronRight, BookOpen, LogOut } from "lucide-react";
@@ -52,10 +53,16 @@ export default function Sidebar({
   return (
     <aside className="sidebar w-72 min-h-screen flex flex-col">
       {/* Logo */}
-      <div className="bg-navy px-6 py-5">
+      <div className="bg-navy px-6 py-4">
         <Link href="/dashboard" className="block">
-          <span className="font-display text-xl font-semibold text-white">Coachdazet</span>
-          <span className="font-serif italic text-terracotta text-base ml-1">Formation</span>
+          <Image
+            src="/logo-coachdazet.png"
+            alt="Coachdazet Formation"
+            width={200}
+            height={39}
+            priority
+            className="h-10 w-auto"
+          />
         </Link>
       </div>
 
@@ -170,9 +177,4 @@ export default function Sidebar({
             title="Se déconnecter"
           >
             <LogOut size={18} />
-          </button>
-        </div>
-      </div>
-    </aside>
-  );
-}
+         
