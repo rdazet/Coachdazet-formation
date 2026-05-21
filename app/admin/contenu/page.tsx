@@ -9,7 +9,7 @@ export default async function ContenuPage() {
     .from("modules")
     .select("*, videos(*, resources(*))")
     .order("sort_order", { ascending: true })
-    .order("sort_order", { referencedTable: "videos", ascending: true });
+    .order("title", { referencedTable: "videos", ascending: true });
 
   return (
     <div className="px-8 py-8">
