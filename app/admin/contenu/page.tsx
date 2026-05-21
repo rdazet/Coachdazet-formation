@@ -11,17 +11,16 @@ export default async function ContenuPage() {
     .order("sort_order", { ascending: true })
     .order("title", { referencedTable: "videos", ascending: true });
 
+  // Sort videos alphabetically within each module (Supabase nested order is unreliable)
+  const sortedModules = (modules || []).map((mod) => ({
+    ...mod,
+    videos: [...(mod.videos || [])].sort((a, b) =>
+      a.title.localeCompare(b.title, "fr")
+    ),
+  }));
+
   return (
     <div className="px-8 py-8">
       <div className="mb-6">
         <h1 className="font-display text-2xl font-semibold text-navy">
-          Gestion du contenu
-        </h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Gérez les modules, vidéos et ressources de la formation.
-        </p>
-      </div>
-      <ContentManager modules={(modules || []) as Module[]} />
-    </div>
-  );
-}
+    
