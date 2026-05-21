@@ -82,7 +82,7 @@
 
   /* ── Sidebar ── */
   .sidebar {
-    @apply bg-[#F5F5F5] border-r border-gray-200 flex flex-col;
+    @apply bg-white border-r border-gray-200 flex flex-col;
   }
 
   /* ── Badge ── */
