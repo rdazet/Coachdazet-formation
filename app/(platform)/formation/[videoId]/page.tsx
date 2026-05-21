@@ -18,11 +18,17 @@ export default async function VideoPage({ params }: Props) {
   const adminClient = createAdminClient();
   const { data: video, error } = await adminClient
     .from("videos")
-    .select("*, resources(*), modules(title)")
+    .select("*, modules(title)")
     .eq("id", videoId)
     .single();
 
   if (error || !video) notFound();
+
+  // Fetch resources separately to bypass any RLS join issues
+  const { data: videoResources } = await adminClient
+    .from("resources")
+    .select("id, title, file_path, file_type, file_size")
+    .eq("video_id", videoId);
 
   const { data: allVideos } = await adminClient
     .from("videos")
@@ -46,7 +52,7 @@ export default async function VideoPage({ params }: Props) {
 
   const isCompleted = !!progressRecord;
 
-  const resources = (video.resources as Array<{ id: string; title: string; file_path: string; file_type: string; file_size: number | null }> || []);
+  const resources = (videoResources || []) as Array<{ id: string; title: string; file_path: string; file_type: string; file_size: number | null }>;
 
   return (
     <div className="min-h-screen flex flex-col">
