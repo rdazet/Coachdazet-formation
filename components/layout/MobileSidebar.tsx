@@ -55,13 +55,15 @@ export default function MobileSidebar(props: MobileSidebarProps) {
         }`}
       >
         <div className="relative h-full">
-          <button
-            onClick={() => setOpen(false)}
-            className="absolute top-4 right-[-40px] text-white bg-navy/80 p-1.5 rounded-r-lg"
-            aria-label="Fermer le menu"
-          >
-            <X size={18} />
-          </button>
+          {open && (
+            <button
+              onClick={() => setOpen(false)}
+              className="absolute top-4 right-[-40px] text-white bg-navy/80 p-1.5 rounded-r-lg"
+              aria-label="Fermer le menu"
+            >
+              <X size={18} />
+            </button>
+          )}
           <Sidebar {...props} />
         </div>
       </div>
