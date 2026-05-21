@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -15,7 +15,8 @@ export default async function VideoPage({ params }: Props) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  const { data: video, error } = await supabase
+  const adminClient = createAdminClient();
+  const { data: video, error } = await adminClient
     .from("videos")
     .select("*, resources(*), modules(title)")
     .eq("id", videoId)
@@ -23,17 +24,14 @@ export default async function VideoPage({ params }: Props) {
 
   if (error || !video) notFound();
 
-  const { data: allVideos } = await supabase
+  const { data: allVideos } = await adminClient
     .from("videos")
     .select("id, title, module_id, sort_order, modules(sort_order)")
-    .order("sort_order", { ascending: true });
+    .order("title", { ascending: true });
 
-  const sortedVideos = (allVideos || []).sort((a, b) => {
-    const aModuleOrder = (a.modules as unknown as { sort_order: number })?.sort_order ?? 0;
-    const bModuleOrder = (b.modules as unknown as { sort_order: number })?.sort_order ?? 0;
-    if (aModuleOrder !== bModuleOrder) return aModuleOrder - bModuleOrder;
-    return a.sort_order - b.sort_order;
-  });
+  const sortedVideos = (allVideos || []).sort((a, b) =>
+    a.title.localeCompare(b.title, "fr")
+  );
 
   const currentIndex = sortedVideos.findIndex((v) => v.id === videoId);
   const prevVideo = currentIndex > 0 ? sortedVideos[currentIndex - 1] : null;

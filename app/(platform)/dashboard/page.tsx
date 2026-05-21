@@ -20,7 +20,7 @@ export default async function DashboardPage() {
     .from("modules")
     .select("*, videos(*, resources(*))")
     .order("sort_order", { ascending: true })
-    .order("sort_order", { referencedTable: "videos", ascending: true });
+    .order("title", { referencedTable: "videos", ascending: true });
 
   const { data: progress } = await supabase
     .from("progress")
