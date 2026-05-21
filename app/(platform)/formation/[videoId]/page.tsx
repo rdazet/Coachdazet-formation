@@ -64,14 +64,14 @@ export default async function VideoPage({ params }: Props) {
     <div className="min-h-screen flex flex-col">
       <div className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-8 py-6 lg:py-8">
         {/* Title */}
-        <div className="mb-4">
+        <div className="mb-6">
           <h1 className="font-display text-2xl sm:text-3xl font-semibold text-navy">
             Vidéo {video.title}
           </h1>
         </div>
 
         {/* Video player */}
-        <div className="mb-6">
+        <div className="mb-10">
           <div
             className="relative w-full bg-black rounded-xl overflow-hidden shadow-lg"
             style={{ paddingBottom: "56.25%" }}
