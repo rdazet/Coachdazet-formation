@@ -4,10 +4,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { CheckCircle, Circle, ChevronDown, ChevronRight, BookOpen, LogOut } from "lucide-react";
+import { CheckCircle, Circle, ChevronDown, ChevronRight, BookOpen, LogOut, ChevronLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import type { Module, Video } from "@/types";
+import type { Module } from "@/types";
 import clsx from "clsx";
 
 interface SidebarProps {
@@ -27,10 +27,31 @@ export default function Sidebar({
 }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+
+  // Derive currentVideoId from URL if not passed
+  const videoIdFromUrl = pathname.startsWith("/formation/")
+    ? pathname.split("/formation/")[1]
+    : null;
+  const activeVideoId = currentVideoId || videoIdFromUrl || null;
+
+  // Flatten and sort all videos alphabetically for prev/next navigation
+  const allVideos = modules
+    .flatMap((mod) => mod.videos || [])
+    .sort((a, b) => a.title.localeCompare(b.title, "fr"));
+
+  const currentIndex = activeVideoId
+    ? allVideos.findIndex((v) => v.id === activeVideoId)
+    : -1;
+  const prevVideo = currentIndex > 0 ? allVideos[currentIndex - 1] : null;
+  const nextVideo =
+    currentIndex >= 0 && currentIndex < allVideos.length - 1
+      ? allVideos[currentIndex + 1]
+      : null;
+
   const [openModules, setOpenModules] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
     modules.forEach((mod) => {
-      const hasCurrentVideo = mod.videos?.some((v) => v.id === currentVideoId);
+      const hasCurrentVideo = mod.videos?.some((v) => v.id === activeVideoId);
       if (hasCurrentVideo) initial[mod.id] = true;
     });
     return initial;
@@ -78,6 +99,40 @@ export default function Sidebar({
           {completedVideoIds.length} / {totalVideos} vidéos complétées
         </p>
       </div>
+
+      {/* Prev / Next — only on video pages */}
+      {activeVideoId && (
+        <div className="px-4 py-3 border-b border-gray-200 flex gap-2">
+          {prevVideo ? (
+            <Link
+              href={`/formation/${prevVideo.id}`}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:border-navy hover:text-navy transition-colors"
+            >
+              <ChevronLeft size={15} />
+              Précédent
+            </Link>
+          ) : (
+            <span className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border border-gray-100 text-sm font-medium text-gray-300 cursor-not-allowed">
+              <ChevronLeft size={15} />
+              Précédent
+            </span>
+          )}
+          {nextVideo ? (
+            <Link
+              href={`/formation/${nextVideo.id}`}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:border-navy hover:text-navy transition-colors"
+            >
+              Suivant
+              <ChevronRight size={15} />
+            </Link>
+          ) : (
+            <span className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border border-gray-100 text-sm font-medium text-gray-300 cursor-not-allowed">
+              Suivant
+              <ChevronRight size={15} />
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto py-3">
@@ -133,7 +188,7 @@ export default function Sidebar({
                 <ul className="bg-white/40">
                   {moduleVideos.map((video) => {
                     const isCompleted = completedVideoIds.includes(video.id);
-                    const isCurrent = video.id === currentVideoId;
+                    const isCurrent = video.id === activeVideoId;
 
                     return (
                       <li key={video.id}>

@@ -1,7 +1,5 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
-import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import CompleteButton from "@/components/video/CompleteButton";
 import ResourceLink from "@/components/video/ResourceLink";
 
@@ -32,7 +30,7 @@ export default async function VideoPage({ params }: Props) {
 
   const { data: allVideos } = await adminClient
     .from("videos")
-    .select("id, title, module_id, sort_order, modules(sort_order)")
+    .select("id, title")
     .order("title", { ascending: true });
 
   const sortedVideos = (allVideos || []).sort((a, b) =>
@@ -40,8 +38,10 @@ export default async function VideoPage({ params }: Props) {
   );
 
   const currentIndex = sortedVideos.findIndex((v) => v.id === videoId);
-  const prevVideo = currentIndex > 0 ? sortedVideos[currentIndex - 1] : null;
-  const nextVideo = currentIndex < sortedVideos.length - 1 ? sortedVideos[currentIndex + 1] : null;
+  const nextVideo =
+    currentIndex >= 0 && currentIndex < sortedVideos.length - 1
+      ? sortedVideos[currentIndex + 1]
+      : null;
 
   const { data: progressRecord } = await supabase
     .from("progress")
@@ -52,38 +52,16 @@ export default async function VideoPage({ params }: Props) {
 
   const isCompleted = !!progressRecord;
 
-  const resources = (videoResources || []) as Array<{ id: string; title: string; file_path: string; file_type: string; file_size: number | null }>;
+  const resources = (videoResources || []) as Array<{
+    id: string;
+    title: string;
+    file_path: string;
+    file_type: string;
+    file_size: number | null;
+  }>;
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Top navigation bar */}
-      <div className="border-b border-gray-200 px-6 py-3 flex items-center justify-between bg-white sticky top-0 z-10">
-        <div className="flex items-center gap-2 text-sm text-gray-500">
-          <Link href="/dashboard" className="hover:text-navy transition-colors">
-            Formation
-          </Link>
-          <ChevronRight size={14} />
-          <span className="text-gray-400">{(video.modules as unknown as { title: string })?.title}</span>
-          <ChevronRight size={14} />
-          <span className="text-navy font-medium truncate max-w-48">Vidéo {video.title}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          {prevVideo && (
-            <Link href={`/formation/${prevVideo.id}`} className="btn-ghost text-sm">
-              <ChevronLeft size={16} />
-              <span className="hidden sm:inline">Précédent</span>
-            </Link>
-          )}
-          {nextVideo && (
-            <Link href={`/formation/${nextVideo.id}`} className="btn-ghost text-sm">
-              <span className="hidden sm:inline">Suivant</span>
-              <ChevronRight size={16} />
-            </Link>
-          )}
-        </div>
-      </div>
-
-      {/* Content */}
       <div className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-8 py-6 lg:py-8">
         {/* Title */}
         <div className="mb-4">
@@ -149,7 +127,7 @@ export default async function VideoPage({ params }: Props) {
           </div>
         )}
 
-        {/* Complete button — no card border */}
+        {/* Complete button */}
         <div className="flex justify-center py-4">
           <CompleteButton videoId={video.id} isCompleted={isCompleted} nextVideoId={nextVideo?.id} />
         </div>
