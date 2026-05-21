@@ -28,7 +28,6 @@ export default function Sidebar({
   const pathname = usePathname();
   const router = useRouter();
   const [openModules, setOpenModules] = useState<Record<string, boolean>>(() => {
-    // Open the module that contains the current video by default
     const initial: Record<string, boolean> = {};
     modules.forEach((mod) => {
       const hasCurrentVideo = mod.videos?.some((v) => v.id === currentVideoId);
@@ -82,7 +81,6 @@ export default function Sidebar({
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto py-3">
-        {/* Dashboard link */}
         <Link
           href="/dashboard"
           className={clsx(
@@ -177,4 +175,9 @@ export default function Sidebar({
             title="Se déconnecter"
           >
             <LogOut size={18} />
-         
+          </button>
+        </div>
+      </div>
+    </aside>
+  );
+}

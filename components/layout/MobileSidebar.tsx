@@ -62,4 +62,9 @@ export default function MobileSidebar(props: MobileSidebarProps) {
           >
             <X size={18} />
           </button>
-          <Sideb
+          <Sidebar {...props} />
+        </div>
+      </div>
+    </>
+  );
+}
