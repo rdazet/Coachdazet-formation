@@ -7,14 +7,12 @@ import type { Module } from "@/types";
 async function getFormationData(userId: string) {
   const supabase = await createClient();
 
-  // Fetch modules with videos and resources
   const { data: modules } = await supabase
     .from("modules")
     .select("*, videos(*, resources(*))")
     .order("sort_order", { ascending: true })
-    .order("sort_order", { referencedTable: "videos", ascending: true });
+    .order("title", { referencedTable: "videos", ascending: true });
 
-  // Fetch user progress
   const { data: progress } = await supabase
     .from("progress")
     .select("video_id")
@@ -48,7 +46,6 @@ export default async function PlatformLayout({
     redirect("/connexion");
   }
 
-  // Check user profile/status
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("status, full_name, role")
@@ -75,7 +72,6 @@ export default async function PlatformLayout({
 
   return (
     <div className="flex min-h-screen bg-white">
-      {/* Desktop sidebar */}
       <div className="hidden lg:flex lg:shrink-0">
         <Sidebar
           modules={modules}
@@ -85,7 +81,6 @@ export default async function PlatformLayout({
         />
       </div>
 
-      {/* Mobile sidebar */}
       <MobileSidebar
         modules={modules}
         completedVideoIds={completedVideoIds}
@@ -93,7 +88,6 @@ export default async function PlatformLayout({
         profileName={profile.full_name}
       />
 
-      {/* Main content */}
       <main className="flex-1 overflow-y-auto pt-0 lg:pt-0">
         <div className="pt-14 lg:pt-0">{children}</div>
       </main>
