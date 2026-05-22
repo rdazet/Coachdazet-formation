@@ -16,7 +16,7 @@ export default function AuthLayout({
             width={320}
             height={58}
             priority
-            className="h-14 w-auto"
+            className="w-full h-auto"
           />
         </div>
         {children}
