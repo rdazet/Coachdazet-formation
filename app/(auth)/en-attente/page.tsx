@@ -24,7 +24,7 @@ export default function EnAttentePage() {
       <div className="border-t border-gray-100 pt-5 mt-2">
         <p className="text-sm text-gray-500">
           Une question ?{" "}
-          <a href="mailto:contact@coachdazet.com" className="text-navy hover:underline font-medium">
+          <a href="mailto:hello@coachdazet.com" className="text-navy hover:underline font-medium">
             Contactez-nous
           </a>
         </p>
