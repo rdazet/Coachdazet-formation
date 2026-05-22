@@ -276,7 +276,7 @@ export default function ContentManager({ modules }: ContentManagerProps) {
                                 value={editForm.summary}
                                 onChange={(e) => setEditForm((p) => ({ ...p, summary: e.target.value }))}
                                 className="input text-sm py-2 resize-none w-full"
-                                rows={12}
+                                rows={24}
                               />
                             </div>
 
@@ -294,7 +294,7 @@ export default function ContentManager({ modules }: ContentManagerProps) {
                                 value={editForm.exercices}
                                 onChange={(e) => setEditForm((p) => ({ ...p, exercices: e.target.value }))}
                                 className="input text-sm py-2 resize-none w-full"
-                                rows={10}
+                                rows={20}
                               />
                             </div>
 
@@ -422,7 +422,7 @@ export default function ContentManager({ modules }: ContentManagerProps) {
                           value={newVideo.summary}
                           onChange={(e) => setNewVideo((p) => ({ ...p, summary: e.target.value }))}
                           className="input text-sm py-2 resize-none"
-                          rows={6}
+                          rows={12}
                         />
                       </div>
                       <div>
@@ -436,7 +436,7 @@ export default function ContentManager({ modules }: ContentManagerProps) {
                           value={newVideo.exercices}
                           onChange={(e) => setNewVideo((p) => ({ ...p, exercices: e.target.value }))}
                           className="input text-sm py-2 resize-none"
-                          rows={6}
+                          rows={12}
                         />
                       </div>
                       <div className="flex items-center gap-2">
