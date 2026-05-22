@@ -137,7 +137,7 @@ export default async function DashboardPage() {
 
                   {/* Video list preview */}
                   <ul className="space-y-1">
-                    {moduleVideos.slice(0, 3).map((video) => (
+                    {moduleVideos.map((video) => (
                       <li key={video.id}>
                         <Link
                           href={`/formation/${video.id}`}
@@ -152,11 +152,7 @@ export default async function DashboardPage() {
                         </Link>
                       </li>
                     ))}
-                    {moduleVideos.length > 3 && (
-                      <li className="text-xs text-gray-400 pl-5">
-                        +{moduleVideos.length - 3} autre{moduleVideos.length - 3 > 1 ? "s" : ""} vidéo{moduleVideos.length - 3 > 1 ? "s" : ""}
-                      </li>
-                    )}
+
                   </ul>
                 </div>
 
