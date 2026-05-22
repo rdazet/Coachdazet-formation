@@ -14,10 +14,10 @@ export default function EnAttentePage() {
       </h2>
 
       <p className="text-gray-600 leading-relaxed mb-4">
-        Votre inscription a bien été enregistrée. Nous allons vérifier votre paiement et activer votre accès dans les plus brefs délais.
+        Votre inscription a bien été enregistrée.
       </p>
 
-      <p className="text-gray-500 text-sm mb-6">
+      <p className="text-gray-600 leading-relaxed mb-6">
         Vous recevrez un email de confirmation dès que votre compte sera activé.
       </p>
 
