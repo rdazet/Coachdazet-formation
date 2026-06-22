@@ -1,10 +1,23 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import CompleteButton from "@/components/video/CompleteButton";
 import ResourceLink from "@/components/video/ResourceLink";
 
 interface Props {
   params: Promise<{ videoId: string }>;
+}
+
+// Tier required per module sort_order
+function getTierRequired(moduleSortOrder: number): number {
+  if (moduleSortOrder <= 2) return 1; // Modules 1-2 (Stratégie, Immobilier)
+  if (moduleSortOrder <= 4) return 2; // Modules 3-4 (Bourse, Budget)
+  return 3;                            // Module 5 (Salaire)
+}
+
+function getQuestionnairePath(moduleSortOrder: number): string {
+  if (moduleSortOrder <= 2) return "/formation/questionnaire/immobilier";
+  if (moduleSortOrder <= 4) return "/formation/questionnaire/bourse";
+  return "/formation/questionnaire/salaire";
 }
 
 export default async function VideoPage({ params }: Props) {
@@ -16,11 +29,41 @@ export default async function VideoPage({ params }: Props) {
   const adminClient = createAdminClient();
   const { data: video, error } = await adminClient
     .from("videos")
-    .select("*, modules(title)")
+    .select("*, modules(title, sort_order)")
     .eq("id", videoId)
     .single();
 
   if (error || !video) notFound();
+
+  // Check tier access
+  const moduleSortOrder = (video.modules as { sort_order: number })?.sort_order ?? 1;
+  const tierRequired = getTierRequired(moduleSortOrder);
+
+  if (tierRequired > 1) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("tier")
+      .eq("id", user!.id)
+      .single();
+
+    const userTier = profile?.tier ?? 1;
+    if (userTier < tierRequired) {
+      // Check if already submitted questionnaire (waiting approval)
+      const { data: pendingSubmission } = await supabase
+        .from("questionnaire_submissions")
+        .select("id, status")
+        .eq("user_id", user!.id)
+        .eq("module_number", moduleSortOrder <= 4 ? 2 : 3)
+        .order("submitted_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (pendingSubmission) {
+        redirect("/formation/questionnaire/en-attente");
+      }
+      redirect(getQuestionnairePath(moduleSortOrder));
+    }
+  }
 
   // Fetch resources separately to bypass any RLS join issues
   const { data: videoResources } = await adminClient

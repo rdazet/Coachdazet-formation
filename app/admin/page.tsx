@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
-import { Users, UserCheck, Clock, BookOpen } from "lucide-react";
+import Link from "next/link";
+import { Users, UserCheck, Clock, BookOpen, ClipboardList } from "lucide-react";
 
 export default async function AdminDashboardPage() {
   const supabase = await createClient();
@@ -23,6 +24,11 @@ export default async function AdminDashboardPage() {
   const { count: totalVideos } = await supabase
     .from("videos")
     .select("*", { count: "exact", head: true });
+
+  const { count: pendingQuestionnaires } = await supabase
+    .from("questionnaire_submissions")
+    .select("*", { count: "exact", head: true })
+    .eq("status", "pending");
 
   // Recent pending users
   const { data: pendingList } = await supabase
@@ -64,6 +70,14 @@ export default async function AdminDashboardPage() {
       value: totalVideos || 0,
       icon: BookOpen,
       color: "bg-terracotta/10 text-terracotta",
+      href: "/admin/contenu",
+    },
+    {
+      label: "Questionnaires en attente",
+      value: pendingQuestionnaires || 0,
+      icon: ClipboardList,
+      color: "bg-purple-50 text-purple-600",
+      href: "/admin/questionnaires",
     },
   ];
 
@@ -74,18 +88,27 @@ export default async function AdminDashboardPage() {
       </h1>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {stats.map((stat) => (
-          <div key={stat.label} className="card flex items-center gap-4">
-            <div className={`p-3 rounded-lg ${stat.color}`}>
-              <stat.icon size={22} />
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+        {stats.map((stat) => {
+          const inner = (
+            <div className="card flex items-center gap-4 h-full">
+              <div className={`p-3 rounded-lg ${stat.color}`}>
+                <stat.icon size={22} />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-navy">{stat.value}</p>
+                <p className="text-xs text-gray-500">{stat.label}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-2xl font-bold text-navy">{stat.value}</p>
-              <p className="text-xs text-gray-500">{stat.label}</p>
-            </div>
-          </div>
-        ))}
+          );
+          return (stat as { href?: string }).href ? (
+            <Link key={stat.label} href={(stat as { href: string }).href} className="block hover:opacity-80 transition-opacity">
+              {inner}
+            </Link>
+          ) : (
+            <div key={stat.label}>{inner}</div>
+          );
+        })}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
