@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { CheckCircle, Circle, ChevronDown, ChevronRight, BookOpen, LogOut, ChevronLeft, BarChart2 } from "lucide-react";
+import { CheckCircle, Circle, ChevronDown, ChevronRight, BookOpen, LogOut, ChevronLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import type { Module } from "@/types";
@@ -149,30 +149,36 @@ export default function Sidebar({
           Vue d&apos;ensemble
         </Link>
 
-        <Link
-          href="/bilan/donnees"
-          className={clsx(
-            "flex items-center gap-2.5 px-5 py-2.5 text-sm font-medium transition-colors",
-            pathname === "/bilan/donnees"
-              ? "text-navy bg-white border-l-2 border-navy"
-              : "text-gray-600 hover:text-navy hover:bg-white/50"
-          )}
-        >
-          <BarChart2 size={16} />
-          Vos données
-        </Link>
-        <Link
-          href="/bilan/resultat"
-          className={clsx(
-            "flex items-center gap-2.5 px-5 py-2.5 text-sm font-medium transition-colors",
-            pathname === "/bilan/resultat"
-              ? "text-navy bg-white border-l-2 border-navy"
-              : "text-gray-600 hover:text-navy hover:bg-white/50"
-          )}
-        >
-          <BarChart2 size={16} />
-          Bilan Patrimonial
-        </Link>
+        <ul className="bg-white/40">
+          <li>
+            <Link
+              href="/bilan/donnees"
+              className={clsx(
+                "flex items-center gap-2.5 px-5 py-2 pl-12 text-sm transition-colors",
+                pathname === "/bilan/donnees"
+                  ? "text-navy font-semibold bg-white border-l-2 border-terracotta"
+                  : "text-gray-600 hover:text-navy hover:bg-white/70"
+              )}
+            >
+              <Circle size={14} className="text-gray-300 shrink-0" />
+              <span className="leading-tight">Vos données</span>
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/bilan/resultat"
+              className={clsx(
+                "flex items-center gap-2.5 px-5 py-2 pl-12 text-sm transition-colors",
+                pathname === "/bilan/resultat"
+                  ? "text-navy font-semibold bg-white border-l-2 border-terracotta"
+                  : "text-gray-600 hover:text-navy hover:bg-white/70"
+              )}
+            >
+              <Circle size={14} className="text-gray-300 shrink-0" />
+              <span className="leading-tight">Bilan patrimonial</span>
+            </Link>
+          </li>
+        </ul>
 
         <div className="mt-3 mb-1 px-5">
           <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Modules</span>
