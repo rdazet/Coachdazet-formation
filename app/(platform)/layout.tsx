@@ -10,8 +10,15 @@ async function getFormationData(userId: string) {
   const { data: modules } = await supabase
     .from("modules")
     .select("*, videos(*, resources(*))")
-    .order("sort_order", { ascending: true })
-    .order("title", { referencedTable: "videos", ascending: true });
+    .order("sort_order", { ascending: true });
+
+  // Natural numeric sort for videos within each module (handles "10" after "9")
+  const sortedModules = (modules || []).map((mod) => ({
+    ...mod,
+    videos: [...(mod.videos || [])].sort((a, b) =>
+      a.title.localeCompare(b.title, "fr", { numeric: true })
+    ),
+  }));
 
   const { data: progress } = await supabase
     .from("progress")
@@ -19,13 +26,13 @@ async function getFormationData(userId: string) {
     .eq("user_id", userId);
 
   const completedVideoIds = (progress || []).map((p) => p.video_id);
-  const totalVideos = (modules || []).reduce(
+  const totalVideos = sortedModules.reduce(
     (sum, mod) => sum + (mod.videos?.length || 0),
     0
   );
 
   return {
-    modules: (modules || []) as Module[],
+    modules: sortedModules as Module[],
     completedVideoIds,
     totalVideos,
   };

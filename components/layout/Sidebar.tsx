@@ -42,7 +42,7 @@ export default function Sidebar({
   // Flatten and sort all videos alphabetically for prev/next navigation
   const allVideos = modules
     .flatMap((mod) => mod.videos || [])
-    .sort((a, b) => a.title.localeCompare(b.title, "fr"));
+    .sort((a, b) => a.title.localeCompare(b.title, "fr", { numeric: true }));
 
   const currentIndex = activeVideoId
     ? allVideos.findIndex((v) => v.id === activeVideoId)

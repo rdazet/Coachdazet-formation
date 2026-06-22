@@ -17,11 +17,17 @@ export default async function DashboardPage() {
     .eq("id", user!.id)
     .single();
 
-  const { data: modules } = await supabase
+  const { data: modulesRaw } = await supabase
     .from("modules")
     .select("*, videos(*, resources(*))")
-    .order("sort_order", { ascending: true })
-    .order("title", { referencedTable: "videos", ascending: true });
+    .order("sort_order", { ascending: true });
+
+  const modules = (modulesRaw || []).map((mod) => ({
+    ...mod,
+    videos: [...(mod.videos || [])].sort((a, b) =>
+      a.title.localeCompare(b.title, "fr", { numeric: true })
+    ),
+  }));
 
   const { data: progress } = await supabase
     .from("progress")

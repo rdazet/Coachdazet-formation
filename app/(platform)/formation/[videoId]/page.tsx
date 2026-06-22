@@ -77,7 +77,7 @@ export default async function VideoPage({ params }: Props) {
     .order("title", { ascending: true });
 
   const sortedVideos = (allVideos || []).sort((a, b) =>
-    a.title.localeCompare(b.title, "fr")
+    a.title.localeCompare(b.title, "fr", { numeric: true })
   );
 
   const currentIndex = sortedVideos.findIndex((v) => v.id === videoId);

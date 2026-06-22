@@ -14,7 +14,7 @@ export default async function ContenuPage() {
   const sortedModules = (modules || []).map((mod) => ({
     ...mod,
     videos: [...(mod.videos || [])].sort((a: { title: string }, b: { title: string }) =>
-      a.title.localeCompare(b.title, "fr")
+      a.title.localeCompare(b.title, "fr", { numeric: true })
     ),
   }));
 
