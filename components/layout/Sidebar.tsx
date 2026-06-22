@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { CheckCircle, Circle, ChevronDown, ChevronRight, BookOpen, LogOut, ChevronLeft } from "lucide-react";
+import { CheckCircle, Circle, ChevronDown, ChevronRight, BookOpen, LogOut, ChevronLeft, BarChart2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import type { Module } from "@/types";
@@ -147,6 +147,19 @@ export default function Sidebar({
         >
           <BookOpen size={16} />
           Vue d&apos;ensemble
+        </Link>
+
+        <Link
+          href="/bilan"
+          className={clsx(
+            "flex items-center gap-2.5 px-5 py-2.5 text-sm font-medium transition-colors",
+            pathname === "/bilan"
+              ? "text-navy bg-white border-l-2 border-navy"
+              : "text-gray-600 hover:text-navy hover:bg-white/50"
+          )}
+        >
+          <BarChart2 size={16} />
+          Bilan Patrimonial
         </Link>
 
         <div className="mt-3 mb-1 px-5">
