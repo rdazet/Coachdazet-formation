@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CheckCircle, Circle, ChevronDown, ChevronRight, BookOpen, LogOut, ChevronLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
@@ -27,6 +27,11 @@ export default function Sidebar({
 }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const [hasBilanData, setHasBilanData] = useState(false);
+
+  useEffect(() => {
+    setHasBilanData(!!localStorage.getItem("bilan_donnees"));
+  }, []);
 
   // Derive currentVideoId from URL if not passed
   const videoIdFromUrl = pathname.startsWith("/formation/")
@@ -198,7 +203,11 @@ export default function Sidebar({
                               : "text-gray-600 hover:text-navy hover:bg-white/70"
                           )}
                         >
-                          <Circle size={14} className="text-gray-300 shrink-0" />
+                          {hasBilanData ? (
+                            <CheckCircle size={14} className="text-terracotta shrink-0" />
+                          ) : (
+                            <Circle size={14} className="text-gray-300 shrink-0" />
+                          )}
                           <span className="leading-tight">Vos données</span>
                         </Link>
                       </li>
@@ -212,7 +221,11 @@ export default function Sidebar({
                               : "text-gray-600 hover:text-navy hover:bg-white/70"
                           )}
                         >
-                          <Circle size={14} className="text-gray-300 shrink-0" />
+                          {hasBilanData ? (
+                            <CheckCircle size={14} className="text-terracotta shrink-0" />
+                          ) : (
+                            <Circle size={14} className="text-gray-300 shrink-0" />
+                          )}
                           <span className="leading-tight">Bilan patrimonial</span>
                         </Link>
                       </li>

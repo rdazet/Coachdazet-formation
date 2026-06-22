@@ -42,12 +42,12 @@ export default async function VideoPage({ params }: Props) {
   if (tierRequired > 1) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("tier")
+      .select("tier, role")
       .eq("id", user!.id)
       .single();
 
     const userTier = profile?.tier ?? 1;
-    if (userTier < tierRequired) {
+    if (userTier < tierRequired && profile?.role !== "admin") {
       // Check if already submitted questionnaire (waiting approval)
       const { data: pendingSubmission } = await supabase
         .from("questionnaire_submissions")

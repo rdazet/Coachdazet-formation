@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { CheckCircle, Circle, ChevronRight, PlayCircle } from "lucide-react";
 import type { Module } from "@/types";
+import BilanLinks from "@/components/dashboard/BilanLinks";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -137,22 +138,7 @@ export default async function DashboardPage() {
 
                   {/* Video list preview */}
                   <ul className="space-y-1">
-                    {index === 0 && (
-                      <>
-                        <li>
-                          <Link href="/bilan/donnees" className="flex items-center gap-2 text-sm text-gray-600 hover:text-navy transition-colors py-0.5 group">
-                            <Circle size={14} className="text-gray-300 shrink-0" />
-                            <span className="group-hover:underline truncate">Vos données</span>
-                          </Link>
-                        </li>
-                        <li>
-                          <Link href="/bilan/resultat" className="flex items-center gap-2 text-sm text-gray-600 hover:text-navy transition-colors py-0.5 group">
-                            <Circle size={14} className="text-gray-300 shrink-0" />
-                            <span className="group-hover:underline truncate">Bilan patrimonial</span>
-                          </Link>
-                        </li>
-                      </>
-                    )}
+                    {index === 0 && <BilanLinks />}
                     {moduleVideos.map((video) => (
                       <li key={video.id}>
                         <Link
