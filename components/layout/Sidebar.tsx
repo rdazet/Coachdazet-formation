@@ -150,10 +150,22 @@ export default function Sidebar({
         </Link>
 
         <Link
-          href="/bilan"
+          href="/bilan/donnees"
           className={clsx(
             "flex items-center gap-2.5 px-5 py-2.5 text-sm font-medium transition-colors",
-            pathname === "/bilan"
+            pathname === "/bilan/donnees"
+              ? "text-navy bg-white border-l-2 border-navy"
+              : "text-gray-600 hover:text-navy hover:bg-white/50"
+          )}
+        >
+          <BarChart2 size={16} />
+          Vos données
+        </Link>
+        <Link
+          href="/bilan/resultat"
+          className={clsx(
+            "flex items-center gap-2.5 px-5 py-2.5 text-sm font-medium transition-colors",
+            pathname === "/bilan/resultat"
               ? "text-navy bg-white border-l-2 border-navy"
               : "text-gray-600 hover:text-navy hover:bg-white/50"
           )}

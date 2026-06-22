@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vos Données — Coach Dazet Bilan</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main class="app-container">
+        <header>
+            <h1 class="brand-title">Coach Dazet <span class="accent-text">Données</span></h1>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            <p class="step-indicator">Étape <span id="current-step-display">1</span> / <span id="total-steps-display">6</span></p>
+        </header>
+
+        <form id="questionnaire-form" class="wizard-form">
+
+            <!-- STEP 1: GENERAL -->
+            <div class="step active" id="step-1">
+                <h2 class="step-title">Informations Générales</h2>
+                <div class="input-group">
+                    <label for="date_evaluation">Date du Bilan</label>
+                    <input type="date" id="date_evaluation" name="date_evaluation">
+                </div>
+                <div class="input-group">
+                    <label for="age">Votre Âge</label>
+                    <input type="number" id="age" name="age" min="18" max="100" placeholder="Ex: 35">
+                </div>
+                <div class="input-group">
+                    <label for="situation">Situation Familiale</label>
+                    <select id="situation" name="situation">
+                        <option value="celibataire">Célibataire</option>
+                        <option value="couple">En couple</option>
+                        <option value="marie">Marié(e)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- STEP 2: REVENUS & DEPENSES -->
+            <div class="step" id="step-2">
+                <h2 class="step-title">Revenus & Dépenses</h2>
+                <div class="grid-2">
+                    <div class="input-group"><label>Salaire net mensuel (€)</label><input type="number" name="salaire_net" class="rev-dep"></div>
+                    <div class="input-group"><label>Bonus net mensuel lissé (€)</label><input type="number" name="bonus_net" class="rev-dep" value="0"></div>
+                    <div class="input-group"><label>Total salaire net envisageable dans 3 ans (€)</label><input type="number" name="salaire_3ans" class="rev-dep"></div>
+                    <div class="input-group"><label>Épargne mensuelle prévue (€)</label><input type="number" name="epargne_mensuelle" class="rev-dep" value="0"></div>
+                    <div class="input-group full-width"><label>Grosses dépenses prévues dans les 5 ans (€)</label><input type="number" name="grosses_depenses" class="rev-dep" value="0"></div>
+                </div>
+            </div>
+
+            <!-- STEP 3: LIQUIDITES -->
+            <div class="step" id="step-3">
+                <h2 class="step-title">Argent Disponible (Liquidités)</h2>
+                <div class="grid-3">
+                    <div class="input-group"><label>Comptes chèques (€)</label><input type="number" name="comptes_cheques" class="savings" value="0"></div>
+                    <div class="input-group"><label>Livret A (€)</label><input type="number" name="livret_a" class="savings" value="0"></div>
+                    <div class="input-group"><label>LDD (€)</label><input type="number" name="ldd" class="savings" value="0"></div>
+                    <div class="input-group"><label>LEP (€)</label><input type="number" name="lep" class="savings" value="0"></div>
+                    <div class="input-group"><label>CEL (€)</label><input type="number" name="cel" class="savings" value="0"></div>
+                    <div class="input-group"><label>PEL (€)</label><input type="number" name="pel" class="savings" value="0"></div>
+                    <div class="input-group full-width"><label>Divers (€)</label><input type="number" name="divers_liquidites" class="savings" value="0"></div>
+                </div>
+            </div>
+
+            <!-- STEP 4: BOURSE -->
+            <div class="step" id="step-4">
+                <h2 class="step-title">Investissements Financiers</h2>
+                <div class="grid-2">
+                    <div class="input-group"><label>Comptes Titres (CTO) (€)</label><input type="number" name="cto" class="savings" value="0"></div>
+                    <div class="input-group"><label>PEA (€)</label><input type="number" name="pea" class="savings" value="0"></div>
+                    <div class="input-group"><label>PER (€)</label><input type="number" name="per" class="savings" value="0"></div>
+                    <div class="input-group"><label>PEE + Intéressement (€)</label><input type="number" name="pee" class="savings" value="0"></div>
+                    <div class="input-group"><label>Assurance-vie Fonds Euros (€)</label><input type="number" name="av_fonds_euros" class="savings" value="0"></div>
+                    <div class="input-group"><label>Assurance-vie Unités de Compte (€)</label><input type="number" name="av_uc" class="savings" value="0"></div>
+                    <div class="input-group full-width"><label>Autres (Actifs pros, etc.) (€)</label><input type="number" name="autres_invests" class="savings" value="0"></div>
+                </div>
+            </div>
+
+            <!-- STEP 5: IMMOBILIER -->
+            <div class="step" id="step-5">
+                <h2 class="step-title">Patrimoine Immobilier</h2>
+                <div class="asset-card">
+                    <h3>Résidence Principale</h3>
+                    <div class="input-group"><label>Lieu</label><input type="text" name="rp_lieu" placeholder="Ex: Paris"></div>
+                    <div class="grid-2">
+                        <div class="input-group"><label>Valeur estimée (€)</label><input type="number" name="rp_valeur" class="real-estate" value="0"></div>
+                        <div class="input-group"><label>Montant emprunté initial (€)</label><input type="number" name="rp_emprunt_initial" value="0"></div>
+                        <div class="input-group"><label>Taux d'intérêt annuel (%)</label><input type="number" step="0.01" name="rp_taux" value="0"></div>
+                        <div class="input-group"><label>Date de début</label><input type="date" name="rp_debut"></div>
+                        <div class="input-group"><label>Durée (Années)</label><input type="number" name="rp_duree" value="0"></div>
+                    </div>
+                </div>
+                <div class="asset-card">
+                    <h3>Investissement Locatif & SCPI</h3>
+                    <div class="grid-2">
+                        <div class="input-group"><label>Lieu</label><input type="text" name="loc_lieu" placeholder="Ex: Lyon"></div>
+                        <div class="input-group"><label>Valeur estimée (€)</label><input type="number" name="loc_valeur" class="real-estate" value="0"></div>
+                        <div class="input-group"><label>Montant emprunté initial (€)</label><input type="number" name="loc_emprunt_initial" value="0"></div>
+                        <div class="input-group"><label>Taux d'intérêt annuel (%)</label><input type="number" step="0.01" name="loc_taux" value="0"></div>
+                        <div class="input-group"><label>Date de début</label><input type="date" name="loc_debut"></div>
+                        <div class="input-group"><label>Durée (Années)</label><input type="number" name="loc_duree" value="0"></div>
+                        <div class="input-group"><label>Loyers mensuels reçus (€)</label><input type="number" name="loc_loyers" value="0"></div>
+                        <div class="input-group"><label>Charges mensuelles (€)</label><input type="number" name="loc_charges" value="0"></div>
+                        <div class="input-group full-width"><label>Parts de SCPI (€)</label><input type="number" name="scpi" class="savings" value="0"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 6: ENDETTEMENT -->
+            <div class="step" id="step-6">
+                <h2 class="step-title">Endettement (Hors Immobilier déclaré)</h2>
+                <p class="subtitle">Indiquez ici vos prêts consommation, étudiants ou autres.</p>
+                <div class="asset-card">
+                    <div class="grid-2">
+                        <div class="input-group"><label>Montant emprunté initial (€)</label><input type="number" name="dette_montant" value="0"></div>
+                        <div class="input-group"><label>Taux d'intérêt annuel (%)</label><input type="number" step="0.01" name="dette_taux" value="0"></div>
+                        <div class="input-group"><label>Date de début</label><input type="date" name="dette_debut"></div>
+                        <div class="input-group"><label>Durée (Années)</label><input type="number" name="dette_duree" value="0"></div>
+                        <div class="input-group full-width">
+                            <label>Ou bien, indiquez directement le capital restant dû (€)</label>
+                            <input type="number" name="dette_capital_du_direct" value="0">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions" id="form-actions">
+                <button type="button" class="btn btn-secondary" id="btn-prev" disabled>Précédent</button>
+                <button type="button" class="btn btn-primary" id="btn-next">Suivant</button>
+                <button type="button" class="btn btn-primary hidden" id="btn-submit">Calculer Mon Patrimoine →</button>
+            </div>
+        </form>
+    </main>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        let currentStep = 1;
+        const totalSteps = 6;
+
+        const steps = document.querySelectorAll('.step');
+        const btnNext = document.getElementById('btn-next');
+        const btnPrev = document.getElementById('btn-prev');
+        const btnSubmit = document.getElementById('btn-submit');
+        const progressBar = document.getElementById('progress-bar');
+        const currentStepDisplay = document.getElementById('current-step-display');
+        document.getElementById('total-steps-display').textContent = totalSteps;
+
+        // Set today's date as default
+        const dateInput = document.getElementById('date_evaluation');
+        if (dateInput && !dateInput.value) {
+            const today = new Date();
+            dateInput.value = today.toISOString().split('T')[0];
+        }
+
+        // Restore from localStorage if available
+        const saved = localStorage.getItem('bilan_donnees');
+        if (saved) {
+            try {
+                const data = JSON.parse(saved);
+                Object.entries(data).forEach(([name, value]) => {
+                    const el = document.querySelector(`[name="${name}"]`);
+                    if (el) el.value = value;
+                });
+            } catch(e) {}
+        }
+
+        function updateUI() {
+            steps.forEach((step, i) => step.classList.toggle('active', i + 1 === currentStep));
+            progressBar.style.width = `${(currentStep / totalSteps) * 100}%`;
+            currentStepDisplay.textContent = currentStep;
+            btnPrev.disabled = currentStep === 1;
+
+            if (currentStep === totalSteps) {
+                btnNext.classList.add('hidden');
+                btnSubmit.classList.remove('hidden');
+            } else {
+                btnNext.classList.remove('hidden');
+                btnSubmit.classList.add('hidden');
+            }
+        }
+
+        btnNext.addEventListener('click', () => { if (currentStep < totalSteps) { currentStep++; updateUI(); } });
+        btnPrev.addEventListener('click', () => { if (currentStep > 1) { currentStep--; updateUI(); } });
+
+        btnSubmit.addEventListener('click', () => {
+            // Collect all form data
+            const data = {};
+            document.querySelectorAll('[name]').forEach(el => {
+                if (el.name) data[el.name] = el.value;
+            });
+            localStorage.setItem('bilan_donnees', JSON.stringify(data));
+            // Navigate to bilan page
+            window.location.href = '/bilan/resultat.html';
+        });
+
+        updateUI();
+    });
+    </script>
+</body>
+</html>

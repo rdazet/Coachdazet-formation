@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bilan Patrimonial — Coach Dazet</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <main class="app-container">
+        <header>
+            <h1 class="brand-title">Coach Dazet <span class="accent-text">Bilan</span></h1>
+            <div style="text-align:center; margin-bottom:1rem;">
+                <a href="/bilan/donnees.html" class="btn btn-secondary" style="font-size:0.85rem; padding:0.4rem 1rem;">← Modifier mes données</a>
+            </div>
+        </header>
+
+        <!-- Wrapper for result steps (hidden until calculated) -->
+        <div id="results-wrapper">
+
+            <!-- STEP 7: RÉSULTAT -->
+            <div class="step active result-step" id="step-7">
+                <div class="result-card glowing-border">
+                    <h3 class="result-label">Votre Patrimoine Actuel</h3>
+                    <div class="result-number" id="patrimoine-net">0 €</div>
+                </div>
+                <div class="breakdown">
+                    <div class="breakdown-item"><span>Patrimoine cash</span><span id="res-cash" class="positive">0 €</span></div>
+                    <div class="breakdown-item"><span>Patrimoine immobilier</span><span id="res-immo" class="positive">0 €</span></div>
+                    <div class="breakdown-item"><span>Patrimoine bourse</span><span id="res-bourse" class="positive">0 €</span></div>
+                    <div class="breakdown-item"><span>Patrimoine total</span><span id="res-patrimoine-total" class="positive">0 €</span></div>
+                    <div class="breakdown-item"><span>Dépenses annuelles</span><span id="res-depenses-annuelles" class="neutral">0 €</span></div>
+                    <div class="breakdown-item"><span>Patrimoine en années de dépenses</span><span id="res-annees-depenses" class="accent-text" style="font-weight:bold;">0 ans</span></div>
+                </div>
+                <div class="chart-container" style="position:relative;height:300px;width:100%;margin:2rem 0;display:flex;justify-content:center;">
+                    <canvas id="patrimoineChart"></canvas>
+                </div>
+                <h3 class="step-title center-text" style="margin-top:2rem;font-size:1.25rem;">Votre Potentiel d'Emprunt Immobilier</h3>
+                <div class="result-card glowing-border" style="margin-top:2rem;">
+                    <h3 class="result-label">Votre Potentiel Immobilier (Endettement)</h3>
+                    <div class="breakdown-item" style="color:#fff;"><span>Remboursements (Prêts Immo)</span><span id="res-remboursements-immo" style="font-weight:bold;color:#fff;">0 €</span></div>
+                    <div class="breakdown-item" style="color:#fff;"><span>Salaire annuel</span><span id="res-salaire-annuel" style="font-weight:bold;color:#fff;">0 €</span></div>
+                    <div class="breakdown-item" style="color:#fff;"><span>Revenus locatifs annuels</span><span id="res-revenus-locatifs" style="font-weight:bold;color:#fff;">0 €</span></div>
+                    <div class="breakdown-item" style="color:#fff;border-bottom:1px solid rgba(255,255,255,0.2);padding-bottom:0.5rem;margin-bottom:0.5rem;"><span>Total revenus</span><span id="res-total-revenus" style="font-weight:bold;color:#fff;">0 €</span></div>
+                    <div class="breakdown-item" style="color:#fff;"><span>Taux d'endettement actuel</span><span id="res-taux-endettement" style="font-weight:bold;color:#fff;">0 %</span></div>
+                    <div class="breakdown-item" style="color:#fff;"><span>Capacité de remboursement (CR mensuel)</span><span id="res-cr-mensuel" style="font-weight:600;color:var(--coach-bleu-clair);">0 € / mois</span></div>
+                    <div class="breakdown-item" style="color:#fff;"><span>Capacité d'endettement (sur 20 ans à 3.0%)</span><span id="res-cape-endettement" style="font-weight:bold;font-size:1.1rem;color:var(--coach-orange);">0 €</span></div>
+                </div>
+                <div class="result-card glowing-border" style="margin-top:2rem;">
+                    <h3 class="result-label">Analyse de votre Épargne</h3>
+                    <div class="breakdown-item" style="color:#fff;"><span>Épargne actuelle déclarée</span><span id="res-epargne-actuelle" style="font-weight:bold;color:#fff;">0 € / an</span></div>
+                    <div class="breakdown-item" style="color:#fff;"><span>Remboursement principal RP (sur 1 an)</span><span id="res-epargne-principal" style="color:#fff;">0 € / an</span></div>
+                    <div class="breakdown-item" style="color:#fff;"><span>Épargne Totale</span><span id="res-epargne-totale" style="font-weight:bold;color:var(--coach-orange);">0 € / an</span></div>
+                    <div class="breakdown-item" style="margin-top:1rem;color:#fff;"><span>Taux d'épargne actuel</span><span id="res-taux-epargne" style="font-weight:bold;color:#fff;">0 %</span></div>
+                    <div class="breakdown-item" style="color:#fff;"><span>Taux d'épargne idéal</span><span id="res-taux-ideal" style="color:var(--coach-bleu-clair);font-weight:bold;">0 %</span></div>
+                    <div class="breakdown-item" style="margin-top:1rem;color:#fff;"><span>Économies supplémentaires à cibler</span><span id="res-economies-supp" style="font-weight:bold;color:var(--success);">0 € / mois</span></div>
+                </div>
+                <div style="text-align:center;display:flex;justify-content:center;gap:1rem;margin-top:1rem;">
+                    <button type="button" class="btn btn-primary" id="btn-projection">Voir la projection →</button>
+                </div>
+            </div>
+
+            <!-- STEP 8: PROJECTION -->
+            <div class="step result-step" id="step-8">
+                <div class="result-card glowing-border">
+                    <h3 class="result-label">Patrimoine estimé à 65 ans :</h3>
+                    <div class="result-number" id="projection-net">0 €</div>
+                </div>
+                <div class="chart-container" style="position:relative;height:300px;width:100%;margin:2rem 0;display:flex;justify-content:center;">
+                    <canvas id="projectionChart"></canvas>
+                </div>
+                <div class="breakdown" style="max-height:250px;overflow-y:auto;overflow-x:auto;">
+                    <h4 style="color:var(--coach-bleu-fonce);font-family:'Outfit';margin-bottom:0.5rem;">Résumé Global</h4>
+                    <table style="width:100%;color:var(--text-main);font-size:0.85rem;text-align:left;border-collapse:collapse;margin-top:1rem;" id="projection-table-main">
+                        <thead><tr style="border-bottom:2px solid var(--border);">
+                            <th style="padding:0.5rem;white-space:nowrap;">Année</th>
+                            <th style="padding:0.5rem;white-space:nowrap;">Âge</th>
+                            <th style="padding:0.5rem;white-space:nowrap;">Cash</th>
+                            <th style="padding:0.5rem;white-space:nowrap;">Immobilier</th>
+                            <th style="padding:0.5rem;white-space:nowrap;">Bourse</th>
+                            <th style="padding:0.5rem;white-space:nowrap;">Patrimoine Total</th>
+                            <th style="padding:0.5rem;text-align:right;color:var(--primary);white-space:nowrap;">Cash Optimisé</th>
+                            <th style="padding:0.5rem;text-align:right;color:var(--coach-bleu-fonce);font-weight:bold;white-space:nowrap;">Immobilier Optimisé</th>
+                            <th style="padding:0.5rem;text-align:right;color:#FF8C42;font-weight:bold;white-space:nowrap;">Bourse Optimisée</th>
+                            <th style="padding:0.5rem;text-align:right;color:#1F2A44;font-weight:bold;white-space:nowrap;">Patrimoine Optimisé</th>
+                        </tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div class="breakdown" style="max-height:250px;overflow-y:auto;overflow-x:auto;margin-top:2rem;">
+                    <h4 style="color:var(--coach-bleu-fonce);font-family:'Outfit';margin-bottom:0.5rem;">Détails (Indicateurs et Flux de Trésorerie)</h4>
+                    <table style="width:100%;color:var(--text-main);font-size:0.85rem;text-align:left;border-collapse:collapse;margin-top:1rem;" id="projection-table-details">
+                        <thead><tr style="border-bottom:2px solid var(--border);">
+                            <th style="padding:0.5rem;white-space:nowrap;">Année</th><th style="padding:0.5rem;white-space:nowrap;">Âge</th>
+                            <th style="padding:0.5rem;text-align:right;white-space:nowrap;">Cash dispo</th>
+                            <th style="padding:0.5rem;text-align:right;color:var(--danger);white-space:nowrap;">CRD crédit</th>
+                            <th style="padding:0.5rem;text-align:right;color:var(--primary);white-space:nowrap;">Patrimoine cash</th>
+                            <th style="padding:0.5rem;text-align:right;white-space:nowrap;">Valeur du bien</th>
+                            <th style="padding:0.5rem;text-align:right;color:var(--danger);white-space:nowrap;">Capital restant dû</th>
+                            <th style="padding:0.5rem;text-align:right;white-space:nowrap;">Valeur nette</th>
+                            <th style="padding:0.5rem;text-align:right;color:var(--success);white-space:nowrap;">Epargne sup</th>
+                            <th style="padding:0.5rem;text-align:right;white-space:nowrap;">SCPI</th>
+                            <th style="padding:0.5rem;text-align:right;white-space:nowrap;">Valeur Nouvel Invest.</th>
+                            <th style="padding:0.5rem;text-align:right;color:var(--danger);white-space:nowrap;">Reste à payer</th>
+                            <th style="padding:0.5rem;text-align:right;color:var(--primary);white-space:nowrap;">Valeur nette NI</th>
+                            <th style="padding:0.5rem;text-align:right;color:var(--coach-bleu-fonce);white-space:nowrap;">Immo optimisé</th>
+                            <th style="padding:0.5rem;text-align:right;white-space:nowrap;">Épargne Actuelle</th>
+                            <th style="padding:0.5rem;text-align:right;color:var(--coach-bleu-clair);white-space:nowrap;">Économies Suppl.</th>
+                            <th style="padding:0.5rem;text-align:right;color:var(--primary);font-weight:bold;white-space:nowrap;">Épargne Future</th>
+                            <th style="padding:0.5rem;text-align:right;color:var(--success);white-space:nowrap;">Épargne Suppl. Emprunt</th>
+                            <th style="padding:0.5rem;text-align:right;color:var(--success);font-weight:bold;white-space:nowrap;">Épargne Totale</th>
+                            <th style="padding:0.5rem;text-align:right;color:#FF8C42;white-space:nowrap;">Rendement R</th>
+                        </tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div style="text-align:center;display:flex;justify-content:center;gap:1rem;margin-top:1rem;">
+                    <button type="button" class="btn btn-secondary" id="btn-back-result">← Retour au Bilan</button>
+                    <button type="button" class="btn btn-primary" id="btn-verifications">Vérifications</button>
+                </div>
+            </div>
+
+            <!-- STEP 9: VERIFICATIONS -->
+            <div class="step result-step" id="step-9">
+                <h2 class="step-title center-text">Vérifications (Variables Internes)</h2>
+                <div class="breakdown" style="max-height:500px;overflow-y:auto;">
+                    <h4 style="color:var(--coach-bleu-fonce);font-family:'Outfit';margin-bottom:0.5rem;">Patrimoine & Dettes</h4>
+                    <div class="breakdown-item"><span>Patrimoine Cash</span><span id="check-pat-cash" style="font-weight:bold;">0</span></div>
+                    <div class="breakdown-item"><span>Patrimoine Immobilier</span><span id="check-pat-immo" style="font-weight:bold;">0</span></div>
+                    <div class="breakdown-item"><span>Patrimoine Bourse</span><span id="check-pat-bourse" style="font-weight:bold;">0</span></div>
+                    <div class="breakdown-item"><span>Patrimoine Total</span><span id="check-pat-total" style="font-weight:bold;color:var(--primary);">0</span></div>
+                    <div class="breakdown-item"><span>Reste à payer RP</span><span id="check-rp-remaining">0</span></div>
+                    <div class="breakdown-item"><span>Reste à payer Locatif</span><span id="check-loc-remaining">0</span></div>
+                    <div class="breakdown-item"><span>Reste à payer Autre</span><span id="check-autre-remaining">0</span></div>
+                    <div class="breakdown-item"><span>Dettes Total</span><span id="check-total-debt" style="color:var(--danger);font-weight:bold;">0</span></div>
+                    <h4 style="color:var(--coach-bleu-fonce);font-family:'Outfit';margin-bottom:0.5rem;margin-top:1rem;">Flux Mensuels & Annuels</h4>
+                    <div class="breakdown-item"><span>Salaire Complet</span><span id="check-salaire-complet">0</span></div>
+                    <div class="breakdown-item"><span>Portion Capital RP du mois actuel</span><span id="check-rp-principal-mensuel">0</span></div>
+                    <div class="breakdown-item"><span>Dépenses Mensuelles</span><span id="check-depenses-mensuelles">0</span></div>
+                    <div class="breakdown-item"><span>Dépenses Annuelles</span><span id="check-depenses-annuelles">0</span></div>
+                    <div class="breakdown-item"><span>Patrimoine en années de dépenses</span><span id="check-annees-depenses" style="font-weight:bold;">0</span></div>
+                    <div class="breakdown-item"><span>Revenus Annuels</span><span id="check-revenus-annuels">0</span></div>
+                    <div class="breakdown-item"><span>Remboursements Annuels</span><span id="check-remboursements-annuels">0</span></div>
+                    <div class="breakdown-item"><span>Taux d'endettement</span><span id="check-taux-endettement" style="font-weight:bold;">0</span></div>
+                    <div class="breakdown-item"><span>Capacité de Remboursement Mensuelle (CR)</span><span id="check-cr-mensuelle">0</span></div>
+                    <div class="breakdown-item"><span>Capacité d'Endettement</span><span id="check-capacite-endettement" style="font-weight:bold;">0</span></div>
+                    <h4 style="color:var(--coach-bleu-fonce);font-family:'Outfit';margin-bottom:0.5rem;margin-top:1rem;">Épargne</h4>
+                    <div class="breakdown-item"><span>Épargne Actuelle Déclarée</span><span id="check-epargne-actuelle">0</span></div>
+                    <div class="breakdown-item"><span>Remboursement Principal RP sur 1 an</span><span id="check-rp-principal-annuel">0</span></div>
+                    <div class="breakdown-item"><span>Épargne Totale</span><span id="check-epargne-totale" style="font-weight:bold;color:var(--coach-orange);">0</span></div>
+                    <div class="breakdown-item"><span>Taux d'Épargne Actuel</span><span id="check-taux-epargne">0</span></div>
+                    <div class="breakdown-item"><span>Taux d'Épargne Idéal</span><span id="check-taux-ideal">0</span></div>
+                    <div class="breakdown-item"><span>Économies Supplémentaires (par mois)</span><span id="check-economies-supp" style="font-weight:bold;color:var(--success);">0</span></div>
+                </div>
+                <div style="text-align:center;display:flex;justify-content:center;gap:1rem;margin-top:1rem;">
+                    <button type="button" class="btn btn-secondary" id="btn-back-projection">← Retour Projection</button>
+                </div>
+            </div>
+
+        </div><!-- /results-wrapper -->
+
+        <!-- Loading state -->
+        <div id="no-data" style="display:none;text-align:center;padding:3rem 1rem;">
+            <p style="color:var(--text-muted);font-size:1.1rem;margin-bottom:1.5rem;">Aucune donnée trouvée.</p>
+            <a href="/bilan/donnees.html" class="btn btn-primary">Saisir mes données →</a>
+        </div>
+    </main>
+
+    <script>
+    // Inject form data from localStorage into hidden inputs that app.js will read
+    const saved = localStorage.getItem('bilan_donnees');
+    if (!saved) {
+        document.getElementById('results-wrapper').style.display = 'none';
+        document.getElementById('no-data').style.display = 'block';
+    } else {
+        // Create hidden inputs for each saved field so app.js can find them via querySelector
+        const data = JSON.parse(saved);
+        const hiddenContainer = document.createElement('div');
+        hiddenContainer.style.display = 'none';
+        Object.entries(data).forEach(([name, value]) => {
+            const input = document.createElement('input');
+            input.name = name;
+            input.id = name === 'date_evaluation' ? 'date_evaluation' : undefined;
+            input.value = value;
+            hiddenContainer.appendChild(input);
+        });
+        document.body.appendChild(hiddenContainer);
+    }
+    </script>
+    <script src="app_resultat.js"></script>
+</body>
+</html>

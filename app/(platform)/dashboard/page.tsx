@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import { CheckCircle, Circle, ChevronRight, PlayCircle } from "lucide-react";
+import { CheckCircle, Circle, ChevronRight, PlayCircle, BarChart2, FileText } from "lucide-react";
 import type { Module } from "@/types";
 
 export default async function DashboardPage() {
@@ -134,6 +134,26 @@ export default async function DashboardPage() {
                       style={{ width: `${modulePercent}%` }}
                     />
                   </div>
+
+                  {/* Bilan buttons — module 1 only */}
+                  {index === 0 && (
+                    <div className="flex gap-3 mb-4">
+                      <Link
+                        href="/bilan/donnees"
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-navy text-white text-sm font-medium hover:bg-navy/90 transition-colors"
+                      >
+                        <FileText size={15} />
+                        Vos données
+                      </Link>
+                      <Link
+                        href="/bilan/resultat"
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-navy text-navy text-sm font-medium hover:bg-navy hover:text-white transition-colors"
+                      >
+                        <BarChart2 size={15} />
+                        Bilan patrimonial
+                      </Link>
+                    </div>
+                  )}
 
                   {/* Video list preview */}
                   <ul className="space-y-1">
