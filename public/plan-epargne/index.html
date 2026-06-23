@@ -19,6 +19,39 @@
       border-bottom: 2px solid #C0603A;
     }
 
+    /* ── Mois input ─────────────────────────────── */
+    .mois-card {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: #F8F9FB;
+      border: 1px solid #E5E7EB;
+      border-radius: 8px;
+      padding: 0.6rem 1rem;
+      margin-bottom: 1.25rem;
+    }
+    .mois-card label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #6B7280;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+    }
+    .mois-card input {
+      width: 64px;
+      padding: 5px 8px;
+      border: 1px solid #D1D5DB;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-family: 'Inter', sans-serif;
+      color: #1B2B4A;
+      background: #fff;
+      text-align: right;
+    }
+    .mois-card input:focus { outline: none; border-color: #C0603A; }
+    .mois-card .unit { font-size: 0.82rem; color: #9CA3AF; }
+
     /* ── Charts ──────────────────────────────────── */
     .charts-row {
       display: flex;
@@ -125,6 +158,13 @@
   <!-- ── SECTION 2 : Plan Épargne ────────────────────────── -->
   <h2 class="section-title" style="margin-top:3rem">2 — Définissez votre plan d'épargne</h2>
 
+  <!-- Mois fonds de sécurité -->
+  <div class="mois-card">
+    <label>Nombre de mois requis pour le fonds de sécurité</label>
+    <input type="number" id="inp-mois" min="1" max="36" step="1">
+    <span class="unit">mois</span>
+  </div>
+
   <!-- Pie charts -->
   <div class="charts-row">
     <div class="chart-card">
@@ -188,8 +228,8 @@ const mtActuel     = 0;
 const bourseActuel = n('cto') + n('pea') + n('per') + n('pee') + n('av_uc') + n('autres_invests');
 
 // Computed constants
-const depensesMensuelles = Math.max(0, revenusMensuels - epargneMensuelleBase);
-const moisFondsSecu      = defaultMois(age);
+const depensesMensuelles  = Math.max(0, revenusMensuels - epargneMensuelleBase);
+const moisFondsSecuDefaut = defaultMois(age);
 
 function defaultMois(age) {
   if (age < 30) return 3;
@@ -292,10 +332,10 @@ function fmtMouv(v) {
   return `<span style="color:#6B7280">0 €</span>`;
 }
 
-// ── Calculate (runs once on load) ────────────────────────
+// ── Calculate ────────────────────────────────────────────
 function recalculate() {
   const depenses = depensesMensuelles;
-  const mois     = moisFondsSecu;
+  const mois     = parseFloat(document.getElementById('inp-mois')?.value) || moisFondsSecuDefaut;
   const gt5      = grossesDepenses;
 
   // Actuel (fixed)
@@ -347,9 +387,9 @@ function recalculate() {
   notifyHeight();
 }
 
-// ── Save / Restore (progrès uniquement) ──────────────────
+// ── Save / Restore ────────────────────────────────────────
 function saveData() {
-  const data = {};
+  const data = { 'inp-mois': document.getElementById('inp-mois')?.value || '' };
   PROGRES_ITEMS.forEach((_,i) => {
     data[`prog-sel-${i}`] = document.getElementById(`prog-sel-${i}`)?.value || '';
     data[`prog-com-${i}`] = document.getElementById(`prog-com-${i}`)?.value || '';
@@ -360,13 +400,19 @@ function saveData() {
 function restoreData() {
   try {
     const raw = localStorage.getItem('plan_epargne_data');
+    const moisEl = document.getElementById('inp-mois');
+    if (moisEl) moisEl.value = moisFondsSecuDefaut; // valeur par défaut
     if (!raw) return;
     const saved = JSON.parse(raw);
+    if (saved['inp-mois'] && moisEl) moisEl.value = saved['inp-mois'];
     PROGRES_ITEMS.forEach((_,i) => {
       if (saved[`prog-sel-${i}`]) document.getElementById(`prog-sel-${i}`).value = saved[`prog-sel-${i}`];
       if (saved[`prog-com-${i}`]) document.getElementById(`prog-com-${i}`).value = saved[`prog-com-${i}`];
     });
-  } catch(e) {}
+  } catch(e) {
+    const moisEl = document.getElementById('inp-mois');
+    if (moisEl) moisEl.value = moisFondsSecuDefaut;
+  }
 }
 
 document.addEventListener('input',  saveData);
@@ -396,7 +442,7 @@ function validerPlan() {
 
   // Section 2
   const depenses = depensesMensuelles;
-  const mois     = moisFondsSecu;
+  const mois     = parseFloat(document.getElementById('inp-mois')?.value) || moisFondsSecuDefaut;
   const gt5      = grossesDepenses;
 
   const cSecu   = depenses * mois;
