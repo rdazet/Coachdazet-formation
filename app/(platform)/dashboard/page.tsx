@@ -4,6 +4,7 @@ import { CheckCircle, Circle, ChevronRight, PlayCircle } from "lucide-react";
 import type { Module } from "@/types";
 import BilanLinks from "@/components/dashboard/BilanLinks";
 import PlanImmoLink from "@/components/dashboard/PlanImmoLink";
+import PlanBourseLink from "@/components/dashboard/PlanBourseLink";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -146,7 +147,6 @@ export default async function DashboardPage() {
                   {/* Video list preview */}
                   <ul className="space-y-1">
                     {index === 0 && <BilanLinks />}
-                    {index === 1 && <PlanImmoLink />}
                     {moduleVideos.map((video) => (
                       <li key={video.id}>
                         <Link
@@ -162,7 +162,8 @@ export default async function DashboardPage() {
                         </Link>
                       </li>
                     ))}
-
+                    {index === 1 && <PlanImmoLink />}
+                    {index === 2 && <PlanBourseLink />}
                   </ul>
                 </div>
 

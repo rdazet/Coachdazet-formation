@@ -392,6 +392,28 @@ export default function ContentManager({ modules }: ContentManagerProps) {
                   </div>
                 ))}
 
+                {/* Plan Immobilier — module 2 only */}
+                {index === 1 && (
+                  <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-100 bg-[#FAFAFA]">
+                    <Video size={16} className="text-terracotta mt-0.5 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-navy truncate">Plan Immobilier</p>
+                      <p className="text-xs text-gray-400 truncate">/plan-immo — page de calcul auto (locataire / propriétaire)</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Plan Bourse — module 3 only */}
+                {index === 2 && (
+                  <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-100 bg-[#FAFAFA]">
+                    <Video size={16} className="text-terracotta mt-0.5 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-navy truncate">Plan Bourse</p>
+                      <p className="text-xs text-gray-400 truncate">/plan-bourse — progrès + plan d&apos;investissement</p>
+                    </div>
+                  </div>
+                )}
+
                 {/* Add video form */}
                 {addVideoFor === module.id ? (
                   <div className="px-5 py-4 bg-[#F5F5F5] border-t border-gray-100">
