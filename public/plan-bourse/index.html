@@ -440,6 +440,19 @@ document.addEventListener('input', saveData);
 document.addEventListener('change', saveData);
 restoreData();
 
+// ── Auto-resize parent iframe ─────────────────────────────
+function notifyHeight() {
+  const h = document.documentElement.scrollHeight;
+  window.parent.postMessage({ type: 'iframeHeight', height: h }, '*');
+}
+// On load + after any DOM/input changes
+window.addEventListener('load', notifyHeight);
+document.addEventListener('input', () => setTimeout(notifyHeight, 50));
+document.addEventListener('change', () => setTimeout(notifyHeight, 50));
+// Watch for dynamic content (table rows being added)
+new MutationObserver(() => setTimeout(notifyHeight, 50))
+  .observe(document.body, { childList: true, subtree: true });
+
 // ── Email ─────────────────────────────────────────────────
 
 function validerPlan() {

@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import AutoResizeFrame from "@/components/iframe/AutoResizeFrame";
 
 export default async function PlanBoursePage() {
   const supabase = await createClient();
@@ -11,14 +12,14 @@ export default async function PlanBoursePage() {
     .single();
 
   const fullName = profile?.full_name || "";
-  const parts = fullName.trim().split(/\s+/);
+  const parts  = fullName.trim().split(/\s+/);
   const prenom = encodeURIComponent(parts[0] || "");
   const nom    = encodeURIComponent(parts.slice(1).join(" ") || "");
 
   const iframeSrc = `/plan-bourse/index.html?prenom=${prenom}&nom=${nom}`;
 
   return (
-    <div className="flex flex-col h-full min-h-[calc(100vh-4rem)]">
+    <div className="flex flex-col">
       <div className="px-6 py-4 border-b border-gray-200 bg-white flex items-center justify-between shrink-0">
         <div>
           <h1 className="font-display text-xl font-semibold text-navy">Plan Bourse</h1>
@@ -33,12 +34,7 @@ export default async function PlanBoursePage() {
           Ouvrir en plein écran ↗
         </a>
       </div>
-      <iframe
-        src={iframeSrc}
-        className="flex-1 w-full border-0"
-        style={{ minHeight: "calc(100vh - 8rem)" }}
-        title="Plan Bourse"
-      />
+      <AutoResizeFrame src={iframeSrc} title="Plan Bourse" />
     </div>
   );
 }
