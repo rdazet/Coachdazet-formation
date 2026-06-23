@@ -19,53 +19,6 @@
       border-bottom: 2px solid #C0603A;
     }
 
-    /* ── Input cards ─────────────────────────────── */
-    .inputs-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 0.75rem;
-      margin-bottom: 1.5rem;
-    }
-    .input-card {
-      background: #F8F9FB;
-      border: 1px solid #E5E7EB;
-      border-radius: 8px;
-      padding: 0.75rem 1rem;
-    }
-    .input-card label {
-      display: block;
-      font-size: 0.72rem;
-      font-weight: 600;
-      color: #6B7280;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 4px;
-    }
-    .input-card .input-row {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .input-card input {
-      flex: 1;
-      min-width: 0;
-      padding: 6px 10px;
-      border: 1px solid #D1D5DB;
-      border-radius: 6px;
-      font-size: 0.9rem;
-      font-family: 'Inter', sans-serif;
-      color: #1B2B4A;
-      background: #fff;
-      text-align: right;
-    }
-    .input-card input:focus { outline: none; border-color: #C0603A; }
-    .input-card input[readonly] { background: #F3F4F6; color: #6B7280; cursor: default; }
-    .input-card .unit { font-size: 0.82rem; color: #9CA3AF; white-space: nowrap; }
-    .input-card .calc-val {
-      font-size: 1rem; font-weight: 700; color: #C0603A;
-      font-family: 'Outfit', sans-serif;
-    }
-
     /* ── Charts ──────────────────────────────────── */
     .charts-row {
       display: flex;
@@ -180,9 +133,6 @@
   <!-- ── SECTION 2 : Plan Épargne ────────────────────────── -->
   <h2 class="section-title" style="margin-top:3rem">2 — Définissez votre plan d'épargne</h2>
 
-  <!-- Input fields -->
-  <div class="inputs-grid" id="inputs-grid"></div>
-
   <!-- Pie charts -->
   <div class="charts-row">
     <div class="chart-card">
@@ -273,27 +223,9 @@ PROGRES_ITEMS.forEach((item, i) => {
   progTbody.appendChild(tr);
 });
 
-// ── Input fields ──────────────────────────────────────────
-const INPUT_FIELDS = [
-  { id: 'inp-revenus',   label: 'Revenus mensuels',                unit: '€', val: revenusMensuels, calc: false },
-  { id: 'inp-depenses',  label: 'Dépenses mensuelles',             unit: '€', val: Math.max(0, revenusMensuels - epargneMensuelleBase), calc: false },
-  { id: 'inp-epargne',   label: 'Épargne mensuelle',               unit: '€', val: epargneMensuelleBase, readonly: true },
-  { id: 'inp-mois',      label: 'Mois requis — fonds de sécurité', unit: 'mois', val: defaultMois(age), calc: false },
-  { id: 'inp-gt5',       label: 'Grosses dépenses prévues (5 ans)', unit: '€', val: grossesDepenses, calc: false },
-];
-
-const grid = document.getElementById('inputs-grid');
-INPUT_FIELDS.forEach(f => {
-  const card = document.createElement('div');
-  card.className = 'input-card';
-  card.innerHTML = `
-    <label>${f.label}</label>
-    <div class="input-row">
-      <input type="number" id="${f.id}" value="${f.val}" min="0" step="1" ${f.readonly ? 'readonly' : ''}>
-      <span class="unit">${f.unit}</span>
-    </div>`;
-  grid.appendChild(card);
-});
+// ── Computed constants (from bilan_donnees) ───────────────
+const depensesMensuelles = Math.max(0, revenusMensuels - epargneMensuelleBase);
+const moisFondsSecu      = defaultMois(age);
 
 // ── Table rows ────────────────────────────────────────────
 const PAT_ROWS = [
@@ -371,15 +303,11 @@ function gv(id) { return parseFloat(document.getElementById(id)?.value) || 0; }
 
 // ── Recalculate ───────────────────────────────────────────
 function recalculate() {
-  const revenus  = gv('inp-revenus');
-  const depenses = gv('inp-depenses');
-  const epargne  = revenus - depenses;
-  const mois     = gv('inp-mois');
-  const gt5      = gv('inp-gt5');
-
-  // Update épargne mensuelle (readonly)
-  const inpEpargne = document.getElementById('inp-epargne');
-  if (inpEpargne) inpEpargne.value = Math.max(0, epargne).toFixed(0);
+  const revenus  = revenusMensuels;
+  const depenses = depensesMensuelles;
+  const epargne  = epargneMensuelleBase;
+  const mois     = moisFondsSecu;
+  const gt5      = grossesDepenses;
 
   // Actuel values
   const actDettes = gv('act-dettes');
@@ -432,25 +360,9 @@ function recalculate() {
   notifyHeight();
 }
 
-// When revenus changes, recompute dépenses (keep épargne stable if possible)
-document.getElementById('inp-revenus')?.addEventListener('input', () => {
-  const rev = gv('inp-revenus');
-  const ep  = gv('inp-epargne');
-  const depEl = document.getElementById('inp-depenses');
-  if (depEl) depEl.value = Math.max(0, rev - ep).toFixed(0);
-  recalculate();
-});
-// When dépenses changes, épargne auto-updates via recalculate
-document.getElementById('inp-depenses')?.addEventListener('input', recalculate);
-document.getElementById('inp-mois')?.addEventListener('input', recalculate);
-document.getElementById('inp-gt5')?.addEventListener('input', recalculate);
-
 // ── Save / Restore ────────────────────────────────────────
 function saveData() {
   const data = {};
-  ['inp-revenus','inp-depenses','inp-mois','inp-gt5'].forEach(id => {
-    data[id] = document.getElementById(id)?.value || '';
-  });
   ['dettes','secu','mt','bourse'].forEach(k => {
     data['act-'+k] = document.getElementById('act-'+k)?.value || '';
   });
@@ -466,12 +378,6 @@ function restoreData() {
     const raw = localStorage.getItem('plan_epargne_data');
     if (!raw) return;
     const saved = JSON.parse(raw);
-    ['inp-revenus','inp-depenses','inp-mois','inp-gt5'].forEach(id => {
-      if (saved[id] !== undefined && saved[id] !== '') {
-        const el = document.getElementById(id);
-        if (el) el.value = saved[id];
-      }
-    });
     ['dettes','secu','mt','bourse'].forEach(k => {
       const key = 'act-'+k;
       if (saved[key] !== undefined && saved[key] !== '') {
@@ -512,11 +418,11 @@ function validerPlan() {
   });
 
   // Section 2
-  const revenus  = gv('inp-revenus');
-  const depenses = gv('inp-depenses');
-  const epargne  = Math.max(0, revenus - depenses);
-  const mois     = gv('inp-mois');
-  const gt5      = gv('inp-gt5');
+  const revenus  = revenusMensuels;
+  const depenses = depensesMensuelles;
+  const epargne  = epargneMensuelleBase;
+  const mois     = moisFondsSecu;
+  const gt5      = grossesDepenses;
 
   const idSecu   = depenses * mois;
   const idMt     = gt5;
