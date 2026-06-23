@@ -29,10 +29,12 @@ export default function Sidebar({
   const router = useRouter();
   const [hasBilanData, setHasBilanData] = useState(false);
   const [hasBourseData, setHasBourseData] = useState(false);
+  const [hasEpargneData, setHasEpargneData] = useState(false);
 
   useEffect(() => {
     setHasBilanData(!!localStorage.getItem("bilan_donnees"));
     setHasBourseData(!!localStorage.getItem("plan_bourse_data"));
+    setHasEpargneData(!!localStorage.getItem("plan_epargne_data"));
   }, []);
 
   // Derive currentVideoId from URL if not passed
@@ -258,6 +260,26 @@ export default function Sidebar({
                       </li>
                     );
                   })}
+                  {index === 0 && (
+                    <li>
+                      <Link
+                        href="/plan-epargne"
+                        className={clsx(
+                          "flex items-center gap-2.5 px-5 py-2 pl-12 text-sm transition-colors",
+                          pathname === "/plan-epargne"
+                            ? "text-navy font-semibold bg-white border-l-2 border-terracotta"
+                            : "text-gray-600 hover:text-navy hover:bg-white/70"
+                        )}
+                      >
+                        {hasEpargneData ? (
+                          <CheckCircle size={14} className="text-terracotta shrink-0" />
+                        ) : (
+                          <Circle size={14} className="text-gray-300 shrink-0" />
+                        )}
+                        <span className="leading-tight">Plan Épargne</span>
+                      </Link>
+                    </li>
+                  )}
                   {index === 1 && (
                     <li>
                       <Link

@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plan Épargne — Coach Dazet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/bilan/style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    .container { padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
+
+    .section-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.15rem; font-weight: 700; color: #1B2B4A;
+      margin: 2rem 0 0.5rem; padding-bottom: 0.4rem;
+      border-bottom: 2px solid #C0603A;
+    }
+
+    /* ── Input cards ─────────────────────────────── */
+    .inputs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    .input-card {
+      background: #F8F9FB;
+      border: 1px solid #E5E7EB;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+    }
+    .input-card label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #6B7280;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+    .input-card .input-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .input-card input {
+      flex: 1;
+      min-width: 0;
+      padding: 6px 10px;
+      border: 1px solid #D1D5DB;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-family: 'Inter', sans-serif;
+      color: #1B2B4A;
+      background: #fff;
+      text-align: right;
+    }
+    .input-card input:focus { outline: none; border-color: #C0603A; }
+    .input-card input[readonly] { background: #F3F4F6; color: #6B7280; cursor: default; }
+    .input-card .unit { font-size: 0.82rem; color: #9CA3AF; white-space: nowrap; }
+    .input-card .calc-val {
+      font-size: 1rem; font-weight: 700; color: #C0603A;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    /* ── Charts ──────────────────────────────────── */
+    .charts-row {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .chart-card {
+      flex: 1;
+      background: #fff;
+      border: 1px solid #E5E7EB;
+      border-radius: 10px;
+      padding: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .chart-card h3 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #44546A;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin: 0 0 0.75rem;
+      text-align: center;
+    }
+    .chart-wrapper { position: relative; height: 200px; }
+
+    /* ── Main table ───────────────────────────────── */
+    .pat-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 2rem;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .pat-table th {
+      background: #1B2B4A;
+      color: #fff;
+      padding: 10px 12px;
+      text-align: right;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+    .pat-table th:first-child { text-align: left; }
+    .pat-table td {
+      padding: 7px 12px;
+      border-bottom: 1px solid #F0F0F0;
+      vertical-align: middle;
+      font-size: 0.88rem;
+      text-align: right;
+    }
+    .pat-table tr:last-child td { border-bottom: none; }
+    .pat-table td:first-child { text-align: left; font-weight: 500; color: #374151; background: #F8F9FB; }
+    .pat-table tr.total-row td { font-weight: 700; color: #1B2B4A; background: #EEF2F7; border-top: 2px solid #1B2B4A; }
+    .pat-table tr.total-row td:first-child { background: #EEF2F7; }
+
+    .pat-table input.pat-input {
+      width: 110px;
+      padding: 4px 8px;
+      border: 1px solid #E5E7EB;
+      border-radius: 5px;
+      font-size: 0.85rem;
+      font-family: 'Inter', sans-serif;
+      color: #1B2B4A;
+      text-align: right;
+      background: #fff;
+    }
+    .pat-table input.pat-input:focus { outline: none; border-color: #C0603A; }
+
+    .val-calc { color: #1B2B4A; font-weight: 600; }
+    .val-pos  { color: #16A34A; font-weight: 600; }
+    .val-neg  { color: #DC2626; font-weight: 600; }
+
+    /* ── Progress table ───────────────────────────── */
+    .prog-table { width: 100%; border-collapse: collapse; margin-bottom: 2rem; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .prog-table th { background: #1B2B4A; color: #fff; padding: 10px 12px; text-align: left; font-family: 'Outfit', sans-serif; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.07em; }
+    .prog-table td { padding: 7px 10px; border-bottom: 1px solid #F0F0F0; vertical-align: middle; font-size: 0.88rem; }
+    .prog-table tr:last-child td { border-bottom: none; }
+    .prog-table td:first-child { color: #374151; font-weight: 500; background: #F8F9FB; width: 55%; }
+    .prog-table td:nth-child(2) { background: #fff; text-align: center; width: 90px; }
+    .prog-table td:nth-child(3) { background: #fff; }
+    select.oui-non { padding: 5px 8px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 0.85rem; font-family: 'Inter', sans-serif; color: #374151; background: white; cursor: pointer; width: 74px; }
+    select.oui-non:focus { outline: none; border-color: #1B2B4A; }
+    input.comment-input { width: 100%; padding: 5px 8px; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.85rem; font-family: 'Inter', sans-serif; color: #374151; box-sizing: border-box; background: #fff; }
+    input.comment-input:focus { outline: none; border-color: #1B2B4A; }
+
+    /* ── Validate button ──────────────────────────── */
+    .btn-validate { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 2.5rem auto 1rem; padding: 14px 36px; background: #C0603A; color: white; border: none; border-radius: 10px; font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s, transform 0.1s; box-shadow: 0 2px 8px rgba(192,96,58,0.3); }
+    .btn-validate:hover { background: #A8522F; transform: translateY(-1px); }
+    .btn-validate:active { transform: translateY(0); }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ── SECTION 1 : Mesurez vos progrès ─────────────────── -->
+  <h2 class="section-title" style="margin-top:1.5rem">1 — Mesurez vos progrès</h2>
+
+  <table class="prog-table">
+    <thead>
+      <tr>
+        <th>ÉPARGNE</th>
+        <th style="text-align:center">OUI / NON</th>
+        <th>COMMENTAIRES</th>
+      </tr>
+    </thead>
+    <tbody id="progres-tbody"></tbody>
+  </table>
+
+  <!-- ── SECTION 2 : Plan Épargne ────────────────────────── -->
+  <h2 class="section-title" style="margin-top:3rem">2 — Définissez votre plan d'épargne</h2>
+
+  <!-- Input fields -->
+  <div class="inputs-grid" id="inputs-grid"></div>
+
+  <!-- Pie charts -->
+  <div class="charts-row">
+    <div class="chart-card">
+      <h3>Patrimoine actuel</h3>
+      <div class="chart-wrapper"><canvas id="chart-actuel"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Patrimoine cible</h3>
+      <div class="chart-wrapper"><canvas id="chart-cible"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Patrimoine table -->
+  <table class="pat-table">
+    <thead>
+      <tr>
+        <th>PATRIMOINE HORS IMMOBILIER</th>
+        <th>Actuel</th>
+        <th>Idéal</th>
+        <th>Mouvements</th>
+        <th>Épargne future</th>
+      </tr>
+    </thead>
+    <tbody id="pat-tbody"></tbody>
+  </table>
+
+  <!-- Validate -->
+  <div style="text-align:center">
+    <button class="btn-validate" onclick="validerPlan()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+      </svg>
+      Validez votre plan Épargne
+    </button>
+  </div>
+
+</div>
+
+<script>
+// ── URL params ────────────────────────────────────────────
+const params = new URLSearchParams(window.location.search);
+const PRENOM = params.get('prenom') || '';
+const NOM    = params.get('nom')    || '';
+
+// ── bilan_donnees ────────────────────────────────────────
+let d = {};
+try { d = JSON.parse(localStorage.getItem('bilan_donnees') || '{}'); } catch(e) {}
+
+function n(k) { return parseFloat(d[k]) || 0; }
+
+// Pre-computed from bilan
+const age = n('age');
+const revenusMensuels = n('salaire_net') + n('bonus_net');
+const epargneMensuelleBase = n('epargne_mensuelle');
+const grossesDepenses = n('grosses_depenses');
+
+// Actuel values
+const dettesActuel = n('dette_capital_du_direct');
+const liquidites   = n('comptes_cheques') + n('livret_a') + n('ldd') + n('lep') + n('cel') + n('pel') + n('divers_liquidites');
+const bourseActuel = n('cto') + n('pea') + n('per') + n('pee') + n('av_fonds_euros') + n('av_uc') + n('autres_invests');
+
+// Default months for fonds de sécurité
+function defaultMois(age) {
+  if (age < 30) return 3;
+  if (age < 50) return 6;
+  if (age < 65) return 12;
+  return 24;
+}
+
+// ── Progress items ────────────────────────────────────────
+const PROGRES_ITEMS = [
+  "Vous avez calculé combien vous avez dans chaque fonds (dettes, urgence, moyen terme et bourse)",
+  "Vous avez calculé votre portefeuille cible",
+  "Vous avez réajusté votre portefeuille en conséquence",
+];
+
+const progTbody = document.getElementById('progres-tbody');
+PROGRES_ITEMS.forEach((item, i) => {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td>${item}</td>
+    <td><select class="oui-non" id="prog-sel-${i}">
+      <option value="">—</option>
+      <option value="Oui">Oui</option>
+      <option value="Non">Non</option>
+    </select></td>
+    <td><input class="comment-input" type="text" id="prog-com-${i}"></td>`;
+  progTbody.appendChild(tr);
+});
+
+// ── Input fields ──────────────────────────────────────────
+const INPUT_FIELDS = [
+  { id: 'inp-revenus',   label: 'Revenus mensuels',                unit: '€', val: revenusMensuels, calc: false },
+  { id: 'inp-depenses',  label: 'Dépenses mensuelles',             unit: '€', val: Math.max(0, revenusMensuels - epargneMensuelleBase), calc: false },
+  { id: 'inp-epargne',   label: 'Épargne mensuelle',               unit: '€', val: epargneMensuelleBase, readonly: true },
+  { id: 'inp-mois',      label: 'Mois requis — fonds de sécurité', unit: 'mois', val: defaultMois(age), calc: false },
+  { id: 'inp-gt5',       label: 'Grosses dépenses prévues (5 ans)', unit: '€', val: grossesDepenses, calc: false },
+];
+
+const grid = document.getElementById('inputs-grid');
+INPUT_FIELDS.forEach(f => {
+  const card = document.createElement('div');
+  card.className = 'input-card';
+  card.innerHTML = `
+    <label>${f.label}</label>
+    <div class="input-row">
+      <input type="number" id="${f.id}" value="${f.val}" min="0" step="1" ${f.readonly ? 'readonly' : ''}>
+      <span class="unit">${f.unit}</span>
+    </div>`;
+  grid.appendChild(card);
+});
+
+// ── Table rows ────────────────────────────────────────────
+const PAT_ROWS = [
+  { id: 'dettes',   label: 'Dettes',              actuel: dettesActuel,   editable: true  },
+  { id: 'secu',     label: 'Fonds de sécurité',   actuel: liquidites,     editable: true  },
+  { id: 'mt',       label: 'Fonds moyen terme',   actuel: 0,              editable: true  },
+  { id: 'bourse',   label: 'Bourse',              actuel: bourseActuel,   editable: true  },
+];
+
+const patTbody = document.getElementById('pat-tbody');
+PAT_ROWS.forEach(row => {
+  const tr = document.createElement('tr');
+  tr.id = 'row-' + row.id;
+  tr.innerHTML = `
+    <td>${row.label}</td>
+    <td><input class="pat-input" type="number" id="act-${row.id}" value="${row.actuel}" min="0" step="100" oninput="recalculate()"></td>
+    <td id="ideal-${row.id}" class="val-calc">—</td>
+    <td id="mouv-${row.id}">—</td>
+    <td style="color:#9CA3AF">—</td>`;
+  patTbody.appendChild(tr);
+});
+
+// Total row
+const totalRow = document.createElement('tr');
+totalRow.className = 'total-row';
+totalRow.innerHTML = `
+  <td>TOTAL</td>
+  <td id="total-act">—</td>
+  <td id="total-ideal">—</td>
+  <td id="total-mouv">—</td>
+  <td></td>`;
+patTbody.appendChild(totalRow);
+
+// ── Charts ────────────────────────────────────────────────
+const COLORS = {
+  dettes: '#E74C3C',
+  secu:   '#1B2B4A',
+  mt:     '#44546A',
+  bourse: '#C0603A',
+};
+const LABELS = { dettes: 'Dettes', secu: 'Fonds de sécurité', mt: 'Fonds moyen terme', bourse: 'Bourse' };
+
+const chartOptions = {
+  responsive: true, maintainAspectRatio: false,
+  plugins: {
+    legend: { position: 'bottom', labels: { font: { family: 'Inter', size: 11 }, padding: 8, boxWidth: 12 } },
+    tooltip: { callbacks: { label: ctx => ` ${ctx.label} : ${fmt(ctx.raw)}` } }
+  }
+};
+
+let chartActuel = new Chart(document.getElementById('chart-actuel'), {
+  type: 'doughnut',
+  data: { labels: [], datasets: [{ data: [], backgroundColor: [], borderWidth: 2, borderColor: '#fff' }] },
+  options: { ...chartOptions }
+});
+let chartCible = new Chart(document.getElementById('chart-cible'), {
+  type: 'doughnut',
+  data: { labels: [], datasets: [{ data: [], backgroundColor: [], borderWidth: 2, borderColor: '#fff' }] },
+  options: { ...chartOptions }
+});
+
+// ── Helpers ───────────────────────────────────────────────
+function fmt(v) {
+  if (v === null || v === undefined || isNaN(v)) return '—';
+  return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(v);
+}
+function fmtMouv(v) {
+  if (isNaN(v)) return '—';
+  const s = fmt(Math.abs(v));
+  if (v > 0)  return `<span class="val-pos">+${s}</span>`;
+  if (v < 0)  return `<span class="val-neg">−${s}</span>`;
+  return `<span style="color:#6B7280">0 €</span>`;
+}
+function gv(id) { return parseFloat(document.getElementById(id)?.value) || 0; }
+
+// ── Recalculate ───────────────────────────────────────────
+function recalculate() {
+  const revenus  = gv('inp-revenus');
+  const depenses = gv('inp-depenses');
+  const epargne  = revenus - depenses;
+  const mois     = gv('inp-mois');
+  const gt5      = gv('inp-gt5');
+
+  // Update épargne mensuelle (readonly)
+  const inpEpargne = document.getElementById('inp-epargne');
+  if (inpEpargne) inpEpargne.value = Math.max(0, epargne).toFixed(0);
+
+  // Actuel values
+  const actDettes = gv('act-dettes');
+  const actSecu   = gv('act-secu');
+  const actMt     = gv('act-mt');
+  const actBourse = gv('act-bourse');
+  const totalAct  = actDettes + actSecu + actMt + actBourse;
+
+  // Idéal values
+  const idDettes = 0;
+  const idSecu   = depenses * mois;
+  const idMt     = gt5;
+  const idBourse = Math.max(0, totalAct - idSecu - idMt); // redistribute remaining to bourse
+  const totalId  = idDettes + idSecu + idMt + idBourse;
+
+  // Update ideal cells
+  document.getElementById('ideal-dettes').innerHTML = `<span class="val-calc">${fmt(idDettes)}</span>`;
+  document.getElementById('ideal-secu').innerHTML   = `<span class="val-calc">${fmt(idSecu)}</span>`;
+  document.getElementById('ideal-mt').innerHTML     = `<span class="val-calc">${fmt(idMt)}</span>`;
+  document.getElementById('ideal-bourse').innerHTML = `<span class="val-calc">${fmt(idBourse)}</span>`;
+
+  // Mouvements
+  document.getElementById('mouv-dettes').innerHTML = fmtMouv(idDettes - actDettes);
+  document.getElementById('mouv-secu').innerHTML   = fmtMouv(idSecu   - actSecu);
+  document.getElementById('mouv-mt').innerHTML     = fmtMouv(idMt     - actMt);
+  document.getElementById('mouv-bourse').innerHTML = fmtMouv(idBourse - actBourse);
+
+  // Totals
+  document.getElementById('total-act').textContent   = fmt(totalAct);
+  document.getElementById('total-ideal').innerHTML   = `<span class="val-calc">${fmt(totalId)}</span>`;
+  document.getElementById('total-mouv').innerHTML    = fmtMouv(totalId - totalAct);
+
+  // Charts
+  const KEYS = ['dettes','secu','mt','bourse'];
+  const actVals   = [actDettes, actSecu, actMt, actBourse];
+  const cibleVals = [idDettes,  idSecu,  idMt,  idBourse];
+
+  function updateChart(chart, vals) {
+    const filtered = KEYS.map((k,i) => ({ k, v: vals[i], l: LABELS[k], c: COLORS[k] })).filter(x => x.v > 0);
+    chart.data.labels   = filtered.map(x => x.l);
+    chart.data.datasets[0].data            = filtered.map(x => x.v);
+    chart.data.datasets[0].backgroundColor = filtered.map(x => x.c);
+    chart.update();
+  }
+
+  updateChart(chartActuel, actVals);
+  updateChart(chartCible,  cibleVals);
+
+  saveData();
+  notifyHeight();
+}
+
+// When revenus changes, recompute dépenses (keep épargne stable if possible)
+document.getElementById('inp-revenus')?.addEventListener('input', () => {
+  const rev = gv('inp-revenus');
+  const ep  = gv('inp-epargne');
+  const depEl = document.getElementById('inp-depenses');
+  if (depEl) depEl.value = Math.max(0, rev - ep).toFixed(0);
+  recalculate();
+});
+// When dépenses changes, épargne auto-updates via recalculate
+document.getElementById('inp-depenses')?.addEventListener('input', recalculate);
+document.getElementById('inp-mois')?.addEventListener('input', recalculate);
+document.getElementById('inp-gt5')?.addEventListener('input', recalculate);
+
+// ── Save / Restore ────────────────────────────────────────
+function saveData() {
+  const data = {};
+  ['inp-revenus','inp-depenses','inp-mois','inp-gt5'].forEach(id => {
+    data[id] = document.getElementById(id)?.value || '';
+  });
+  ['dettes','secu','mt','bourse'].forEach(k => {
+    data['act-'+k] = document.getElementById('act-'+k)?.value || '';
+  });
+  PROGRES_ITEMS.forEach((_,i) => {
+    data[`prog-sel-${i}`] = document.getElementById(`prog-sel-${i}`)?.value || '';
+    data[`prog-com-${i}`] = document.getElementById(`prog-com-${i}`)?.value || '';
+  });
+  localStorage.setItem('plan_epargne_data', JSON.stringify(data));
+}
+
+function restoreData() {
+  try {
+    const raw = localStorage.getItem('plan_epargne_data');
+    if (!raw) return;
+    const saved = JSON.parse(raw);
+    ['inp-revenus','inp-depenses','inp-mois','inp-gt5'].forEach(id => {
+      if (saved[id] !== undefined && saved[id] !== '') {
+        const el = document.getElementById(id);
+        if (el) el.value = saved[id];
+      }
+    });
+    ['dettes','secu','mt','bourse'].forEach(k => {
+      const key = 'act-'+k;
+      if (saved[key] !== undefined && saved[key] !== '') {
+        const el = document.getElementById(key);
+        if (el) el.value = saved[key];
+      }
+    });
+    PROGRES_ITEMS.forEach((_,i) => {
+      if (saved[`prog-sel-${i}`]) document.getElementById(`prog-sel-${i}`).value = saved[`prog-sel-${i}`];
+      if (saved[`prog-com-${i}`]) document.getElementById(`prog-com-${i}`).value = saved[`prog-com-${i}`];
+    });
+  } catch(e) {}
+}
+
+document.addEventListener('input', saveData);
+document.addEventListener('change', saveData);
+restoreData();
+recalculate();
+
+// ── Auto-resize iframe ────────────────────────────────────
+function notifyHeight() {
+  window.parent.postMessage({ type: 'iframeHeight', height: document.documentElement.scrollHeight }, '*');
+}
+window.addEventListener('load', notifyHeight);
+new MutationObserver(() => setTimeout(notifyHeight, 50)).observe(document.body, { childList: true, subtree: true });
+
+// ── Email ─────────────────────────────────────────────────
+function validerPlan() {
+  const prenom = PRENOM || '[Prénom]';
+  const nom    = NOM    || '[Nom]';
+
+  // Section 1
+  let part1 = 'MESUREZ VOS PROGRÈS\n' + '─'.repeat(38) + '\n\n';
+  PROGRES_ITEMS.forEach((item, i) => {
+    const sel = document.getElementById(`prog-sel-${i}`)?.value || '—';
+    const com = document.getElementById(`prog-com-${i}`)?.value.trim() || '';
+    part1 += `${item}\n  → ${sel}${com ? '  |  ' + com : ''}\n\n`;
+  });
+
+  // Section 2
+  const revenus  = gv('inp-revenus');
+  const depenses = gv('inp-depenses');
+  const epargne  = Math.max(0, revenus - depenses);
+  const mois     = gv('inp-mois');
+  const gt5      = gv('inp-gt5');
+
+  const idSecu   = depenses * mois;
+  const idMt     = gt5;
+  const totalAct = gv('act-dettes') + gv('act-secu') + gv('act-mt') + gv('act-bourse');
+  const idBourse = Math.max(0, totalAct - idSecu - idMt);
+
+  let part2 = 'PLAN ÉPARGNE\n' + '─'.repeat(38) + '\n\n';
+  part2 += `Revenus mensuels : ${revenus} €\n`;
+  part2 += `Dépenses mensuelles : ${depenses} €\n`;
+  part2 += `Épargne mensuelle : ${epargne} €\n`;
+  part2 += `Mois requis — fonds de sécurité : ${mois}\n`;
+  part2 += `Grosses dépenses prévues (5 ans) : ${gt5} €\n\n`;
+  part2 += 'PATRIMOINE HORS IMMOBILIER\n';
+  part2 += `${'─'.repeat(38)}\n`;
+  part2 += `                     | Actuel       | Idéal        | Mouvement\n`;
+
+  function fmtNum(v) { return String(Math.round(v)).padStart(12) + ' €'; }
+  const rows = [
+    { label: 'Dettes',            act: gv('act-dettes'), id: 0 },
+    { label: 'Fonds de sécurité', act: gv('act-secu'),   id: idSecu },
+    { label: 'Fonds moyen terme', act: gv('act-mt'),     id: idMt },
+    { label: 'Bourse',            act: gv('act-bourse'), id: idBourse },
+  ];
+  rows.forEach(r => {
+    const m = r.id - r.act;
+    const mStr = (m >= 0 ? '+' : '') + Math.round(m) + ' €';
+    part2 += `${r.label.padEnd(20)} | ${fmtNum(r.act)} | ${fmtNum(r.id)} | ${mStr}\n`;
+  });
+  const tAct = rows.reduce((s,r) => s+r.act, 0);
+  const tId  = rows.reduce((s,r) => s+r.id,  0);
+  part2 += `${'─'.repeat(38)}\n`;
+  part2 += `${'TOTAL'.padEnd(20)} | ${fmtNum(tAct)} | ${fmtNum(tId)} | ${(tId >= tAct ? '+' : '') + Math.round(tId - tAct)} €\n`;
+
+  const subject = encodeURIComponent(`Plan Épargne ${prenom} ${nom}`);
+  const body = encodeURIComponent(
+    `Bonjour Raphael,\n\nVoici mon plan Épargne, dis-moi ce que tu en penses.\n\n` +
+    `[Vos questions éventuelles ici]\n\n` +
+    `${'═'.repeat(38)}\n\n` + part1 + '\n' + part2 +
+    `\n${'═'.repeat(38)}\n\nCordialement,\n${prenom}`
+  );
+  window.location.href = `mailto:rdazet@hotmail.com?subject=${subject}&body=${body}`;
+}
+</script>
+</body>
+</html>

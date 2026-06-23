@@ -5,6 +5,7 @@ import type { Module } from "@/types";
 import BilanLinks from "@/components/dashboard/BilanLinks";
 import PlanImmoLink from "@/components/dashboard/PlanImmoLink";
 import PlanBourseLink from "@/components/dashboard/PlanBourseLink";
+import PlanEpargneLink from "@/components/dashboard/PlanEpargneLink";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -162,6 +163,7 @@ export default async function DashboardPage() {
                         </Link>
                       </li>
                     ))}
+                    {index === 0 && <PlanEpargneLink />}
                     {index === 1 && <PlanImmoLink />}
                     {index === 2 && <PlanBourseLink />}
                   </ul>

@@ -392,6 +392,17 @@ export default function ContentManager({ modules }: ContentManagerProps) {
                   </div>
                 ))}
 
+                {/* Plan Épargne — module 1 only */}
+                {index === 0 && (
+                  <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-100 bg-[#FAFAFA]">
+                    <Video size={16} className="text-terracotta mt-0.5 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-navy truncate">Plan Épargne</p>
+                      <p className="text-xs text-gray-400 truncate">/plan-epargne — progrès + patrimoine hors immobilier</p>
+                    </div>
+                  </div>
+                )}
+
                 {/* Plan Immobilier — module 2 only */}
                 {index === 1 && (
                   <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-100 bg-[#FAFAFA]">
