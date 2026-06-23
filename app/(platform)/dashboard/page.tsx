@@ -6,6 +6,8 @@ import BilanLinks from "@/components/dashboard/BilanLinks";
 import PlanImmoLink from "@/components/dashboard/PlanImmoLink";
 import PlanBourseLink from "@/components/dashboard/PlanBourseLink";
 import PlanEpargneLink from "@/components/dashboard/PlanEpargneLink";
+import PlanBudgetLink from "@/components/dashboard/PlanBudgetLink";
+import PlanSalaireLink from "@/components/dashboard/PlanSalaireLink";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -166,6 +168,8 @@ export default async function DashboardPage() {
                     {index === 0 && <PlanEpargneLink />}
                     {index === 1 && <PlanImmoLink />}
                     {index === 2 && <PlanBourseLink />}
+                    {index === 3 && <PlanBudgetLink />}
+                    {index === 4 && <PlanSalaireLink />}
                   </ul>
                 </div>
 

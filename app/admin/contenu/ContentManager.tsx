@@ -425,6 +425,28 @@ export default function ContentManager({ modules }: ContentManagerProps) {
                   </div>
                 )}
 
+                {/* Plan Budget — module 4 only */}
+                {index === 3 && (
+                  <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-100 bg-[#FAFAFA]">
+                    <Video size={16} className="text-terracotta mt-0.5 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-navy truncate">Plan Budget</p>
+                      <p className="text-xs text-gray-400 truncate">/plan-budget — progrès budget annuel</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Plan Salaire — module 5 only */}
+                {index === 4 && (
+                  <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-100 bg-[#FAFAFA]">
+                    <Video size={16} className="text-terracotta mt-0.5 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-navy truncate">Plan Salaire</p>
+                      <p className="text-xs text-gray-400 truncate">/plan-salaire — progrès négociation salariale</p>
+                    </div>
+                  </div>
+                )}
+
                 {/* Add video form */}
                 {addVideoFor === module.id ? (
                   <div className="px-5 py-4 bg-[#F5F5F5] border-t border-gray-100">

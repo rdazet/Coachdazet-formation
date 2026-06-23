@@ -30,11 +30,15 @@ export default function Sidebar({
   const [hasBilanData, setHasBilanData] = useState(false);
   const [hasBourseData, setHasBourseData] = useState(false);
   const [hasEpargneData, setHasEpargneData] = useState(false);
+  const [hasBudgetData, setHasBudgetData] = useState(false);
+  const [hasSalaireData, setHasSalaireData] = useState(false);
 
   useEffect(() => {
     setHasBilanData(!!localStorage.getItem("bilan_donnees"));
     setHasBourseData(!!localStorage.getItem("plan_bourse_data"));
     setHasEpargneData(!!localStorage.getItem("plan_epargne_data"));
+    setHasBudgetData(!!localStorage.getItem("plan_budget_data"));
+    setHasSalaireData(!!localStorage.getItem("plan_salaire_data"));
   }, []);
 
   // Derive currentVideoId from URL if not passed
@@ -317,6 +321,46 @@ export default function Sidebar({
                           <Circle size={14} className="text-gray-300 shrink-0" />
                         )}
                         <span className="leading-tight">Plan Bourse</span>
+                      </Link>
+                    </li>
+                  )}
+                  {index === 3 && (
+                    <li>
+                      <Link
+                        href="/plan-budget"
+                        className={clsx(
+                          "flex items-center gap-2.5 px-5 py-2 pl-12 text-sm transition-colors",
+                          pathname === "/plan-budget"
+                            ? "text-navy font-semibold bg-white border-l-2 border-terracotta"
+                            : "text-gray-600 hover:text-navy hover:bg-white/70"
+                        )}
+                      >
+                        {hasBudgetData ? (
+                          <CheckCircle size={14} className="text-terracotta shrink-0" />
+                        ) : (
+                          <Circle size={14} className="text-gray-300 shrink-0" />
+                        )}
+                        <span className="leading-tight">Plan Budget</span>
+                      </Link>
+                    </li>
+                  )}
+                  {index === 4 && (
+                    <li>
+                      <Link
+                        href="/plan-salaire"
+                        className={clsx(
+                          "flex items-center gap-2.5 px-5 py-2 pl-12 text-sm transition-colors",
+                          pathname === "/plan-salaire"
+                            ? "text-navy font-semibold bg-white border-l-2 border-terracotta"
+                            : "text-gray-600 hover:text-navy hover:bg-white/70"
+                        )}
+                      >
+                        {hasSalaireData ? (
+                          <CheckCircle size={14} className="text-terracotta shrink-0" />
+                        ) : (
+                          <Circle size={14} className="text-gray-300 shrink-0" />
+                        )}
+                        <span className="leading-tight">Plan Salaire</span>
                       </Link>
                     </li>
                   )}
