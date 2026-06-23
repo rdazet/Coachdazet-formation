@@ -18,16 +18,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Données manquantes" }, { status: 400 });
   }
 
-  const { error } = await resend.emails.send({
-    from: "Formation <hello@coachdazet.com>",
-    to: "rdazet@hotmail.com",
-    subject,
-    text,
-  });
+  const from = process.env.EMAIL_FROM || "onboarding@resend.dev";
+  const to   = process.env.ADMIN_EMAIL || "rdazet@hotmail.com";
+
+  const { error } = await resend.emails.send({ from, to, subject, text });
 
   if (error) {
-    console.error("Resend error:", error);
-    return NextResponse.json({ error: "Erreur lors de l'envoi" }, { status: 500 });
+    console.error("Resend error:", JSON.stringify(error));
+    return NextResponse.json({ error: "Erreur lors de l'envoi", detail: error }, { status: 500 });
   }
 
   return NextResponse.json({ success: true });
