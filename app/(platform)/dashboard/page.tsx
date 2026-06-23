@@ -3,6 +3,7 @@ import Link from "next/link";
 import { CheckCircle, Circle, ChevronRight, PlayCircle } from "lucide-react";
 import type { Module } from "@/types";
 import BilanLinks from "@/components/dashboard/BilanLinks";
+import PlanImmoLink from "@/components/dashboard/PlanImmoLink";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -145,6 +146,7 @@ export default async function DashboardPage() {
                   {/* Video list preview */}
                   <ul className="space-y-1">
                     {index === 0 && <BilanLinks />}
+                    {index === 1 && <PlanImmoLink />}
                     {moduleVideos.map((video) => (
                       <li key={video.id}>
                         <Link

@@ -191,6 +191,26 @@ export default function Sidebar({
 
               {isOpen && (
                 <ul className="bg-white/40">
+                  {index === 1 && (
+                    <li>
+                      <Link
+                        href="/plan-immo"
+                        className={clsx(
+                          "flex items-center gap-2.5 px-5 py-2 pl-12 text-sm transition-colors",
+                          pathname === "/plan-immo"
+                            ? "text-navy font-semibold bg-white border-l-2 border-terracotta"
+                            : "text-gray-600 hover:text-navy hover:bg-white/70"
+                        )}
+                      >
+                        {hasBilanData ? (
+                          <CheckCircle size={14} className="text-terracotta shrink-0" />
+                        ) : (
+                          <Circle size={14} className="text-gray-300 shrink-0" />
+                        )}
+                        <span className="leading-tight">Plan Immobilier</span>
+                      </Link>
+                    </li>
+                  )}
                   {index === 0 && (
                     <>
                       <li>
