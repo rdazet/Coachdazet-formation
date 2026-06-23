@@ -56,7 +56,7 @@
 
   <!-- Validate -->
   <div style="text-align:center">
-    <button class="btn-validate" onclick="validerPlan()">
+    <button id="btn-valider" class="btn-validate" onclick="validerPlan()">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
       </svg>
@@ -134,25 +134,48 @@ window.addEventListener('load', notifyHeight);
 new MutationObserver(() => setTimeout(notifyHeight, 50)).observe(document.body, { childList: true, subtree: true });
 
 // ── Email ─────────────────────────────────────────────────
-function validerPlan() {
+async function validerPlan() {
   const prenom = PRENOM || '[Prénom]';
   const nom    = NOM    || '[Nom]';
 
-  let body = 'MESUREZ VOS PROGRÈS — BUDGET\n' + '─'.repeat(40) + '\n\n';
+  let bodyText = 'MESUREZ VOS PROGRÈS — BUDGET\n' + '─'.repeat(40) + '\n\n';
   PROGRES_ITEMS.forEach((item, i) => {
     const sel = document.getElementById(`prog-sel-${i}`)?.value || '—';
     const com = document.getElementById(`prog-com-${i}`)?.value.trim() || '';
-    body += `${item}\n  → ${sel}${com ? '  |  ' + com : ''}\n\n`;
+    bodyText += `${item}\n  → ${sel}${com ? '  |  ' + com : ''}\n\n`;
   });
 
-  const subject = encodeURIComponent(`Plan Budget ${prenom} ${nom}`);
-  const bodyEncoded = encodeURIComponent(
+  const subject = `Plan Budget ${prenom} ${nom}`;
+  const text =
     `Bonjour Raphael,\n\nVoici mon plan Budget, dis-moi ce que tu en penses.\n\n` +
     `[Vos questions éventuelles ici]\n\n` +
-    `${'═'.repeat(40)}\n\n` + body +
-    `${'═'.repeat(40)}\n\nCordialement,\n${prenom}`
-  );
-  window.location.href = `mailto:rdazet@hotmail.com?subject=${subject}&body=${bodyEncoded}`;
+    `${'═'.repeat(40)}\n\n` + bodyText +
+    `${'═'.repeat(40)}\n\nCordialement,\n${prenom}`;
+
+  const btn = document.getElementById('btn-valider');
+  btn.disabled = true;
+  btn.innerHTML = 'Envoi en cours…';
+
+  try {
+    const res  = await fetch('/api/plan/send-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ subject, text }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      btn.innerHTML = '✓ Plan envoyé avec succès !';
+      btn.style.background = '#16A34A';
+    } else {
+      btn.innerHTML = 'Erreur — réessayez';
+      btn.style.background = '#DC2626';
+      btn.disabled = false;
+    }
+  } catch(e) {
+    btn.innerHTML = 'Erreur réseau — réessayez';
+    btn.style.background = '#DC2626';
+    btn.disabled = false;
+  }
 }
 </script>
 </body>
