@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import { Users, BookOpen, LogOut, LayoutDashboard, ClipboardList } from "lucide-react";
+import { Users, BookOpen, LogOut, LayoutDashboard, ClipboardList, FlaskConical } from "lucide-react";
 
 export default async function AdminLayout({
   children,
@@ -65,6 +65,13 @@ export default async function AdminLayout({
           >
             <ClipboardList size={18} />
             Questionnaires
+          </Link>
+          <Link
+            href="/admin/clients"
+            className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors text-sm font-medium"
+          >
+            <FlaskConical size={18} />
+            Test clients
           </Link>
         </nav>
 

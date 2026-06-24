@@ -1,0 +1,747 @@
+"use client";
+
+import { useState, useCallback, useRef } from "react";
+import * as XLSX from "xlsx";
+import { Upload, Download, ChevronDown, ChevronRight } from "lucide-react";
+
+// ═══════════════════════════════════════════════════════════
+// TYPES
+// ═══════════════════════════════════════════════════════════
+
+interface ClientData {
+  nom: string;
+  age: number;
+  situation_familiale: string;
+  salaire_net: number;
+  bonus_net: number;
+  epargne_mensuelle: number;
+  salaire_futur: number;
+  grosses_depenses: number;
+  comptes_cheques: number;
+  cel: number;
+  pel: number;
+  livret_a: number;
+  ldd: number;
+  lep: number;
+  divers_liquidites: number;
+  dette_montant: number;
+  dette_taux_pct: number;  // en % (ex: 3.75)
+  dette_debut: string;
+  dette_duree: number;
+  dette_capital_direct: number;
+  rp_valeur: number;
+  rp_emprunt: number;
+  rp_taux_pct: number;
+  rp_debut: string;
+  rp_duree: number;
+  loc_valeur: number;
+  loc_emprunt: number;
+  loc_taux_pct: number;
+  loc_debut: string;
+  loc_duree: number;
+  loc_loyers: number;
+  loc_charges: number;
+  cto: number;
+  pea: number;
+  per: number;
+  pee: number;
+  av_fonds_euros: number;
+  av_uc: number;
+  autres_invests: number;
+}
+
+type RowDef =
+  | { type: "section"; label: string }
+  | { type: "row"; label: string; fmt: "currency" | "pct" | "text" | "years" | "number"; value: (d: ClientData) => number | string }
+  | { type: "note"; label: string };
+
+// ═══════════════════════════════════════════════════════════
+// PARSING HELPERS
+// ═══════════════════════════════════════════════════════════
+
+function num(v: unknown): number {
+  if (v === null || v === undefined || v === "") return 0;
+  if (typeof v === "number") return isNaN(v) ? 0 : v;
+  const n = parseFloat(String(v).replace(",", "."));
+  return isNaN(n) ? 0 : n;
+}
+function str(v: unknown): string {
+  if (v === null || v === undefined) return "";
+  return String(v);
+}
+function parseTauxPct(v: unknown): number {
+  if (v === null || v === undefined || v === "") return 0;
+  if (typeof v === "string") {
+    // "1.15%" → 1.15
+    const n = parseFloat(v.replace("%", "").trim());
+    return isNaN(n) ? 0 : n;
+  }
+  if (typeof v === "number") {
+    // 0.036 → 3.6  (decimals < 1 are assumed to be fractions)
+    return v > 1 ? v : v * 100;
+  }
+  return 0;
+}
+function parseDate(v: unknown): string {
+  if (!v) return "";
+  if (v instanceof Date) return v.toISOString().split("T")[0];
+  if (typeof v === "string") return v.slice(0, 10);
+  return "";
+}
+function getCellValue(ws: XLSX.WorkSheet, row: number, col: number): unknown {
+  const addr = XLSX.utils.encode_cell({ r: row - 1, c: col - 1 });
+  const cell = ws[addr];
+  return cell ? cell.v : null;
+}
+
+// ═══════════════════════════════════════════════════════════
+// EXCEL PARSING
+// ═══════════════════════════════════════════════════════════
+
+function parseExcel(wb: XLSX.WorkBook): ClientData[] {
+  const ws = wb.Sheets["Questionnaire"];
+  if (!ws) return [];
+  const clients: ClientData[] = [];
+  for (let col = 3; col <= 10; col++) {
+    const nom = getCellValue(ws, 7, col);
+    if (!nom) continue;
+    clients.push({
+      nom: str(nom),
+      age: num(getCellValue(ws, 9, col)),
+      situation_familiale: str(getCellValue(ws, 10, col)),
+      salaire_net: num(getCellValue(ws, 13, col)),
+      bonus_net: num(getCellValue(ws, 14, col)),
+      epargne_mensuelle: num(getCellValue(ws, 16, col)),
+      salaire_futur: num(getCellValue(ws, 17, col)),
+      grosses_depenses: num(getCellValue(ws, 18, col)),
+      comptes_cheques: num(getCellValue(ws, 21, col)),
+      cel: num(getCellValue(ws, 22, col)),
+      pel: num(getCellValue(ws, 23, col)),
+      livret_a: num(getCellValue(ws, 24, col)),
+      ldd: num(getCellValue(ws, 25, col)),
+      lep: num(getCellValue(ws, 26, col)),
+      divers_liquidites: num(getCellValue(ws, 27, col)),
+      dette_montant: num(getCellValue(ws, 30, col)),
+      dette_taux_pct: parseTauxPct(getCellValue(ws, 31, col)),
+      dette_debut: parseDate(getCellValue(ws, 32, col)),
+      dette_duree: num(getCellValue(ws, 33, col)),
+      dette_capital_direct: num(getCellValue(ws, 34, col)),
+      rp_valeur: num(getCellValue(ws, 38, col)),
+      rp_emprunt: num(getCellValue(ws, 39, col)),
+      rp_taux_pct: parseTauxPct(getCellValue(ws, 40, col)),
+      rp_debut: parseDate(getCellValue(ws, 41, col)),
+      rp_duree: num(getCellValue(ws, 42, col)),
+      loc_valeur: num(getCellValue(ws, 46, col)),
+      loc_emprunt: num(getCellValue(ws, 47, col)),
+      loc_taux_pct: parseTauxPct(getCellValue(ws, 48, col)),
+      loc_debut: parseDate(getCellValue(ws, 49, col)),
+      loc_duree: num(getCellValue(ws, 50, col)),
+      loc_loyers: num(getCellValue(ws, 51, col)),
+      loc_charges: num(getCellValue(ws, 52, col)),
+      cto: num(getCellValue(ws, 56, col)),
+      pea: num(getCellValue(ws, 57, col)),
+      per: num(getCellValue(ws, 58, col)),
+      pee: num(getCellValue(ws, 59, col)),
+      av_fonds_euros: num(getCellValue(ws, 60, col)),
+      av_uc: num(getCellValue(ws, 61, col)),
+      autres_invests: num(getCellValue(ws, 62, col)),
+    });
+  }
+  return clients;
+}
+
+// ═══════════════════════════════════════════════════════════
+// CALCULATION ENGINE  (portage fidèle des HTML)
+// ═══════════════════════════════════════════════════════════
+
+function crdMonthly(principal: number, tauxPct: number, years: number, startDate: string): number {
+  if (!principal || !years || !startDate) return 0;
+  const start = new Date(startDate);
+  const today = new Date();
+  if (isNaN(start.getTime()) || start > today) return principal;
+  let months = (today.getFullYear() - start.getFullYear()) * 12 + (today.getMonth() - start.getMonth());
+  if (today.getDate() < start.getDate()) months--;
+  months = Math.max(0, months);
+  const total = years * 12;
+  if (months >= total) return 0;
+  const r = tauxPct / 100 / 12;
+  if (r === 0) return principal - (principal / total) * months;
+  const pmt = (principal * r) / (1 - Math.pow(1 + r, -total));
+  let bal = principal;
+  for (let i = 0; i < months; i++) bal -= pmt - bal * r;
+  return Math.max(0, bal);
+}
+
+function mc(tauxDecimal: number, years: number): number {
+  if (tauxDecimal === 0 || years === 0) return years > 0 ? 1 / (years * 12) : 0;
+  const pow = Math.pow(1 + tauxDecimal, years);
+  return (tauxDecimal * pow) / (pow - 1) / 12;
+}
+
+function defaultMois(age: number): number {
+  if (age < 30) return 3;
+  if (age < 50) return 6;
+  if (age < 65) return 12;
+  return 24;
+}
+
+// ── Données dérivées utilisées dans plusieurs plans ────────
+function base(d: ClientData) {
+  const salaire = d.salaire_net + d.bonus_net;
+  const epargne = d.epargne_mensuelle;
+  const cashBrut = d.comptes_cheques + d.cel + d.pel + d.livret_a + d.ldd + d.lep + d.divers_liquidites;
+  const detteCRD = d.dette_capital_direct > 0
+    ? d.dette_capital_direct
+    : crdMonthly(d.dette_montant, d.dette_taux_pct, d.dette_duree, d.dette_debut);
+  const cashNet = cashBrut - detteCRD;
+  const bourse = d.cto + d.pea + d.per + d.pee + d.av_uc + d.autres_invests;
+  const rpCRD = crdMonthly(d.rp_emprunt, d.rp_taux_pct, d.rp_duree, d.rp_debut);
+  const rpNet = d.rp_valeur - rpCRD;
+  const locCRD = crdMonthly(d.loc_emprunt, d.loc_taux_pct, d.loc_duree, d.loc_debut);
+  const locNet = d.loc_valeur - locCRD;
+  const rpMens = d.rp_emprunt > 0 && d.rp_duree > 0
+    ? mc(d.rp_taux_pct / 100, d.rp_duree) * d.rp_emprunt
+    : 0;
+  return { salaire, epargne, cashBrut, detteCRD, cashNet, bourse, rpCRD, rpNet, locCRD, locNet, rpMens };
+}
+
+// ═══════════════════════════════════════════════════════════
+// TABLE DEFINITIONS
+// ═══════════════════════════════════════════════════════════
+
+const TABLE_DONNEES: RowDef[] = [
+  { type: "section", label: "IDENTITÉ" },
+  { type: "row", label: "Âge", fmt: "number", value: d => d.age },
+  { type: "row", label: "Situation familiale", fmt: "text", value: d => d.situation_familiale },
+  { type: "section", label: "REVENUS ET DÉPENSES" },
+  { type: "row", label: "Salaire net mensuel", fmt: "currency", value: d => d.salaire_net },
+  { type: "row", label: "Bonus net mensuel", fmt: "currency", value: d => d.bonus_net },
+  { type: "row", label: "Total salaire net", fmt: "currency", value: d => d.salaire_net + d.bonus_net },
+  { type: "row", label: "Épargne mensuelle", fmt: "currency", value: d => d.epargne_mensuelle },
+  { type: "row", label: "Salaire dans 3 ans", fmt: "currency", value: d => d.salaire_futur },
+  { type: "row", label: "Grosses dépenses (5 ans)", fmt: "currency", value: d => d.grosses_depenses },
+  { type: "section", label: "ARGENT DISPONIBLE" },
+  { type: "row", label: "Comptes chèques", fmt: "currency", value: d => d.comptes_cheques },
+  { type: "row", label: "CEL", fmt: "currency", value: d => d.cel },
+  { type: "row", label: "PEL", fmt: "currency", value: d => d.pel },
+  { type: "row", label: "Livret A", fmt: "currency", value: d => d.livret_a },
+  { type: "row", label: "LDD", fmt: "currency", value: d => d.ldd },
+  { type: "row", label: "LEP", fmt: "currency", value: d => d.lep },
+  { type: "row", label: "Divers", fmt: "currency", value: d => d.divers_liquidites },
+  { type: "section", label: "DETTE (hors RP)" },
+  { type: "row", label: "Montant emprunté", fmt: "currency", value: d => d.dette_montant },
+  { type: "row", label: "Taux", fmt: "pct", value: d => d.dette_taux_pct / 100 },
+  { type: "row", label: "Début", fmt: "text", value: d => d.dette_debut },
+  { type: "row", label: "Durée (ans)", fmt: "number", value: d => d.dette_duree },
+  { type: "row", label: "Capital restant dû (direct)", fmt: "currency", value: d => d.dette_capital_direct },
+  { type: "section", label: "RÉSIDENCE PRINCIPALE" },
+  { type: "row", label: "Valeur", fmt: "currency", value: d => d.rp_valeur },
+  { type: "row", label: "Montant emprunté", fmt: "currency", value: d => d.rp_emprunt },
+  { type: "row", label: "Taux", fmt: "pct", value: d => d.rp_taux_pct / 100 },
+  { type: "row", label: "Début", fmt: "text", value: d => d.rp_debut },
+  { type: "row", label: "Durée (ans)", fmt: "number", value: d => d.rp_duree },
+  { type: "section", label: "INVESTISSEMENT LOCATIF" },
+  { type: "row", label: "Valeur", fmt: "currency", value: d => d.loc_valeur },
+  { type: "row", label: "Montant emprunté", fmt: "currency", value: d => d.loc_emprunt },
+  { type: "row", label: "Taux", fmt: "pct", value: d => d.loc_taux_pct / 100 },
+  { type: "row", label: "Début", fmt: "text", value: d => d.loc_debut },
+  { type: "row", label: "Durée (ans)", fmt: "number", value: d => d.loc_duree },
+  { type: "row", label: "Loyers mensuels", fmt: "currency", value: d => d.loc_loyers },
+  { type: "row", label: "Charges mensuelles", fmt: "currency", value: d => d.loc_charges },
+  { type: "section", label: "INVESTISSEMENTS EN BOURSE" },
+  { type: "row", label: "CTO", fmt: "currency", value: d => d.cto },
+  { type: "row", label: "PEA", fmt: "currency", value: d => d.pea },
+  { type: "row", label: "PER", fmt: "currency", value: d => d.per },
+  { type: "row", label: "PEE / Intéressement", fmt: "currency", value: d => d.pee },
+  { type: "row", label: "AV fonds euros", fmt: "currency", value: d => d.av_fonds_euros },
+  { type: "row", label: "AV unités de compte", fmt: "currency", value: d => d.av_uc },
+  { type: "row", label: "Autres investissements", fmt: "currency", value: d => d.autres_invests },
+];
+
+const TABLE_BILAN: RowDef[] = [
+  { type: "section", label: "REVENUS" },
+  { type: "row", label: "Revenus nets mensuels", fmt: "currency", value: d => d.salaire_net + d.bonus_net },
+  { type: "row", label: "Épargne mensuelle", fmt: "currency", value: d => d.epargne_mensuelle },
+  { type: "row", label: "Taux d'épargne", fmt: "pct", value: d => {
+    const s = d.salaire_net + d.bonus_net;
+    return s > 0 ? d.epargne_mensuelle / s : 0;
+  }},
+  { type: "row", label: "Dépenses mensuelles", fmt: "currency", value: d => {
+    const s = d.salaire_net + d.bonus_net;
+    return Math.max(0, s - d.epargne_mensuelle);
+  }},
+  { type: "section", label: "PATRIMOINE CASH" },
+  { type: "row", label: "Cash brut (livrets + comptes)", fmt: "currency", value: d =>
+    d.comptes_cheques + d.cel + d.pel + d.livret_a + d.ldd + d.lep + d.divers_liquidites },
+  { type: "row", label: "Dettes (hors RP)", fmt: "currency", value: d => {
+    const { detteCRD } = base(d);
+    return detteCRD;
+  }},
+  { type: "row", label: "Cash NET", fmt: "currency", value: d => base(d).cashNet },
+  { type: "section", label: "PATRIMOINE BOURSE" },
+  { type: "row", label: "CTO + PEA + PER + PEE", fmt: "currency", value: d => d.cto + d.pea + d.per + d.pee },
+  { type: "row", label: "AV fonds euros (fonds sécurité)", fmt: "currency", value: d => d.av_fonds_euros },
+  { type: "row", label: "AV UC + Autres", fmt: "currency", value: d => d.av_uc + d.autres_invests },
+  { type: "row", label: "Total Bourse", fmt: "currency", value: d => base(d).bourse },
+  { type: "section", label: "IMMOBILIER — RÉSIDENCE PRINCIPALE" },
+  { type: "row", label: "Valeur RP", fmt: "currency", value: d => d.rp_valeur },
+  { type: "row", label: "CRD RP", fmt: "currency", value: d => base(d).rpCRD },
+  { type: "row", label: "RP nette", fmt: "currency", value: d => base(d).rpNet },
+  { type: "row", label: "Mensualités RP", fmt: "currency", value: d => base(d).rpMens },
+  { type: "row", label: "Taux d'endettement RP", fmt: "pct", value: d => {
+    const s = d.salaire_net + d.bonus_net;
+    return s > 0 ? base(d).rpMens / s : 0;
+  }},
+  { type: "section", label: "IMMOBILIER — LOCATIF" },
+  { type: "row", label: "Valeur locatif", fmt: "currency", value: d => d.loc_valeur },
+  { type: "row", label: "CRD locatif", fmt: "currency", value: d => base(d).locCRD },
+  { type: "row", label: "Locatif net", fmt: "currency", value: d => base(d).locNet },
+  { type: "section", label: "TOTAUX" },
+  { type: "row", label: "Patrimoine brut", fmt: "currency", value: d => {
+    const b = base(d);
+    return (d.comptes_cheques + d.cel + d.pel + d.livret_a + d.ldd + d.lep + d.divers_liquidites)
+      + b.bourse + d.av_fonds_euros + d.rp_valeur + d.loc_valeur;
+  }},
+  { type: "row", label: "Patrimoine net", fmt: "currency", value: d => {
+    const b = base(d);
+    return b.cashNet + b.bourse + d.av_fonds_euros + b.rpNet + b.locNet;
+  }},
+  { type: "row", label: "dont Immo net (RP + locatif)", fmt: "currency", value: d => {
+    const b = base(d);
+    return b.rpNet + b.locNet;
+  }},
+];
+
+const TABLE_PLAN_EPARGNE: RowDef[] = [
+  { type: "section", label: "PARAMÈTRES" },
+  { type: "row", label: "Revenus mensuels", fmt: "currency", value: d => d.salaire_net + d.bonus_net },
+  { type: "row", label: "Dépenses mensuelles", fmt: "currency", value: d => Math.max(0, d.salaire_net + d.bonus_net - d.epargne_mensuelle) },
+  { type: "row", label: "Épargne mensuelle", fmt: "currency", value: d => d.epargne_mensuelle },
+  { type: "row", label: "Mois fonds sécurité (défaut par âge)", fmt: "number", value: d => defaultMois(d.age) },
+  { type: "row", label: "Grosses dépenses prévues (5 ans)", fmt: "currency", value: d => d.grosses_depenses },
+  { type: "section", label: "ACTUEL" },
+  { type: "row", label: "Dettes — Actuel", fmt: "currency", value: d => base(d).detteCRD },
+  { type: "row", label: "Fonds de sécurité — Actuel", fmt: "currency", value: d => d.av_fonds_euros },
+  { type: "row", label: "Fonds moyen terme — Actuel", fmt: "currency", value: () => 0 },
+  { type: "row", label: "Bourse — Actuel", fmt: "currency", value: d => base(d).bourse },
+  { type: "row", label: "TOTAL Actuel", fmt: "currency", value: d => {
+    const b = base(d);
+    return b.detteCRD + d.av_fonds_euros + 0 + b.bourse;
+  }},
+  { type: "section", label: "CIBLE" },
+  { type: "row", label: "Dettes — Cible", fmt: "currency", value: () => 0 },
+  { type: "row", label: "Fonds de sécurité — Cible", fmt: "currency", value: d => {
+    const depenses = Math.max(0, d.salaire_net + d.bonus_net - d.epargne_mensuelle);
+    return depenses * defaultMois(d.age);
+  }},
+  { type: "row", label: "Fonds moyen terme — Cible", fmt: "currency", value: d => d.grosses_depenses },
+  { type: "row", label: "Bourse — Cible", fmt: "currency", value: d => {
+    const b = base(d);
+    const total = b.detteCRD + d.av_fonds_euros + 0 + b.bourse;
+    const depenses = Math.max(0, d.salaire_net + d.bonus_net - d.epargne_mensuelle);
+    const cSecu = depenses * defaultMois(d.age);
+    const cMt = d.grosses_depenses;
+    return Math.max(0, total - cSecu - cMt);
+  }},
+  { type: "row", label: "TOTAL Cible", fmt: "currency", value: d => {
+    const b = base(d);
+    const total = b.detteCRD + d.av_fonds_euros + 0 + b.bourse;
+    const depenses = Math.max(0, d.salaire_net + d.bonus_net - d.epargne_mensuelle);
+    const cSecu = depenses * defaultMois(d.age);
+    const cMt = d.grosses_depenses;
+    const cBourse = Math.max(0, total - cSecu - cMt);
+    return 0 + cSecu + cMt + cBourse;
+  }},
+  { type: "section", label: "MOUVEMENTS (Cible − Actuel)" },
+  { type: "row", label: "Dettes — Mouvement", fmt: "currency", value: d => 0 - base(d).detteCRD },
+  { type: "row", label: "Fonds de sécurité — Mouvement", fmt: "currency", value: d => {
+    const depenses = Math.max(0, d.salaire_net + d.bonus_net - d.epargne_mensuelle);
+    return depenses * defaultMois(d.age) - d.av_fonds_euros;
+  }},
+  { type: "row", label: "Fonds moyen terme — Mouvement", fmt: "currency", value: d => d.grosses_depenses - 0 },
+  { type: "row", label: "Bourse — Mouvement", fmt: "currency", value: d => {
+    const b = base(d);
+    const total = b.detteCRD + d.av_fonds_euros + 0 + b.bourse;
+    const depenses = Math.max(0, d.salaire_net + d.bonus_net - d.epargne_mensuelle);
+    const cSecu = depenses * defaultMois(d.age);
+    const cMt = d.grosses_depenses;
+    const cBourse = Math.max(0, total - cSecu - cMt);
+    return cBourse - b.bourse;
+  }},
+];
+
+// Defaults pour plan immo locataire
+const LOC_ANNEES = 25;
+const LOC_TAUX_PCT = 4;
+
+const TABLE_PLAN_IMMO_LOC: RowDef[] = [
+  { type: "note", label: `Hypothèses : ${LOC_ANNEES} ans · ${LOC_TAUX_PCT}% · loyer = 0` },
+  { type: "row", label: "Revenus nets mensuels", fmt: "currency", value: d => d.salaire_net + d.bonus_net },
+  { type: "row", label: "Épargne mensuelle", fmt: "currency", value: d => d.epargne_mensuelle },
+  { type: "row", label: "Dépenses mensuelles", fmt: "currency", value: d => Math.max(0, d.salaire_net + d.bonus_net - d.epargne_mensuelle) },
+  { type: "section", label: "CAS 1 — AVEC VOS FINANCES ACTUELLES" },
+  { type: "row", label: "Capacité de remboursement (1/3 revenus)", fmt: "currency", value: d => (d.salaire_net + d.bonus_net) / 3 },
+  { type: "row", label: "Saut de charge (cap. remb. − loyer 0 €)", fmt: "currency", value: d => (d.salaire_net + d.bonus_net) / 3 },
+  { type: "row", label: "Capacité d'endettement", fmt: "currency", value: d => {
+    const mcVal = mc(LOC_TAUX_PCT / 100, LOC_ANNEES);
+    const capRemb = (d.salaire_net + d.bonus_net) / 3;
+    return mcVal > 0 ? capRemb / mcVal : 0;
+  }},
+  { type: "row", label: "Apport actuel (cash + bourse)", fmt: "currency", value: d => {
+    const b = base(d);
+    return b.cashNet + b.bourse + d.av_fonds_euros;
+  }},
+  { type: "row", label: "Budget total", fmt: "currency", value: d => {
+    const b = base(d);
+    const apport = b.cashNet + b.bourse + d.av_fonds_euros;
+    const mcVal = mc(LOC_TAUX_PCT / 100, LOC_ANNEES);
+    const capEndet = mcVal > 0 ? ((d.salaire_net + d.bonus_net) / 3) / mcVal : 0;
+    return capEndet + apport;
+  }},
+  { type: "row", label: "Budget résidence principale (hors frais 10%)", fmt: "currency", value: d => {
+    const b = base(d);
+    const apport = b.cashNet + b.bourse + d.av_fonds_euros;
+    const mcVal = mc(LOC_TAUX_PCT / 100, LOC_ANNEES);
+    const capEndet = mcVal > 0 ? ((d.salaire_net + d.bonus_net) / 3) / mcVal : 0;
+    return (capEndet + apport) / 1.1;
+  }},
+];
+
+// Defaults pour plan immo proprio
+const PROP_ANNEES = 25;
+const PROP_TAUX_PCT = 3.15;
+const PROP_ENDET_MAX = 0.33;
+
+const TABLE_PLAN_IMMO_PROP: RowDef[] = [
+  { type: "note", label: `Hypothèses ② : ${PROP_ANNEES} ans · ${PROP_TAUX_PCT}% · endettement ${PROP_ENDET_MAX * 100}%` },
+  { type: "section", label: "① RÉSIDENCE PRINCIPALE ACTUELLE" },
+  { type: "row", label: "Valeur RP", fmt: "currency", value: d => d.rp_valeur },
+  { type: "row", label: "Capital restant dû", fmt: "currency", value: d => base(d).rpCRD },
+  { type: "row", label: "Patrimoine immo net", fmt: "currency", value: d => base(d).rpNet },
+  { type: "row", label: "Mensualités RP", fmt: "currency", value: d => base(d).rpMens },
+  { type: "row", label: "Taux d'endettement actuel", fmt: "pct", value: d => {
+    const s = d.salaire_net + d.bonus_net;
+    return s > 0 ? base(d).rpMens / s : 0;
+  }},
+  { type: "section", label: "② NOUVELLE RP (vente RP actuelle)" },
+  { type: "row", label: "Remboursements possibles (33% revenus)", fmt: "currency", value: d => PROP_ENDET_MAX * (d.salaire_net + d.bonus_net) },
+  { type: "row", label: "Emprunt max", fmt: "currency", value: d => {
+    const mcVal = mc(PROP_TAUX_PCT / 100, PROP_ANNEES);
+    return mcVal > 0 ? PROP_ENDET_MAX * (d.salaire_net + d.bonus_net) / mcVal : 0;
+  }},
+  { type: "row", label: "Apport max (vente RP + cash + bourse)", fmt: "currency", value: d => {
+    const b = base(d);
+    const depenses = Math.max(0, d.salaire_net + d.bonus_net - d.epargne_mensuelle);
+    return b.rpNet + b.cashNet + b.bourse + d.av_fonds_euros - (depenses * 6);
+  }},
+  { type: "row", label: "Valeur nouvelle RP (hors frais 10%)", fmt: "currency", value: d => {
+    const b = base(d);
+    const depenses = Math.max(0, d.salaire_net + d.bonus_net - d.epargne_mensuelle);
+    const apport = b.rpNet + b.cashNet + b.bourse + d.av_fonds_euros - (depenses * 6);
+    const mcVal = mc(PROP_TAUX_PCT / 100, PROP_ANNEES);
+    const emprunt = mcVal > 0 ? PROP_ENDET_MAX * (d.salaire_net + d.bonus_net) / mcVal : 0;
+    return (apport + emprunt) / 1.1;
+  }},
+  { type: "section", label: "③ LOCATIF (garde RP actuelle)" },
+  { type: "row", label: "Apport disponible (cash + bourse)", fmt: "currency", value: d => {
+    const b = base(d);
+    return b.cashNet + b.bourse + d.av_fonds_euros;
+  }},
+  { type: "row", label: "Valeur investissement locatif", fmt: "currency", value: d => {
+    const b = base(d);
+    const apport = b.cashNet + b.bourse + d.av_fonds_euros;
+    const ratio = 0.7;
+    const rentFactor = 0.04 * ratio * 0.9 / 12;
+    const mcVal = mc(0.035, 20);
+    const E = Math.max(0,
+      (PROP_ENDET_MAX * (d.salaire_net + d.bonus_net) - b.rpMens + PROP_ENDET_MAX * rentFactor * apport)
+      / (mcVal - PROP_ENDET_MAX * rentFactor)
+    );
+    return 0.9 * (apport + E);
+  }},
+  { type: "row", label: "Taux d'endettement futur (estimé)", fmt: "pct", value: d => {
+    const b = base(d);
+    const apport = b.cashNet + b.bourse + d.av_fonds_euros;
+    const ratio = 0.7;
+    const rentFactor = 0.04 * ratio * 0.9 / 12;
+    const mcVal = mc(0.035, 20);
+    const E = Math.max(0,
+      (PROP_ENDET_MAX * (d.salaire_net + d.bonus_net) - b.rpMens + PROP_ENDET_MAX * rentFactor * apport)
+      / (mcVal - PROP_ENDET_MAX * rentFactor)
+    );
+    const V = 0.9 * (apport + E);
+    const loyers = V * 0.04 / 12 * ratio;
+    const totalRev = loyers + (d.salaire_net + d.bonus_net);
+    const mensNouv = mcVal * E;
+    return totalRev > 0 ? (b.rpMens + mensNouv) / totalRev : 0;
+  }},
+];
+
+const TABLE_PLAN_BOURSE: RowDef[] = [
+  { type: "section", label: "PORTEFEUILLE ACTUEL" },
+  { type: "row", label: "CTO", fmt: "currency", value: d => d.cto },
+  { type: "row", label: "PEA", fmt: "currency", value: d => d.pea },
+  { type: "row", label: "PER", fmt: "currency", value: d => d.per },
+  { type: "row", label: "PEE / Intéressement", fmt: "currency", value: d => d.pee },
+  { type: "row", label: "AV fonds euros", fmt: "currency", value: d => d.av_fonds_euros },
+  { type: "row", label: "AV unités de compte", fmt: "currency", value: d => d.av_uc },
+  { type: "row", label: "Autres investissements", fmt: "currency", value: d => d.autres_invests },
+  { type: "row", label: "TOTAL Bourse", fmt: "currency", value: d => d.cto + d.pea + d.per + d.pee + d.av_fonds_euros + d.av_uc + d.autres_invests },
+  { type: "section", label: "ALLOCATION" },
+  { type: "row", label: "% PEA (fiscalité privilégiée)", fmt: "pct", value: d => {
+    const total = d.cto + d.pea + d.per + d.pee + d.av_fonds_euros + d.av_uc + d.autres_invests;
+    return total > 0 ? d.pea / total : 0;
+  }},
+  { type: "row", label: "% AV (fonds euros + UC)", fmt: "pct", value: d => {
+    const total = d.cto + d.pea + d.per + d.pee + d.av_fonds_euros + d.av_uc + d.autres_invests;
+    return total > 0 ? (d.av_fonds_euros + d.av_uc) / total : 0;
+  }},
+  { type: "row", label: "% PER + PEE (retraite)", fmt: "pct", value: d => {
+    const total = d.cto + d.pea + d.per + d.pee + d.av_fonds_euros + d.av_uc + d.autres_invests;
+    return total > 0 ? (d.per + d.pee) / total : 0;
+  }},
+  { type: "section", label: "CAPACITÉ D'INVESTISSEMENT" },
+  { type: "row", label: "Épargne mensuelle", fmt: "currency", value: d => d.epargne_mensuelle },
+  { type: "row", label: "Projection 10 ans (7%/an, mensuel)", fmt: "currency", value: d => {
+    const r = 0.07 / 12;
+    const n = 10 * 12;
+    const total = d.cto + d.pea + d.per + d.pee + d.av_fonds_euros + d.av_uc + d.autres_invests;
+    return total * Math.pow(1 + r, n) + d.epargne_mensuelle * (Math.pow(1 + r, n) - 1) / r;
+  }},
+  { type: "row", label: "Projection 20 ans (7%/an, mensuel)", fmt: "currency", value: d => {
+    const r = 0.07 / 12;
+    const n = 20 * 12;
+    const total = d.cto + d.pea + d.per + d.pee + d.av_fonds_euros + d.av_uc + d.autres_invests;
+    return total * Math.pow(1 + r, n) + d.epargne_mensuelle * (Math.pow(1 + r, n) - 1) / r;
+  }},
+];
+
+const TABLES = [
+  { id: "donnees",       label: "Données",                  rows: TABLE_DONNEES },
+  { id: "bilan",         label: "Bilan patrimonial",         rows: TABLE_BILAN },
+  { id: "epargne",       label: "Plan Épargne",              rows: TABLE_PLAN_EPARGNE },
+  { id: "immo-loc",      label: "Plan Immo — Locataire",     rows: TABLE_PLAN_IMMO_LOC },
+  { id: "immo-prop",     label: "Plan Immo — Propriétaire",  rows: TABLE_PLAN_IMMO_PROP },
+  { id: "bourse",        label: "Plan Bourse",               rows: TABLE_PLAN_BOURSE },
+];
+
+// ═══════════════════════════════════════════════════════════
+// FORMATTING
+// ═══════════════════════════════════════════════════════════
+
+const fmtEUR = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
+const fmtPct = new Intl.NumberFormat("fr-FR", { style: "percent", minimumFractionDigits: 1, maximumFractionDigits: 1 });
+
+type FmtType = "currency" | "pct" | "text" | "years" | "number";
+function formatValue(v: number | string, fmt: FmtType): string {
+  if (v === null || v === undefined) return "—";
+  if (typeof v === "string") return v || "—";
+  if (fmt === "currency") return v === 0 ? "—" : fmtEUR.format(v);
+  if (fmt === "pct") return v === 0 ? "—" : fmtPct.format(v);
+  if (fmt === "years") return v === 0 ? "—" : `${v.toFixed(1)} ans`;
+  return v === 0 ? "—" : String(Math.round(v * 100) / 100);
+}
+
+// ═══════════════════════════════════════════════════════════
+// EXCEL EXPORT
+// ═══════════════════════════════════════════════════════════
+
+function exportToExcel(clients: ClientData[]) {
+  const wb = XLSX.utils.book_new();
+
+  for (const table of TABLES) {
+    const headers = ["Intitulé", ...clients.map(c => c.nom)];
+    const rows: (string | number)[][] = [headers];
+
+    for (const row of table.rows) {
+      if (row.type === "section") {
+        rows.push([row.label, ...clients.map(() => "")]);
+      } else if (row.type === "note") {
+        rows.push([`⚠ ${row.label}`, ...clients.map(() => "")]);
+      } else {
+        const values = clients.map(c => {
+          const v = row.value(c);
+          if (typeof v === "string") return v;
+          return typeof v === "number" ? Math.round(v) : 0;
+        });
+        rows.push([row.label, ...values]);
+      }
+    }
+
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    ws["!cols"] = [{ wch: 42 }, ...clients.map(() => ({ wch: 16 }))];
+    XLSX.utils.book_append_sheet(wb, ws, table.label.slice(0, 31));
+  }
+
+  XLSX.writeFile(wb, "clients_coachdazet.xlsx");
+}
+
+// ═══════════════════════════════════════════════════════════
+// COMPONENT
+// ═══════════════════════════════════════════════════════════
+
+function TableSection({ table, clients }: { table: typeof TABLES[number]; clients: ClientData[] }) {
+  const [open, setOpen] = useState(true);
+
+  return (
+    <div className="mb-8 rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-white">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between px-5 py-3.5 bg-[#1B2B4A] text-white hover:bg-[#243657] transition-colors"
+      >
+        <span className="font-semibold font-display text-sm tracking-wide uppercase">{table.label}</span>
+        {open ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+      </button>
+
+      {open && (
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse text-sm" style={{ minWidth: `${220 + clients.length * 130}px` }}>
+            <thead>
+              <tr>
+                <th className="sticky left-0 z-10 bg-[#F8F9FB] border-b border-gray-200 text-left px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider" style={{ minWidth: 220 }}>
+                  Intitulé
+                </th>
+                {clients.map(c => (
+                  <th key={c.nom} className="border-b border-gray-200 bg-[#F8F9FB] px-3 py-2 text-center text-xs font-semibold text-[#1B2B4A] uppercase tracking-wider" style={{ minWidth: 120 }}>
+                    {c.nom}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {table.rows.map((row, i) => {
+                if (row.type === "section") {
+                  return (
+                    <tr key={i} className="bg-[#44546A]">
+                      <td colSpan={clients.length + 1} className="sticky left-0 px-4 py-2 text-xs font-bold text-white uppercase tracking-wider">
+                        {row.label}
+                      </td>
+                    </tr>
+                  );
+                }
+                if (row.type === "note") {
+                  return (
+                    <tr key={i} className="bg-amber-50">
+                      <td colSpan={clients.length + 1} className="px-4 py-1.5 text-xs text-amber-700 italic">
+                        ⚠ {row.label}
+                      </td>
+                    </tr>
+                  );
+                }
+                // data row
+                return (
+                  <tr key={i} className="border-b border-gray-100 hover:bg-gray-50">
+                    <td className="sticky left-0 z-10 bg-white px-4 py-2 text-gray-700 font-medium text-xs" style={{ minWidth: 220 }}>
+                      {row.label}
+                    </td>
+                    {clients.map(c => {
+                      const rawVal = row.value(c);
+                      const isIrrelevant =
+                        (table.id === "immo-loc" && c.rp_valeur > 0) ||
+                        (table.id === "immo-prop" && c.rp_valeur === 0);
+                      const display = isIrrelevant ? "—" : formatValue(rawVal, row.fmt);
+                      const isNeg = typeof rawVal === "number" && rawVal < 0;
+                      const isBig = typeof rawVal === "number" && rawVal > 0 &&
+                        (row.label.includes("Budget résidence") || row.label.includes("Patrimoine net") || row.label.includes("TOTAL"));
+                      return (
+                        <td key={c.nom} className={`px-3 py-2 text-right text-xs font-mono ${isNeg ? "text-red-600" : isBig ? "text-[#C0603A] font-bold" : "text-gray-700"}`}>
+                          {display}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function ClientsTestPage() {
+  const [clients, setClients] = useState<ClientData[]>([]);
+  const [fileName, setFileName] = useState<string>("");
+  const [dragging, setDragging] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const processFile = useCallback((file: File) => {
+    setFileName(file.name);
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const wb = XLSX.read(e.target?.result, { type: "array", cellDates: true });
+        const parsed = parseExcel(wb);
+        setClients(parsed);
+      } catch (err) {
+        console.error("Parsing error", err);
+        alert("Erreur lors de la lecture du fichier Excel.");
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file) processFile(file);
+  }, [processFile]);
+
+  return (
+    <div className="p-6 max-w-full">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="font-display text-2xl font-semibold text-[#1B2B4A]">Test clients</h1>
+          <p className="text-sm text-gray-500 mt-0.5">Vérification des calculs bilan + plans sur données réelles</p>
+        </div>
+        {clients.length > 0 && (
+          <button
+            onClick={() => exportToExcel(clients)}
+            className="flex items-center gap-2 px-4 py-2 bg-[#1B2B4A] text-white rounded-lg text-sm font-medium hover:bg-[#243657] transition-colors"
+          >
+            <Download size={16} />
+            Exporter Excel
+          </button>
+        )}
+      </div>
+
+      {/* Upload zone */}
+      <div
+        onDragOver={e => { e.preventDefault(); setDragging(true); }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={handleDrop}
+        onClick={() => inputRef.current?.click()}
+        className={`mb-8 border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${
+          dragging ? "border-[#C0603A] bg-orange-50" : "border-gray-300 hover:border-[#1B2B4A] hover:bg-gray-50"
+        }`}
+      >
+        <Upload size={32} className="mx-auto mb-3 text-gray-400" />
+        {fileName ? (
+          <p className="text-sm font-medium text-[#1B2B4A]">✓ {fileName} · {clients.length} clients chargés</p>
+        ) : (
+          <>
+            <p className="text-sm font-medium text-gray-600">Glissez le fichier Excel ici ou cliquez pour choisir</p>
+            <p className="text-xs text-gray-400 mt-1">Format attendu : feuille « Questionnaire » avec noms en ligne 7</p>
+          </>
+        )}
+        <input ref={inputRef} type="file" accept=".xlsx,.xls" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) processFile(f); }} />
+      </div>
+
+      {/* Tables */}
+      {clients.length > 0 && (
+        <>
+          <div className="mb-4 text-xs text-gray-500">
+            <span className="font-medium">{clients.length} clients :</span> {clients.map(c => c.nom).join(" · ")}
+            <span className="ml-4 text-amber-600">⚠ Plan Immo Locataire : loyer supposé = 0 € · annuité = {LOC_ANNEES} ans · taux = {LOC_TAUX_PCT}%</span>
+          </div>
+          {TABLES.map(t => (
+            <TableSection key={t.id} table={t} clients={clients} />
+          ))}
+        </>
+      )}
+    </div>
+  );
+}
