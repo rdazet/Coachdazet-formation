@@ -383,14 +383,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td style="padding:0.5rem;text-align:right;font-weight:bold;">${formatCurrency(epargneFutureAnnuelle)}</td>
                     <td style="padding:0.5rem;text-align:right;color:var(--success);">${formatCurrency(surplusEmpruntActuel)}</td>
                     <td style="padding:0.5rem;text-align:right;font-weight:bold;color:var(--success);">${formatCurrency(epargneTotaleProjection)}</td>
-                    <td style="padding:0.5rem;text-align:right;font-weight:bold;color:#2563eb;">${formatCurrency(epargneAnnuelleDecla + currentEconomiesSuppAnnuel + surplusEmpruntActuel)}</td>
+                    <td style="padding:0.5rem;text-align:right;font-weight:bold;color:#2563eb;">${formatCurrency(epargneFutureAnnuelle + surplusEmpruntActuel)}</td>
                     <td style="padding:0.5rem;text-align:right;color:#FF8C42;">${(anneeRendementR*100).toFixed(2)} %</td>`;
                 tableBodyDetails.appendChild(tr2);
             }
 
             if (currentAge < 65) {
                 currentYear++;
-                const epargneAInvestir = epargneAnnuelleDecla + currentEconomiesSuppAnnuel + surplusEmpruntActuel;
+                const epargneAInvestir = epargneFutureAnnuelle + surplusEmpruntActuel;
                 bourseOptimise = (bourseOptimise * (1 + anneeRendementR)) + epargneAInvestir;
                 annualNouvelImmoEpargne = 0;
                 if (!locatifInvested) {
