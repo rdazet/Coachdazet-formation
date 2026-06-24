@@ -380,6 +380,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td style="padding:0.5rem;text-align:right;font-weight:bold;">${formatCurrency(epargneFutureAnnuelle)}</td>
                     <td style="padding:0.5rem;text-align:right;color:var(--success);">${formatCurrency(surplusEmpruntActuel)}</td>
                     <td style="padding:0.5rem;text-align:right;font-weight:bold;color:var(--success);">${formatCurrency(epargneTotaleProjection)}</td>
+                    <td style="padding:0.5rem;text-align:right;font-weight:bold;color:#2563eb;">${formatCurrency(epargneAnnuelleDecla + currentEconomiesSuppAnnuel + surplusEmpruntActuel)}</td>
                     <td style="padding:0.5rem;text-align:right;color:#FF8C42;">${(anneeRendementR*100).toFixed(2)} %</td>`;
                 tableBodyDetails.appendChild(tr2);
             }
