@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
-import * as XLSX from "xlsx";
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const XLSX = require("xlsx") as typeof import("xlsx");
 import { Upload, Download, ChevronDown, ChevronRight } from "lucide-react";
 
 // ═══════════════════════════════════════════════════════════
