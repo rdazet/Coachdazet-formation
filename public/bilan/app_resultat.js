@@ -11,7 +11,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showStep(n) {
         currentStep = n;
-        steps.forEach((s, i) => s.classList.toggle('active', i + 1 === n));
+        document.querySelectorAll('.result-step').forEach(s => {
+            s.classList.toggle('active', s.id === `step-${n}`);
+        });
     }
 
     document.getElementById('btn-projection')?.addEventListener('click', () => showStep(8));
