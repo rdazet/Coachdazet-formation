@@ -86,6 +86,22 @@ export default async function VideoPage({ params }: Props) {
       ? sortedVideos[currentIndex + 1]
       : null;
 
+  // Vidéos qui redirigent vers un plan plutôt que la vidéo suivante
+  // (position 1-based dans la liste triée)
+  const PLAN_REDIRECTS: Record<number, { path: string; label: string }> = {
+    2:  { path: "/plan-epargne", label: "Aller au Plan Épargne →" },
+    6:  { path: "/plan-epargne", label: "Aller au Plan Épargne →" },
+    12: { path: "/plan-epargne", label: "Aller au Plan Épargne →" },
+    15: { path: "/plan-epargne", label: "Aller au Plan Épargne →" },
+    17: { path: "/plan-epargne", label: "Aller au Plan Épargne →" },
+  };
+
+  const videoPosition = currentIndex + 1; // 1-based
+  const planRedirect = PLAN_REDIRECTS[videoPosition];
+
+  const nextPath  = planRedirect?.path  ?? (nextVideo ? `/formation/${nextVideo.id}` : undefined);
+  const nextLabel = planRedirect?.label ?? "Vidéo suivante →";
+
   const { data: progressRecord } = await supabase
     .from("progress")
     .select("id")
@@ -172,7 +188,7 @@ export default async function VideoPage({ params }: Props) {
 
         {/* Complete button */}
         <div className="flex justify-center py-4">
-          <CompleteButton videoId={video.id} isCompleted={isCompleted} nextVideoId={nextVideo?.id} />
+          <CompleteButton videoId={video.id} isCompleted={isCompleted} nextPath={nextPath} nextLabel={nextLabel} />
         </div>
       </div>
     </div>

@@ -7,13 +7,15 @@ import { CheckCircle, Loader2 } from "lucide-react";
 interface CompleteButtonProps {
   videoId: string;
   isCompleted: boolean;
-  nextVideoId?: string;
+  nextPath?: string;        // full path: /formation/<id>  OR  /plan-epargne  etc.
+  nextLabel?: string;       // label for the "next" button
 }
 
 export default function CompleteButton({
   videoId,
   isCompleted: initialCompleted,
-  nextVideoId,
+  nextPath,
+  nextLabel = "Vidéo suivante →",
 }: CompleteButtonProps) {
   const router = useRouter();
   const [completed, setCompleted] = useState(initialCompleted);
@@ -33,10 +35,10 @@ export default function CompleteButton({
     setLoading(false);
     router.refresh();
 
-    // If just completed and there's a next video, navigate to it
-    if (newCompleted && nextVideoId) {
+    // If just completed and there's a next destination, navigate to it
+    if (newCompleted && nextPath) {
       setTimeout(() => {
-        router.push(`/formation/${nextVideoId}`);
+        router.push(nextPath);
       }, 800);
     }
   }
@@ -56,12 +58,12 @@ export default function CompleteButton({
           {loading ? <Loader2 size={14} className="animate-spin" /> : null}
           Marquer comme non terminée
         </button>
-        {nextVideoId && (
+        {nextPath && (
           <button
-            onClick={() => router.push(`/formation/${nextVideoId}`)}
+            onClick={() => router.push(nextPath)}
             className="btn-primary"
           >
-            Vidéo suivante →
+            {nextLabel}
           </button>
         )}
       </div>
