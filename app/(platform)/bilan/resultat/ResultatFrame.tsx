@@ -1,7 +1,7 @@
 "use client";
 import { useEffect } from "react";
 
-export default function BilanDonneesPage() {
+export default function ResultatFrame({ src }: { src: string }) {
   useEffect(() => {
     const main = document.querySelector("main");
     if (!main) return;
@@ -15,9 +15,9 @@ export default function BilanDonneesPage() {
   return (
     <div className="h-[calc(100vh-3.5rem)] lg:h-screen">
       <iframe
-        src="/bilan/donnees.html"
+        src={src}
         className="w-full border-0 h-full"
-        title="Vos Données — Bilan Patrimonial"
+        title="Bilan Patrimonial — Résultats"
       />
     </div>
   );

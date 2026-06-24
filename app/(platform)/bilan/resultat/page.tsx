@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import ResultatFrame from "./ResultatFrame";
 
 export default async function BilanResultatPage() {
   const supabase = await createClient();
@@ -16,15 +17,7 @@ export default async function BilanResultatPage() {
     isAdmin = profile?.role === "admin";
   }
 
-  const iframeSrc = `/bilan/resultat.html${isAdmin ? "?admin=1" : ""}`;
-
   return (
-    <div className="flex flex-col overflow-hidden h-[calc(100vh-3.5rem)] lg:h-screen">
-      <iframe
-        src={iframeSrc}
-        className="flex-1 w-full border-0"
-        title="Bilan Patrimonial — Résultats"
-      />
-    </div>
+    <ResultatFrame src={`/bilan/resultat.html${isAdmin ? "?admin=1" : ""}`} />
   );
 }
