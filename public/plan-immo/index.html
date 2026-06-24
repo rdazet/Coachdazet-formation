@@ -56,14 +56,13 @@
 
     /* ── Plan tables ─────────────────────────────── */
     .plan-header-dark {
-      background: #44546A; color: #fff;
+      background: #1B2B4A; color: #fff;
       font-weight: 700; font-family: 'Outfit', sans-serif; font-size: 0.82rem;
       padding: 0.55rem 0.75rem;
       border-radius: 6px 6px 0 0;
       margin-top: 1.5rem; margin-bottom: 0;
       text-transform: uppercase; letter-spacing: 0.06em;
     }
-    .plan-header-dark.dark-navy { background: #1B2B4A; }
 
     .plan-table {
       width: 100%; border-collapse: collapse;
@@ -104,18 +103,21 @@
       background: #1B2B4A; color: #C0603A;
       font-weight: 700; font-size: 0.95rem;
     }
-    /* Result rows — couleur header (même que CAS 1 / CAS 2) */
+    /* Result rows — header colour */
     .plan-table tr.result-row-header td:last-child {
-      background: #44546A; color: #fff;
+      background: #1B2B4A; color: #fff;
       font-weight: 700; font-size: 0.95rem;
     }
     /* Summary rows (bilan sections) */
-    .plan-table tr.summary-row td:first-child { font-style: italic; color: #44546A; }
-    .plan-table tr.summary-row td:last-child { color: #44546A; font-style: italic; }
+    .plan-table tr.summary-row td:first-child { font-style: italic; color: #1B2B4A; }
+    .plan-table tr.summary-row td:last-child { color: #1B2B4A; font-style: italic; }
     /* Taux link row */
     .plan-table td.link-cell { font-size: 0.78rem; color: #6B7280; padding: 4px 10px; }
     .plan-table td.link-cell a { color: #C0603A; text-decoration: none; }
     .plan-table td.link-cell a:hover { text-decoration: underline; }
+    /* Inline taux link */
+    .taux-link { color: #C0603A; font-size: 0.78rem; font-weight: 400; text-decoration: none; margin-left: 0.4rem; }
+    .taux-link:hover { text-decoration: underline; }
 
     /* ── Validate button ─────────────────────────── */
     .btn-validate { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 2.5rem auto 1rem; padding: 14px 36px; background: #C0603A; color: white; border: none; border-radius: 10px; font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s, transform 0.1s; box-shadow: 0 2px 8px rgba(192,96,58,0.3); }
@@ -182,17 +184,14 @@
 
   <!-- PROPRIÉTAIRE -->
   <div id="plan-proprio" style="display:none">
-    <h2 class="section-title" style="margin-top:3rem">
-      2 — Définissez votre Plan Immobilier
-      <small>· tu es propriétaire de ta RP</small>
-    </h2>
+    <h2 class="section-title" style="margin-top:3rem">2 — Définissez votre Plan Immobilier</h2>
 
     <!-- ① Taux d'endettement actuel -->
-    <div class="plan-header-dark">① RÉSIDENCE PRINCIPALE ACTUELLE</div>
+    <div class="plan-header-dark">Quel est ton taux d'endettement actuel ?</div>
     <table class="plan-table">
       <tr><td>Valeur résidence principale</td><td id="p1-valeur-rp">—</td></tr>
       <tr><td>Capital restant dû</td><td id="p1-crd">—</td></tr>
-      <tr class="result-row"><td>Patrimoine immobilier net</td><td id="p1-pat-immo">—</td></tr>
+      <tr><td>Patrimoine immobilier net</td><td id="p1-pat-immo">—</td></tr>
       <tr><td>Montant emprunté</td><td id="p1-emprunt">—</td></tr>
       <tr><td>Taux</td><td id="p1-taux">—</td></tr>
       <tr><td>Début de l'emprunt</td><td id="p1-debut">—</td></tr>
@@ -200,26 +199,25 @@
       <tr><td>Mensualités</td><td id="p1-mensualites">—</td></tr>
       <tr><td>Revenus nets mensuels</td><td id="p1-revenus">—</td></tr>
       <tr class="result-row"><td>Taux d'endettement actuel</td><td id="p1-taux-endet">—</td></tr>
-      <tr><td colspan="2" class="link-cell">
-        <a href="https://www.meilleurtaux.com/credit-immobilier/barometre-des-taux.html" target="_blank">→ Baromètre des taux meilleurtaux.com</a>
-      </td></tr>
     </table>
 
     <!-- ② Nouvelle RP -->
-    <div class="plan-header-dark" style="margin-top:1.75rem">② NOUVELLE RP — tu vends ta RP actuelle</div>
+    <div class="plan-header-dark" style="margin-top:1.75rem">Quel est ton budget pour t'acheter une nouvelle RP ? (hypothèse : tu vends ta RP actuelle)</div>
     <table class="plan-table">
       <tr><td>Endettement max (%)</td><td class="input-cell"><input type="number" id="p2-endet-max" value="33" step="1" min="1" max="50"></td></tr>
       <tr><td>Revenus nets mensuels</td><td id="p2-revenus">—</td></tr>
       <tr><td>Remboursements possibles</td><td id="p2-remb-poss">—</td></tr>
       <tr><td>Nombre d'années</td><td class="input-cell"><input type="number" id="p2-annees" value="25" min="1" max="30"></td></tr>
-      <tr><td>Taux (%)</td><td class="input-cell"><input type="number" id="p2-taux" value="3.15" step="0.05" min="0"></td></tr>
+      <tr><td>
+        Taux (%) — <a href="https://www.meilleurtaux.com/credit-immobilier/barometre-des-taux.html" target="_blank" class="taux-link">Baromètre des taux meilleurtaux.com</a>
+      </td><td class="input-cell"><input type="number" id="p2-taux" value="3.15" step="0.05" min="0"></td></tr>
       <tr><td>Emprunt max</td><td id="p2-emprunt-max">—</td></tr>
       <tr><td>Mensualités</td><td id="p2-mensualites">—</td></tr>
       <tr><td>Apport max (vente RP + cash + bourse)</td><td id="p2-apport-max">—</td></tr>
       <tr><td>Frais d'achat (10%)</td><td id="p2-frais">—</td></tr>
       <tr class="result-row"><td>Valeur de ta nouvelle RP</td><td id="p2-valeur-rp">—</td></tr>
     </table>
-    <div class="plan-header-dark dark-navy">BILAN ②</div>
+    <div class="plan-header-dark">BILAN ②</div>
     <table class="plan-table">
       <tr class="summary-row"><td>Patrimoine immobilier brut</td><td id="p2-pat-brut">—</td></tr>
       <tr class="summary-row"><td>Patrimoine immobilier net</td><td id="p2-pat-net">—</td></tr>
@@ -227,63 +225,17 @@
     </table>
 
     <!-- ③ Locatif -->
-    <div class="plan-header-dark" style="margin-top:1.75rem">③ INVESTISSEMENT LOCATIF — tu gardes ta RP actuelle</div>
+    <div class="plan-header-dark" style="margin-top:1.75rem">Quel est ton budget pour un investissement locatif ? (hypothèse : tu gardes ta RP actuelle)</div>
     <table class="plan-table">
       <tr><td>Endettement max (%)</td><td class="input-cell"><input type="number" id="p3-endet-max" value="33" step="1" min="1" max="50"></td></tr>
       <tr><td>Apport disponible (cash + bourse)</td><td id="p3-apport">—</td></tr>
       <tr><td>Nombre d'années</td><td class="input-cell"><input type="number" id="p3-annees" value="20" min="1" max="30"></td></tr>
-      <tr><td>Taux (%)</td><td class="input-cell"><input type="number" id="p3-taux" value="3.5" step="0.05" min="0"></td></tr>
+      <tr><td>
+        Taux (%) — <a href="https://www.meilleurtaux.com/credit-immobilier/barometre-des-taux.html" target="_blank" class="taux-link">Baromètre des taux meilleurtaux.com</a>
+      </td><td class="input-cell"><input type="number" id="p3-taux" value="3.5" step="0.05" min="0"></td></tr>
       <tr><td>Emprunt max</td><td id="p3-emprunt-max">—</td></tr>
       <tr><td>Frais d'achat (10%)</td><td id="p3-frais">—</td></tr>
       <tr class="result-row"><td>Valeur investissement locatif</td><td id="p3-valeur-loc">—</td></tr>
-      <tr><td>Rentabilité attendue (%)</td><td class="input-cell"><input type="number" id="p3-rentabilite" value="4" step="0.1" min="0"></td></tr>
-      <tr><td>Loyers bruts attendus / mois</td><td id="p3-loyers">—</td></tr>
-      <tr><td>Ratio retenu par les banques</td><td>70%</td></tr>
-      <tr><td>Loyers nets retenus / mois</td><td id="p3-loyers-nets">—</td></tr>
-      <tr><td>Revenus nets mensuels</td><td id="p3-revenus">—</td></tr>
-      <tr><td>Total revenus (salaire + loyers nets)</td><td id="p3-total-rev">—</td></tr>
-      <tr><td>Mensualités possibles</td><td id="p3-mensualites-poss">—</td></tr>
-      <tr><td>Mensualités actuelles (RP)</td><td id="p3-mensualites-actuelles">—</td></tr>
-      <tr><td>Nouvelles mensualités locatif</td><td id="p3-mensualites-nouv">—</td></tr>
-      <tr><td>Mensualités totales</td><td id="p3-mensualites-total">—</td></tr>
-      <tr class="result-row"><td>Taux d'endettement futur</td><td id="p3-taux-endet">—</td></tr>
-      <tr><td>Possibilité de dépasser les 35%</td><td id="p3-depasse-35">—</td></tr>
-    </table>
-    <div class="plan-header-dark dark-navy">BILAN ③</div>
-    <table class="plan-table">
-      <tr class="summary-row"><td>Patrimoine immobilier brut</td><td id="p3-pat-brut">—</td></tr>
-      <tr class="summary-row"><td>Patrimoine immobilier net</td><td id="p3-pat-net">—</td></tr>
-      <tr class="summary-row"><td>Cash flow mensuel</td><td id="p3-cashflow">—</td></tr>
-      <tr class="summary-row"><td>Gains immo moins intérêts</td><td id="p3-gains">—</td></tr>
-    </table>
-
-    <!-- ④ Les deux -->
-    <div class="plan-header-dark" style="margin-top:1.75rem">④ LES DEUX — vends ta RP · nouvel emprunt RP · locatif cash</div>
-    <table class="plan-table">
-      <tr><td>Endettement max (%)</td><td class="input-cell"><input type="number" id="p4-endet-max" value="35" step="1" min="1" max="50"></td></tr>
-      <tr><td>Budget nouvelle RP</td><td class="input-cell"><input type="number" id="p4-budget-rp" value="300000" min="0"></td></tr>
-      <tr class="result-row"><td>Investissement locatif</td><td id="p4-invest-loc">—</td></tr>
-      <tr><td>Frais d'achat (10%)</td><td id="p4-frais">—</td></tr>
-      <tr><td>Budget total</td><td id="p4-budget-total">—</td></tr>
-      <tr><td>Rentabilité attendue (%)</td><td class="input-cell"><input type="number" id="p4-rentabilite" value="4" step="0.1" min="0"></td></tr>
-      <tr><td>Loyers bruts attendus / mois</td><td id="p4-loyers">—</td></tr>
-      <tr><td>Ratio retenu par les banques</td><td>70%</td></tr>
-      <tr><td>Loyers nets retenus / mois</td><td id="p4-loyers-nets">—</td></tr>
-      <tr><td>Revenus nets mensuels</td><td id="p4-revenus">—</td></tr>
-      <tr><td>Total revenus</td><td id="p4-total-rev">—</td></tr>
-      <tr><td>Mensualités possibles</td><td id="p4-mensualites-poss">—</td></tr>
-      <tr><td>Nombre d'années emprunt RP</td><td class="input-cell"><input type="number" id="p4-annees" value="25" min="1" max="30"></td></tr>
-      <tr><td>Taux emprunt RP (%)</td><td class="input-cell"><input type="number" id="p4-taux" value="3.15" step="0.05" min="0"></td></tr>
-      <tr><td>Mensualités emprunt RP</td><td id="p4-mensualites">—</td></tr>
-      <tr><td>Apport max (vente RP + cash + bourse)</td><td id="p4-apport">—</td></tr>
-      <tr><td>Emprunt max</td><td id="p4-emprunt-max">—</td></tr>
-      <tr class="result-row"><td>Financement max total</td><td id="p4-financement">—</td></tr>
-    </table>
-    <div class="plan-header-dark dark-navy">BILAN ④</div>
-    <table class="plan-table">
-      <tr class="summary-row"><td>Patrimoine immobilier brut</td><td id="p4-pat-brut">—</td></tr>
-      <tr class="summary-row"><td>Patrimoine immobilier net</td><td id="p4-pat-net">—</td></tr>
-      <tr class="summary-row"><td>Cash flow mensuel (loyers − mensualités)</td><td id="p4-cashflow">—</td></tr>
     </table>
   </div>
 
@@ -344,16 +296,29 @@ if (!bilanRaw) {
   function fmtPct(n)  { return (n * 100).toFixed(1) + ' %'; }
   function fmtYears(n){ return n <= 0 ? '0 an' : n.toFixed(1) + ' ans'; }
 
+  function fmtDate(dateStr) {
+    if (!dateStr) return '—';
+    const parts = dateStr.split('-');
+    if (parts.length < 3) return dateStr;
+    const months = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+    const dd  = parts[2].substring(0, 2);
+    const mmm = months[parseInt(parts[1]) - 1] || parts[1];
+    const yy  = parts[0].slice(-2);
+    return `${dd} / ${mmm} / ${yy}`;
+  }
+
   function mc(annualRate, years) {
     if (annualRate === 0 || years === 0) return years > 0 ? 1 / (years * 12) : 0;
     const pow = Math.pow(1 + annualRate, years);
     return annualRate * pow / (pow - 1) / 12;
   }
 
+  // Capital restant dû — utilise date_evaluation comme référence
   function crdMonthly(principal, annualRate, years, startDate) {
     if (!principal || !years || !startDate) return 0;
     const start = new Date(startDate);
-    const today = new Date();
+    const evalDate = gs('date_evaluation');
+    const today = evalDate ? new Date(evalDate) : new Date();
     if (start > today) return principal;
     let months = (today.getFullYear() - start.getFullYear()) * 12 + (today.getMonth() - start.getMonth());
     if (today.getDate() < start.getDate()) months--;
@@ -368,15 +333,24 @@ if (!bilanRaw) {
     return Math.max(0, bal);
   }
 
+  // Principal mensuel — amortissement annuel (cohérent avec Excel CUMPRINC)
   function principalMensuel(principal, annualRate, years, startDate) {
     if (!principal || !years || !startDate) return 0;
-    const crd = crdMonthly(principal, annualRate, years, startDate);
-    if (crd <= 0) return 0;
-    const r = (annualRate / 100) / 12;
-    const totalMonths = years * 12;
-    if (r === 0) return principal / totalMonths;
-    const pmt = principal * r / (1 - Math.pow(1+r, -totalMonths));
-    return pmt - crd * r;
+    const evalDate = gs('date_evaluation');
+    const now = evalDate ? new Date(evalDate) : new Date();
+    const start = new Date(startDate);
+    const yearNum = Math.max(1, now.getFullYear() - start.getFullYear());
+    const r = annualRate / 100;
+    function balAtYear(n) {
+      if (n <= 0) return principal;
+      if (n >= years) return 0;
+      if (r === 0) return principal - (principal / years) * n;
+      const pmt = principal * r / (1 - Math.pow(1 + r, -years));
+      const growth = Math.pow(1 + r, n);
+      return Math.max(0, principal * growth - pmt * (growth - 1) / r);
+    }
+    const annualPrinc = Math.max(0, balAtYear(yearNum - 1) - balAtYear(Math.min(yearNum, years)));
+    return annualPrinc / 12;
   }
 
   // ── Données patrimoniales ─────────────────────────────
@@ -436,10 +410,7 @@ if (!bilanRaw) {
     const budgetRP     = budgetTotal / 1.1;
     const apportSupp   = budgetSouhaite - budgetRP;
     const anneesApport = epargne > 0 ? Math.max(0, apportSupp / epargne / 12) : Infinity;
-
-    // Opportunité manquée : rendement annuel à 5% sur l'apport supplémentaire à constituer
     const manque = Math.max(0, apportSupp) * 0.05;
-
     const nouvelleEpargne = epargne + epargneSupp;
     const anneesApport2   = nouvelleEpargne > 0 ? Math.max(0, apportSupp / nouvelleEpargne / 12) : Infinity;
 
@@ -475,13 +446,13 @@ if (!bilanRaw) {
     document.getElementById('p1-pat-immo').textContent    = fmt(rpPatNet);
     document.getElementById('p1-emprunt').textContent     = fmt(rpEmprunt);
     document.getElementById('p1-taux').textContent        = rpTauxPct.toFixed(2) + ' %';
-    document.getElementById('p1-debut').textContent       = rpDebut || '—';
+    document.getElementById('p1-debut').textContent       = fmtDate(rpDebut);
     document.getElementById('p1-duree').textContent       = rpDuree ? rpDuree + ' ans' : '—';
     document.getElementById('p1-mensualites').textContent = fmt(rpMensualites);
     document.getElementById('p1-revenus').textContent     = fmt(salaire);
     const tauEl = document.getElementById('p1-taux-endet');
     tauEl.textContent = fmtPct(tauxEndetActuel);
-    tauEl.style.color = tauxEndetActuel > 0.35 ? '#EF4444' : '#C0603A';
+    tauEl.style.color = '#fff';
 
     // ②
     const p2EndetMax = (parseFloat(document.getElementById('p2-endet-max').value) || 33) / 100;
@@ -510,7 +481,7 @@ if (!bilanRaw) {
     const p3Annees      = parseFloat(document.getElementById('p3-annees').value) || 20;
     const p3TauxPct     = parseFloat(document.getElementById('p3-taux').value) || 3.5;
     const p3Taux        = p3TauxPct / 100;
-    const p3Rentabilite = (parseFloat(document.getElementById('p3-rentabilite').value) || 4) / 100;
+    const p3Rentabilite = 0.04; // 4% par défaut (simplifié)
     const ratio = 0.7;
     const p3Apport      = patrimoineCash + patrimoineBourse - depensesAnnuelles / 2;
     const mcP3          = mc(p3Taux, p3Annees);
@@ -519,83 +490,18 @@ if (!bilanRaw) {
       (p3Apport * rentFactor * p3EndetMax + salaire * p3EndetMax - rpMensualites) /
       (mcP3 - rentFactor * p3EndetMax)
     );
-    const p3Frais             = 0.1 * (p3Apport + p3EmpruntMax);
-    const p3ValeurLoc         = p3Apport + p3EmpruntMax - p3Frais;
-    const p3Loyers            = p3ValeurLoc * p3Rentabilite / 12;
-    const p3LoyersNets        = ratio * p3Loyers;
-    const p3TotalRev          = p3LoyersNets + salaire;
-    const p3MensualitesPoss   = p3EndetMax * p3TotalRev;
-    const p3MensualitesNouv   = mcP3 * p3EmpruntMax;
-    const p3MensualitesTotal  = rpMensualites + p3MensualitesNouv;
-    const p3TauxEndet         = p3TotalRev > 0 ? p3MensualitesTotal / p3TotalRev : 0;
-    const p3Gains             = p3EmpruntMax > 0 ?
-      (p3EmpruntMax * 0.054) - (-(- mcP3 * 12 * p3Annees * p3EmpruntMax) - p3EmpruntMax) *
-      (1 - Math.pow(1.02, -p3Annees)) / (0.02 * p3Annees) / p3Annees : 0;
-    document.getElementById('p3-apport').textContent             = fmt(p3Apport);
-    document.getElementById('p3-emprunt-max').textContent        = fmt(p3EmpruntMax);
-    document.getElementById('p3-frais').textContent              = fmt(p3Frais);
-    document.getElementById('p3-valeur-loc').textContent         = fmt(p3ValeurLoc);
-    document.getElementById('p3-loyers').textContent             = fmt(p3Loyers) + ' / mois';
-    document.getElementById('p3-loyers-nets').textContent        = fmt(p3LoyersNets) + ' / mois';
-    document.getElementById('p3-revenus').textContent            = fmt(salaire);
-    document.getElementById('p3-total-rev').textContent          = fmt(p3TotalRev);
-    document.getElementById('p3-mensualites-poss').textContent   = fmt(p3MensualitesPoss) + ' / mois';
-    document.getElementById('p3-mensualites-actuelles').textContent = fmt(rpMensualites) + ' / mois';
-    document.getElementById('p3-mensualites-nouv').textContent   = fmt(p3MensualitesNouv) + ' / mois';
-    document.getElementById('p3-mensualites-total').textContent  = fmt(p3MensualitesTotal) + ' / mois';
-    const p3TauxEl = document.getElementById('p3-taux-endet');
-    p3TauxEl.textContent = fmtPct(p3TauxEndet);
-    p3TauxEl.style.color = p3TauxEndet > 0.35 ? '#EF4444' : '#C0603A';
-    document.getElementById('p3-depasse-35').textContent  = p3LoyersNets > p3MensualitesNouv ? 'Probable' : 'Peu probable';
-    document.getElementById('p3-pat-brut').textContent    = fmt(rpValeur + p3ValeurLoc);
-    document.getElementById('p3-pat-net').textContent     = fmt(rpPatNet + p3ValeurLoc - p3EmpruntMax);
-    document.getElementById('p3-cashflow').textContent    = fmt(p3LoyersNets - p3MensualitesTotal) + ' / mois';
-    document.getElementById('p3-gains').textContent       = fmt(p3Gains);
-
-    // ④
-    const p4EndetMax    = (parseFloat(document.getElementById('p4-endet-max').value) || 35) / 100;
-    const p4BudgetRP    = parseFloat(document.getElementById('p4-budget-rp').value) || 0;
-    const p4Rentabilite = (parseFloat(document.getElementById('p4-rentabilite').value) || 4) / 100;
-    const p4Annees      = parseFloat(document.getElementById('p4-annees').value) || 25;
-    const p4TauxPct     = parseFloat(document.getElementById('p4-taux').value) || 3.15;
-    const p4Taux        = p4TauxPct / 100;
-    const mcP4          = mc(p4Taux, p4Annees);
-    const p4Apport      = rpPatNet + patrimoineCash + patrimoineBourse - depensesAnnuelles / 2;
-    const p4RentFactor  = p4Rentabilite * ratio / 12;
-    const p4InvestLoc   = Math.max(0,
-      (salaire * p4EndetMax / mcP4 + p4Apport - p4BudgetRP * 1.1) /
-      (1.1 - p4RentFactor * p4EndetMax / mcP4)
-    );
-    const p4Frais          = 0.1 * (p4BudgetRP + p4InvestLoc);
-    const p4BudgetTotal    = p4BudgetRP + p4InvestLoc + p4Frais;
-    const p4Loyers         = p4InvestLoc * p4Rentabilite / 12;
-    const p4LoyersNets     = ratio * p4Loyers;
-    const p4TotalRev       = p4LoyersNets + salaire;
-    const p4MensualitesPoss = p3EndetMax * p4TotalRev;
-    const p4EmpruntMax     = mcP4 > 0 ? p4MensualitesPoss / mcP4 : 0;
-    const p4Mensualites    = mcP4 * p4EmpruntMax;
-    document.getElementById('p4-invest-loc').textContent      = fmt(p4InvestLoc);
-    document.getElementById('p4-frais').textContent           = fmt(p4Frais);
-    document.getElementById('p4-budget-total').textContent    = fmt(p4BudgetTotal);
-    document.getElementById('p4-loyers').textContent          = fmt(p4Loyers) + ' / mois';
-    document.getElementById('p4-loyers-nets').textContent     = fmt(p4LoyersNets) + ' / mois';
-    document.getElementById('p4-revenus').textContent         = fmt(salaire);
-    document.getElementById('p4-total-rev').textContent       = fmt(p4TotalRev);
-    document.getElementById('p4-mensualites-poss').textContent = fmt(p4MensualitesPoss) + ' / mois';
-    document.getElementById('p4-mensualites').textContent     = fmt(p4Mensualites) + ' / mois';
-    document.getElementById('p4-apport').textContent          = fmt(p4Apport);
-    document.getElementById('p4-emprunt-max').textContent     = fmt(p4EmpruntMax);
-    document.getElementById('p4-financement').textContent     = fmt(p4Apport + p4EmpruntMax);
-    document.getElementById('p4-pat-brut').textContent        = fmt(p4BudgetRP + p4InvestLoc);
-    document.getElementById('p4-pat-net').textContent         = fmt(p4BudgetRP + p4InvestLoc - p4EmpruntMax);
-    document.getElementById('p4-cashflow').textContent        = fmt(p4Loyers - p4Mensualites) + ' / mois';
+    const p3Frais    = 0.1 * (p3Apport + p3EmpruntMax);
+    const p3ValeurLoc = p3Apport + p3EmpruntMax - p3Frais;
+    document.getElementById('p3-apport').textContent      = fmt(p3Apport);
+    document.getElementById('p3-emprunt-max').textContent = fmt(p3EmpruntMax);
+    document.getElementById('p3-frais').textContent       = fmt(p3Frais);
+    document.getElementById('p3-valeur-loc').textContent  = fmt(p3ValeurLoc);
 
     notifyHeight();
   }
 
   ['p2-endet-max','p2-annees','p2-taux',
-   'p3-endet-max','p3-annees','p3-taux','p3-rentabilite',
-   'p4-endet-max','p4-budget-rp','p4-rentabilite','p4-annees','p4-taux'].forEach(id => {
+   'p3-endet-max','p3-annees','p3-taux'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('input', calcProprio);
   });
@@ -604,8 +510,7 @@ if (!bilanRaw) {
 // ── Save / Restore ────────────────────────────────────────
 const SAVE_INPUTS = ['l-loyer','l-annees','l-taux','l-budget-souhaite','l-epargne-supp',
   'p2-endet-max','p2-annees','p2-taux',
-  'p3-endet-max','p3-annees','p3-taux','p3-rentabilite',
-  'p4-endet-max','p4-budget-rp','p4-rentabilite','p4-annees','p4-taux'];
+  'p3-endet-max','p3-annees','p3-taux'];
 
 function saveData() {
   const data = {};
@@ -681,7 +586,6 @@ async function validerPlan() {
       txt += `Taux d'endettement actuel : ${document.getElementById('p1-taux-endet')?.textContent || '—'}\n`;
       txt += `Budget nouvelle RP (②) : ${document.getElementById('p2-valeur-rp')?.textContent || '—'}\n`;
       txt += `Budget locatif (③) : ${document.getElementById('p3-valeur-loc')?.textContent || '—'}\n`;
-      txt += `Financement max total (④) : ${document.getElementById('p4-financement')?.textContent || '—'}\n`;
     }
   }
 

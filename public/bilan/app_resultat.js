@@ -183,7 +183,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const tauxEpargneActuel = salaireMensuel > 0 ? ((epargneTotaleAnnuelle / 12) / salaireMensuel) * 100 : 0;
     const salaireAnnuelComplet = salaireMensuel * 12;
     const tauxIdeal = salaireAnnuelComplet > 60000 ? 0.30 : 0.20;
-    const economiesSupplementairesMensuelles = Math.max(0, salaireMensuel * tauxIdeal - epargneTotaleAnnuelle / 12);
+    const epargneCibleeMensuelle = salaireMensuel * tauxIdeal;
+    const economiesSupplementairesMensuelles = epargneTotaleAnnuelle / 12 >= epargneCibleeMensuelle
+        ? (epargneAnnuelleDecla * 0.1) / 12   // bonus 10% si déjà au-dessus du taux idéal
+        : Math.max(0, epargneCibleeMensuelle - epargneTotaleAnnuelle / 12);
 
     // --- AFFICHAGE ---
     const pn = document.getElementById('patrimoine-net');
