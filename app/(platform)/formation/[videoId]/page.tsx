@@ -90,10 +90,10 @@ export default async function VideoPage({ params }: Props) {
   // (position 1-based dans la liste triée)
   const PLAN_REDIRECTS: Record<number, { path: string; label: string }> = {
     2:  { path: "/plan-epargne", label: "Aller au Plan Épargne →" },
-    6:  { path: "/plan-epargne", label: "Aller au Plan Épargne →" },
-    12: { path: "/plan-epargne", label: "Aller au Plan Épargne →" },
-    15: { path: "/plan-epargne", label: "Aller au Plan Épargne →" },
-    17: { path: "/plan-epargne", label: "Aller au Plan Épargne →" },
+    6:  { path: "/plan-immo",    label: "Aller au Plan Immobilier →" },
+    12: { path: "/plan-bourse",  label: "Aller au Plan Bourse →" },
+    15: { path: "/plan-budget",  label: "Aller au Plan Budget →" },
+    17: { path: "/plan-salaire", label: "Aller au Plan Salaire →" },
   };
 
   const videoPosition = currentIndex + 1; // 1-based
