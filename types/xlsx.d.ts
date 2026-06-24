@@ -7,7 +7,7 @@ declare module "xlsx" {
   };
 
   interface WorkSheet {
-    [key: string]: CellObject | WorkSheetRange | undefined;
+    [key: string]: unknown;
     "!ref"?: string;
     "!cols"?: ColInfo[];
   }

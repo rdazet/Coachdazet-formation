@@ -90,7 +90,7 @@ function parseDate(v: unknown): string {
 }
 function getCellValue(ws: XLSX.WorkSheet, row: number, col: number): unknown {
   const addr = XLSX.utils.encode_cell({ r: row - 1, c: col - 1 });
-  const cell = ws[addr];
+  const cell = ws[addr] as XLSX.CellObject | undefined;
   return cell ? cell.v : null;
 }
 
