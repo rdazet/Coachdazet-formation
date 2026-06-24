@@ -412,6 +412,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Projection chart
         const finalVal = Math.round(projDataOptimise[projDataOptimise.length-1] / 10000) * 10000;
         set('projection-net', formatCurrency(finalVal));
+        const finalValToday = Math.round(projDataTotal[projDataTotal.length-1] / 10000) * 10000;
+        set('projection-net-today', formatCurrency(finalValToday));
 
         const ctxProj = document.getElementById('projectionChart')?.getContext('2d');
         if (ctxProj) {

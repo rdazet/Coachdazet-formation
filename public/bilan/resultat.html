@@ -13,10 +13,7 @@
 <body>
     <main class="app-container">
         <header>
-            <h1 class="brand-title">Coach Dazet <span class="accent-text">Bilan</span></h1>
-            <div style="text-align:center; margin-bottom:1rem;">
-                <a href="/bilan/donnees.html" class="btn btn-secondary" style="font-size:0.85rem; padding:0.4rem 1rem;">← Modifier mes données</a>
-            </div>
+            <h1 class="brand-title"><span class="accent-text">Projections</span></h1>
         </header>
 
         <!-- Wrapper for result steps (hidden until calculated) -->
@@ -66,13 +63,31 @@
 
             <!-- STEP 8: PROJECTION -->
             <div class="step result-step" id="step-8">
-                <div class="result-card glowing-border">
-                    <h3 class="result-label">Patrimoine estimé à 65 ans :</h3>
-                    <div class="result-number" id="projection-net">0 €</div>
+                <div style="display:flex;gap:1rem;margin-bottom:2rem;flex-wrap:wrap;">
+                    <div class="result-card" style="flex:1;min-width:200px;">
+                        <h3 class="result-label" style="font-size:0.9rem;">Si tu continues comme aujourd'hui :</h3>
+                        <div class="result-number" id="projection-net-today">0 €</div>
+                    </div>
+                    <div class="result-card glowing-border" style="flex:1;min-width:200px;">
+                        <h3 class="result-label" style="font-size:0.9rem;">Si tu optimises ton patrimoine :</h3>
+                        <div class="result-number" id="projection-net">0 €</div>
+                    </div>
                 </div>
                 <div class="chart-container" style="position:relative;height:300px;width:100%;margin:2rem 0;display:flex;justify-content:center;">
                     <canvas id="projectionChart"></canvas>
                 </div>
+                <div style="text-align:center;display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;margin-top:1rem;">
+                    <button type="button" class="btn btn-secondary" id="btn-back-result">← Retour au Bilan</button>
+                    <button type="button" class="btn btn-primary" id="btn-verifications">Vérifications</button>
+                </div>
+                <div style="text-align:center;margin-top:1.5rem;">
+                    <a href="/bilan/donnees.html" class="btn btn-secondary" style="font-size:0.85rem;padding:0.4rem 1rem;">← Modifier mes données</a>
+                </div>
+            </div>
+
+            <!-- STEP 9: VERIFICATIONS -->
+            <div class="step result-step" id="step-9">
+                <h2 class="step-title center-text">Vérifications (Variables Internes)</h2>
                 <div class="breakdown" style="max-height:250px;overflow-y:auto;overflow-x:auto;">
                     <h4 style="color:var(--coach-bleu-fonce);font-family:'Outfit';margin-bottom:0.5rem;">Résumé Global</h4>
                     <table style="width:100%;color:var(--text-main);font-size:0.85rem;text-align:left;border-collapse:collapse;margin-top:1rem;" id="projection-table-main">
@@ -118,16 +133,7 @@
                         <tbody></tbody>
                     </table>
                 </div>
-                <div style="text-align:center;display:flex;justify-content:center;gap:1rem;margin-top:1rem;">
-                    <button type="button" class="btn btn-secondary" id="btn-back-result">← Retour au Bilan</button>
-                    <button type="button" class="btn btn-primary" id="btn-verifications">Vérifications</button>
-                </div>
-            </div>
-
-            <!-- STEP 9: VERIFICATIONS -->
-            <div class="step result-step" id="step-9">
-                <h2 class="step-title center-text">Vérifications (Variables Internes)</h2>
-                <div class="breakdown" style="max-height:500px;overflow-y:auto;">
+                <div class="breakdown" style="max-height:500px;overflow-y:auto;margin-top:2rem;">
                     <h4 style="color:var(--coach-bleu-fonce);font-family:'Outfit';margin-bottom:0.5rem;">Patrimoine & Dettes</h4>
                     <div class="breakdown-item"><span>Patrimoine Cash</span><span id="check-pat-cash" style="font-weight:bold;">0</span></div>
                     <div class="breakdown-item"><span>Patrimoine Immobilier</span><span id="check-pat-immo" style="font-weight:bold;">0</span></div>
