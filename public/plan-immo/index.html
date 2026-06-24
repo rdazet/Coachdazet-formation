@@ -187,7 +187,7 @@
     <h2 class="section-title" style="margin-top:3rem">2 — Définissez votre Plan Immobilier</h2>
 
     <!-- ① Taux d'endettement actuel -->
-    <div class="plan-header-dark">Quel est ton taux d'endettement actuel ?</div>
+    <div class="plan-header-dark">Quel est votre taux d'endettement actuel ?</div>
     <table class="plan-table">
       <tr><td>Valeur résidence principale</td><td id="p1-valeur-rp">—</td></tr>
       <tr><td>Capital restant dû</td><td id="p1-crd">—</td></tr>
@@ -202,7 +202,7 @@
     </table>
 
     <!-- ② Nouvelle RP -->
-    <div class="plan-header-dark" style="margin-top:1.75rem">Quel est ton budget pour t'acheter une nouvelle RP ? (hypothèse : tu vends ta RP actuelle)</div>
+    <div class="plan-header-dark" style="margin-top:1.75rem">Quel est votre budget pour acheter une nouvelle RP ? <span style="text-transform:none;font-weight:400;font-size:0.78rem;opacity:0.85">(hypothèse : vous vendez votre RP actuelle)</span></div>
     <table class="plan-table">
       <tr><td>Endettement max (%)</td><td class="input-cell"><input type="number" id="p2-endet-max" value="33" step="1" min="1" max="50"></td></tr>
       <tr><td>Revenus nets mensuels</td><td id="p2-revenus">—</td></tr>
@@ -215,17 +215,11 @@
       <tr><td>Mensualités</td><td id="p2-mensualites">—</td></tr>
       <tr><td>Apport max (vente RP + cash + bourse)</td><td id="p2-apport-max">—</td></tr>
       <tr><td>Frais d'achat (10%)</td><td id="p2-frais">—</td></tr>
-      <tr class="result-row"><td>Valeur de ta nouvelle RP</td><td id="p2-valeur-rp">—</td></tr>
-    </table>
-    <div class="plan-header-dark">BILAN ②</div>
-    <table class="plan-table">
-      <tr class="summary-row"><td>Patrimoine immobilier brut</td><td id="p2-pat-brut">—</td></tr>
-      <tr class="summary-row"><td>Patrimoine immobilier net</td><td id="p2-pat-net">—</td></tr>
-      <tr class="summary-row"><td>Cash flow mensuel</td><td id="p2-cashflow">—</td></tr>
+      <tr class="result-row-header"><td>Valeur de votre nouvelle RP</td><td id="p2-valeur-rp">—</td></tr>
     </table>
 
     <!-- ③ Locatif -->
-    <div class="plan-header-dark" style="margin-top:1.75rem">Quel est ton budget pour un investissement locatif ? (hypothèse : tu gardes ta RP actuelle)</div>
+    <div class="plan-header-dark" style="margin-top:1.75rem">Quel est votre budget pour un investissement locatif ? <span style="text-transform:none;font-weight:400;font-size:0.78rem;opacity:0.85">(hypothèse : vous gardez votre RP actuelle)</span></div>
     <table class="plan-table">
       <tr><td>Endettement max (%)</td><td class="input-cell"><input type="number" id="p3-endet-max" value="33" step="1" min="1" max="50"></td></tr>
       <tr><td>Apport disponible (cash + bourse)</td><td id="p3-apport">—</td></tr>
@@ -235,7 +229,7 @@
       </td><td class="input-cell"><input type="number" id="p3-taux" value="3.5" step="0.05" min="0"></td></tr>
       <tr><td>Emprunt max</td><td id="p3-emprunt-max">—</td></tr>
       <tr><td>Frais d'achat (10%)</td><td id="p3-frais">—</td></tr>
-      <tr class="result-row"><td>Valeur investissement locatif</td><td id="p3-valeur-loc">—</td></tr>
+      <tr class="result-row-header"><td>Valeur investissement locatif</td><td id="p3-valeur-loc">—</td></tr>
     </table>
   </div>
 
@@ -472,9 +466,6 @@ if (!bilanRaw) {
     document.getElementById('p2-apport-max').textContent  = fmt(p2ApportMax);
     document.getElementById('p2-frais').textContent       = fmt(p2Frais);
     document.getElementById('p2-valeur-rp').textContent   = fmt(p2ValeurRP);
-    document.getElementById('p2-pat-brut').textContent    = fmt(p2ValeurRP);
-    document.getElementById('p2-pat-net').textContent     = fmt(p2ValeurRP - p2EmpruntMax);
-    document.getElementById('p2-cashflow').textContent    = fmt(-p2Mensualites) + ' / mois';
 
     // ③
     const p3EndetMax    = (parseFloat(document.getElementById('p3-endet-max').value) || 33) / 100;
