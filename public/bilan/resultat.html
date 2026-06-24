@@ -13,17 +13,20 @@
 <body>
     <main class="app-container">
         <header>
-            <h1 class="brand-title"><span class="accent-text">Projections</span></h1>
+            <h1 class="brand-title" id="page-title"><span class="accent-text">Patrimoine actuel</span></h1>
         </header>
 
         <!-- Wrapper for result steps (hidden until calculated) -->
         <div id="results-wrapper">
 
-            <!-- STEP 7: RÉSULTAT -->
+            <!-- STEP 7: PATRIMOINE ACTUEL -->
             <div class="step active result-step" id="step-7">
                 <div class="result-card glowing-border">
                     <h3 class="result-label">Votre Patrimoine Actuel</h3>
                     <div class="result-number" id="patrimoine-net">0 €</div>
+                </div>
+                <div class="chart-container" style="position:relative;height:300px;width:100%;margin:2rem 0;display:flex;justify-content:center;">
+                    <canvas id="patrimoineChart"></canvas>
                 </div>
                 <div class="breakdown">
                     <div class="breakdown-item"><span>Patrimoine cash</span><span id="res-cash" class="positive">0 €</span></div>
@@ -32,29 +35,6 @@
                     <div class="breakdown-item"><span>Patrimoine total</span><span id="res-patrimoine-total" class="positive">0 €</span></div>
                     <div class="breakdown-item"><span>Dépenses annuelles</span><span id="res-depenses-annuelles" class="neutral">0 €</span></div>
                     <div class="breakdown-item"><span>Patrimoine en années de dépenses</span><span id="res-annees-depenses" class="accent-text" style="font-weight:bold;">0 ans</span></div>
-                </div>
-                <div class="chart-container" style="position:relative;height:300px;width:100%;margin:2rem 0;display:flex;justify-content:center;">
-                    <canvas id="patrimoineChart"></canvas>
-                </div>
-                <h3 class="step-title center-text" style="margin-top:2rem;font-size:1.25rem;">Votre Potentiel d'Emprunt Immobilier</h3>
-                <div class="result-card glowing-border" style="margin-top:2rem;">
-                    <h3 class="result-label">Votre Potentiel Immobilier (Endettement)</h3>
-                    <div class="breakdown-item" style="color:#fff;"><span>Remboursements (Prêts Immo)</span><span id="res-remboursements-immo" style="font-weight:bold;color:#fff;">0 €</span></div>
-                    <div class="breakdown-item" style="color:#fff;"><span>Salaire annuel</span><span id="res-salaire-annuel" style="font-weight:bold;color:#fff;">0 €</span></div>
-                    <div class="breakdown-item" style="color:#fff;"><span>Revenus locatifs annuels</span><span id="res-revenus-locatifs" style="font-weight:bold;color:#fff;">0 €</span></div>
-                    <div class="breakdown-item" style="color:#fff;border-bottom:1px solid rgba(255,255,255,0.2);padding-bottom:0.5rem;margin-bottom:0.5rem;"><span>Total revenus</span><span id="res-total-revenus" style="font-weight:bold;color:#fff;">0 €</span></div>
-                    <div class="breakdown-item" style="color:#fff;"><span>Taux d'endettement actuel</span><span id="res-taux-endettement" style="font-weight:bold;color:#fff;">0 %</span></div>
-                    <div class="breakdown-item" style="color:#fff;"><span>Capacité de remboursement (CR mensuel)</span><span id="res-cr-mensuel" style="font-weight:600;color:var(--coach-bleu-clair);">0 € / mois</span></div>
-                    <div class="breakdown-item" style="color:#fff;"><span>Capacité d'endettement (sur 20 ans à 3.0%)</span><span id="res-cape-endettement" style="font-weight:bold;font-size:1.1rem;color:var(--coach-orange);">0 €</span></div>
-                </div>
-                <div class="result-card glowing-border" style="margin-top:2rem;">
-                    <h3 class="result-label">Analyse de votre Épargne</h3>
-                    <div class="breakdown-item" style="color:#fff;"><span>Épargne actuelle déclarée</span><span id="res-epargne-actuelle" style="font-weight:bold;color:#fff;">0 € / an</span></div>
-                    <div class="breakdown-item" style="color:#fff;"><span>Remboursement principal RP (sur 1 an)</span><span id="res-epargne-principal" style="color:#fff;">0 € / an</span></div>
-                    <div class="breakdown-item" style="color:#fff;"><span>Épargne Totale</span><span id="res-epargne-totale" style="font-weight:bold;color:var(--coach-orange);">0 € / an</span></div>
-                    <div class="breakdown-item" style="margin-top:1rem;color:#fff;"><span>Taux d'épargne actuel</span><span id="res-taux-epargne" style="font-weight:bold;color:#fff;">0 %</span></div>
-                    <div class="breakdown-item" style="color:#fff;"><span>Taux d'épargne idéal</span><span id="res-taux-ideal" style="color:var(--coach-bleu-clair);font-weight:bold;">0 %</span></div>
-                    <div class="breakdown-item" style="margin-top:1rem;color:#fff;"><span>Économies supplémentaires à cibler</span><span id="res-economies-supp" style="font-weight:bold;color:var(--success);">0 € / mois</span></div>
                 </div>
                 <div style="text-align:center;display:flex;justify-content:center;gap:1rem;margin-top:1rem;">
                     <button type="button" class="btn btn-primary" id="btn-projection">Voir la projection →</button>
@@ -66,11 +46,11 @@
                 <div style="display:flex;gap:1rem;margin-bottom:2rem;flex-wrap:wrap;">
                     <div class="result-card" style="flex:1;min-width:200px;">
                         <h3 class="result-label" style="font-size:0.9rem;">Si tu continues comme aujourd'hui :</h3>
-                        <div class="result-number" id="projection-net-today">0 €</div>
+                        <div class="result-number" id="projection-net-today" style="white-space:nowrap;">0 €</div>
                     </div>
                     <div class="result-card glowing-border" style="flex:1;min-width:200px;">
                         <h3 class="result-label" style="font-size:0.9rem;">Si tu optimises ton patrimoine :</h3>
-                        <div class="result-number" id="projection-net">0 €</div>
+                        <div class="result-number" id="projection-net" style="white-space:nowrap;">0 €</div>
                     </div>
                 </div>
                 <div class="chart-container" style="position:relative;height:300px;width:100%;margin:2rem 0;display:flex;justify-content:center;">
@@ -85,9 +65,29 @@
                 </div>
             </div>
 
-            <!-- STEP 9: VERIFICATIONS -->
+            <!-- STEP 9: VERIFICATIONS (admin only) -->
             <div class="step result-step" id="step-9">
-                <h2 class="step-title center-text">Vérifications (Variables Internes)</h2>
+                <!-- Cards Endettement & Épargne -->
+                <div class="result-card glowing-border" style="margin-bottom:1.5rem;">
+                    <h3 class="result-label">Votre Potentiel Immobilier (Endettement)</h3>
+                    <div class="breakdown-item" style="color:#fff;"><span>Remboursements (Prêts Immo)</span><span id="res-remboursements-immo" style="font-weight:bold;color:#fff;">0 €</span></div>
+                    <div class="breakdown-item" style="color:#fff;"><span>Salaire annuel</span><span id="res-salaire-annuel" style="font-weight:bold;color:#fff;">0 €</span></div>
+                    <div class="breakdown-item" style="color:#fff;"><span>Revenus locatifs annuels</span><span id="res-revenus-locatifs" style="font-weight:bold;color:#fff;">0 €</span></div>
+                    <div class="breakdown-item" style="color:#fff;border-bottom:1px solid rgba(255,255,255,0.2);padding-bottom:0.5rem;margin-bottom:0.5rem;"><span>Total revenus</span><span id="res-total-revenus" style="font-weight:bold;color:#fff;">0 €</span></div>
+                    <div class="breakdown-item" style="color:#fff;"><span>Taux d'endettement actuel</span><span id="res-taux-endettement" style="font-weight:bold;color:#fff;">0 %</span></div>
+                    <div class="breakdown-item" style="color:#fff;"><span>Capacité de remboursement (CR mensuel)</span><span id="res-cr-mensuel" style="font-weight:600;color:var(--coach-bleu-clair);">0 € / mois</span></div>
+                    <div class="breakdown-item" style="color:#fff;"><span>Capacité d'endettement (sur 20 ans à 3.0%)</span><span id="res-cape-endettement" style="font-weight:bold;font-size:1.1rem;color:var(--coach-orange);">0 €</span></div>
+                </div>
+                <div class="result-card glowing-border" style="margin-bottom:1.5rem;">
+                    <h3 class="result-label">Analyse de votre Épargne</h3>
+                    <div class="breakdown-item" style="color:#fff;"><span>Épargne actuelle déclarée</span><span id="res-epargne-actuelle" style="font-weight:bold;color:#fff;">0 € / an</span></div>
+                    <div class="breakdown-item" style="color:#fff;"><span>Remboursement principal RP (sur 1 an)</span><span id="res-epargne-principal" style="color:#fff;">0 € / an</span></div>
+                    <div class="breakdown-item" style="color:#fff;"><span>Épargne Totale</span><span id="res-epargne-totale" style="font-weight:bold;color:var(--coach-orange);">0 € / an</span></div>
+                    <div class="breakdown-item" style="margin-top:1rem;color:#fff;"><span>Taux d'épargne actuel</span><span id="res-taux-epargne" style="font-weight:bold;color:#fff;">0 %</span></div>
+                    <div class="breakdown-item" style="color:#fff;"><span>Taux d'épargne idéal</span><span id="res-taux-ideal" style="color:var(--coach-bleu-clair);font-weight:bold;">0 %</span></div>
+                    <div class="breakdown-item" style="margin-top:1rem;color:#fff;"><span>Économies supplémentaires à cibler</span><span id="res-economies-supp" style="font-weight:bold;color:var(--success);">0 € / mois</span></div>
+                </div>
+                <!-- Tables de projection -->
                 <div class="breakdown" style="max-height:250px;overflow-y:auto;overflow-x:auto;">
                     <h4 style="color:var(--coach-bleu-fonce);font-family:'Outfit';margin-bottom:0.5rem;">Résumé Global</h4>
                     <table style="width:100%;color:var(--text-main);font-size:0.85rem;text-align:left;border-collapse:collapse;margin-top:1rem;" id="projection-table-main">
@@ -106,7 +106,7 @@
                         <tbody></tbody>
                     </table>
                 </div>
-                <div class="breakdown" style="max-height:250px;overflow-y:auto;overflow-x:auto;margin-top:2rem;">
+                <div class="breakdown" style="overflow-x:auto;margin-top:2rem;">
                     <h4 style="color:var(--coach-bleu-fonce);font-family:'Outfit';margin-bottom:0.5rem;">Détails (Indicateurs et Flux de Trésorerie)</h4>
                     <table style="width:100%;color:var(--text-main);font-size:0.85rem;text-align:left;border-collapse:collapse;margin-top:1rem;" id="projection-table-details">
                         <thead style="position:sticky;top:0;z-index:2;background:var(--bg-card,#fff);"><tr style="border-bottom:2px solid var(--border);">

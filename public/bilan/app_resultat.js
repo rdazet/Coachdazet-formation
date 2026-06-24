@@ -6,19 +6,31 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!saved) return;
 
     // --- Navigation steps 7/8/9 ---
+    const isAdmin = new URLSearchParams(window.location.search).get('admin') === '1';
     let currentStep = 7;
-    const steps = document.querySelectorAll('.step');
+
+    const stepTitles = {
+        7: '<span class="accent-text">Patrimoine actuel</span>',
+        8: '<span class="accent-text">Projections de patrimoine</span>',
+        9: '<span class="accent-text">Vérifications</span>'
+    };
 
     function showStep(n) {
         currentStep = n;
         document.querySelectorAll('.result-step').forEach(s => {
             s.classList.toggle('active', s.id === `step-${n}`);
         });
+        const titleEl = document.getElementById('page-title');
+        if (titleEl && stepTitles[n]) titleEl.innerHTML = stepTitles[n];
     }
+
+    // Masquer le bouton Vérifications pour les non-admins
+    const btnVerif = document.getElementById('btn-verifications');
+    if (btnVerif && !isAdmin) btnVerif.style.display = 'none';
 
     document.getElementById('btn-projection')?.addEventListener('click', () => showStep(8));
     document.getElementById('btn-back-result')?.addEventListener('click', () => showStep(7));
-    document.getElementById('btn-verifications')?.addEventListener('click', () => showStep(9));
+    if (isAdmin) document.getElementById('btn-verifications')?.addEventListener('click', () => showStep(9));
     document.getElementById('btn-back-projection')?.addEventListener('click', () => showStep(8));
 
     // --- Helpers ---
