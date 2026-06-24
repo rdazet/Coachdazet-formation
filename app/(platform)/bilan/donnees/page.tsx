@@ -3,8 +3,12 @@ import { useEffect } from "react";
 
 export default function BilanDonneesPage() {
   useEffect(() => {
+    // Double mécanisme pour garantir qu'un seul scrollbar reste visible
+    const main = document.querySelector("main");
+    if (main) main.style.overflowY = "hidden";
     document.body.classList.add("bilan-iframe-active");
     return () => {
+      if (main) main.style.overflowY = "";
       document.body.classList.remove("bilan-iframe-active");
     };
   }, []);
