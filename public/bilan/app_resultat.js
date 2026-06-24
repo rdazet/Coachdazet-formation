@@ -10,8 +10,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentStep = 7;
 
     const stepTitles = {
-        7: '<span class="accent-text">Patrimoine actuel</span>',
-        8: '<span class="accent-text">Projections de patrimoine</span>',
+        7: '<span class="accent-text">Bilan patrimonial</span>',
+        8: '<span class="accent-text">Projections de patrimoine à 65 ans</span>',
         9: '<span class="accent-text">Vérifications</span>'
     };
 
@@ -429,16 +429,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const ctxProj = document.getElementById('projectionChart')?.getContext('2d');
         if (ctxProj) {
+            const showY2 = depensesAnnuelles > 0;
+            const anneeData = showY2 ? projDataOptimise.map(v => parseFloat((v / depensesAnnuelles).toFixed(2))) : [];
+            const datasets = [
+                { label: 'Patrimoine total', data: projDataTotal, yAxisID: 'y', borderColor: '#161b22', backgroundColor: 'rgba(108,160,220,0.4)', borderWidth: 2, tension: 0.4, fill: true, pointRadius: 0 },
+                { label: 'Patrimoine optimisé', data: projDataOptimise, yAxisID: 'y', borderColor: '#FF8C42', backgroundColor: 'rgba(255,140,66,0.4)', borderWidth: 3, tension: 0.4, fill: '-1', pointRadius: 0 }
+            ];
+            if (showY2) {
+                datasets.push({ label: '_ans', data: anneeData, yAxisID: 'y2', borderColor: 'transparent', backgroundColor: 'transparent', borderWidth: 0, pointRadius: 0, fill: false });
+            }
             new Chart(ctxProj, {
                 type: 'line',
-                data: { labels: projLabels, datasets: [
-                    { label: 'Patrimoine total', data: projDataTotal, borderColor: '#161b22', backgroundColor: 'rgba(108,160,220,0.4)', borderWidth: 2, tension: 0.4, fill: true, pointRadius: 0 },
-                    { label: 'Patrimoine optimisé', data: projDataOptimise, borderColor: '#FF8C42', backgroundColor: 'rgba(255,140,66,0.4)', borderWidth: 3, tension: 0.4, fill: '-1', pointRadius: 0 }
-                ]},
+                data: { labels: projLabels, datasets },
                 options: { responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: true, position: 'bottom', labels: { color: '#1F2A44', font: { family: 'Inter', size: 14 } } },
-                        tooltip: { mode: 'index', intersect: false, callbacks: { label: c => c.dataset.label + ' : ' + Math.round(c.parsed.y).toLocaleString('fr-FR') + ' €' } } },
-                    scales: { y: { ticks: { callback: v => v.toLocaleString('fr-FR') + ' €' } } }
+                    plugins: {
+                        legend: { display: true, position: 'bottom', labels: { color: '#1F2A44', font: { family: 'Inter', size: 14 }, filter: item => item.text !== '_ans' } },
+                        tooltip: { mode: 'index', intersect: false,
+                            filter: item => item.dataset.label !== '_ans',
+                            callbacks: { label: c => c.dataset.label + ' : ' + Math.round(c.parsed.y).toLocaleString('fr-FR') + ' €' } }
+                    },
+                    scales: {
+                        y: { position: 'left', ticks: { callback: v => v.toLocaleString('fr-FR') + ' €' } },
+                        y2: { position: 'right', display: showY2, grid: { drawOnChartArea: false },
+                              ticks: { callback: v => v.toFixed(0) + ' ans' } }
+                    }
                 }
             });
         }
