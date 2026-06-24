@@ -2,8 +2,22 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
-import * as XLSX from "xlsx";
 import { Upload, Download, ChevronDown, ChevronRight } from "lucide-react";
+
+// Charge SheetJS depuis CDN (évite les problèmes de bundling Turbopack)
+function loadXLSX(): Promise<unknown> {
+  return new Promise((resolve, reject) => {
+    if (typeof window === "undefined") return reject("SSR");
+    if ((window as unknown as { XLSX: unknown }).XLSX) {
+      return resolve((window as unknown as { XLSX: unknown }).XLSX);
+    }
+    const script = document.createElement("script");
+    script.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+    script.onload = () => resolve((window as unknown as { XLSX: unknown }).XLSX);
+    script.onerror = () => reject(new Error("Impossible de charger SheetJS"));
+    document.head.appendChild(script);
+  });
+}
 
 // ═══════════════════════════════════════════════════════════
 // TYPES
@@ -89,9 +103,10 @@ function parseDate(v: unknown): string {
   if (typeof v === "string") return v.slice(0, 10);
   return "";
 }
-function getCellValue(ws: XLSX.WorkSheet, row: number, col: number): unknown {
-  const addr = XLSX.utils.encode_cell({ r: row - 1, c: col - 1 });
-  const cell = ws[addr] as XLSX.CellObject | undefined;
+function getCellValue(ws: unknown, row: number, col: number): unknown {
+  const X = (window as unknown as { XLSX: unknown }).XLSX as { utils: { encode_cell: (c: { r: number; c: number }) => string } };
+  const addr = X.utils.encode_cell({ r: row - 1, c: col - 1 });
+  const cell = (ws as Record<string, { v: unknown }>)[addr];
   return cell ? cell.v : null;
 }
 
@@ -99,8 +114,8 @@ function getCellValue(ws: XLSX.WorkSheet, row: number, col: number): unknown {
 // EXCEL PARSING
 // ═══════════════════════════════════════════════════════════
 
-function parseExcel(wb: XLSX.WorkBook): ClientData[] {
-  const ws = wb.Sheets["Questionnaire"];
+function parseExcel(wb: unknown): ClientData[] {
+  const ws = (wb as { Sheets: Record<string, unknown> }).Sheets["Questionnaire"];
   if (!ws) return [];
   const clients: ClientData[] = [];
   for (let col = 3; col <= 10; col++) {
@@ -547,8 +562,17 @@ function formatValue(v: number | string, fmt: FmtType): string {
 // EXCEL EXPORT
 // ═══════════════════════════════════════════════════════════
 
-function exportToExcel(clients: ClientData[]) {
-  const wb = XLSX.utils.book_new();
+async function exportToExcel(clients: ClientData[]) {
+  const X = await loadXLSX() as {
+    utils: {
+      book_new: () => unknown;
+      aoa_to_sheet: (rows: unknown[][]) => Record<string, unknown>;
+      book_append_sheet: (wb: unknown, ws: unknown, name: string) => void;
+    };
+    writeFile: (wb: unknown, name: string) => void;
+  };
+
+  const wb = X.utils.book_new();
 
   for (const table of TABLES) {
     const headers = ["Intitulé", ...clients.map(c => c.nom)];
@@ -569,12 +593,12 @@ function exportToExcel(clients: ClientData[]) {
       }
     }
 
-    const ws = XLSX.utils.aoa_to_sheet(rows);
+    const ws = X.utils.aoa_to_sheet(rows);
     ws["!cols"] = [{ wch: 42 }, ...clients.map(() => ({ wch: 16 }))];
-    XLSX.utils.book_append_sheet(wb, ws, table.label.slice(0, 31));
+    X.utils.book_append_sheet(wb, ws, table.label.slice(0, 31));
   }
 
-  XLSX.writeFile(wb, "clients_coachdazet.xlsx");
+  X.writeFile(wb, "clients_coachdazet.xlsx");
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -667,20 +691,20 @@ export default function ClientsTestPage() {
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const processFile = useCallback((file: File) => {
+  const processFile = useCallback(async (file: File) => {
     setFileName(file.name);
-    const reader = new FileReader();
-    reader.onload = e => {
-      try {
-        const wb = XLSX.read(e.target?.result, { type: "array", cellDates: true });
-        const parsed = parseExcel(wb);
-        setClients(parsed);
-      } catch (err) {
-        console.error("Parsing error", err);
-        alert("Erreur lors de la lecture du fichier Excel.");
-      }
-    };
-    reader.readAsArrayBuffer(file);
+    try {
+      const X = await loadXLSX() as {
+        read: (data: ArrayBuffer, opts: { type: string; cellDates: boolean }) => unknown;
+      };
+      const buf = await file.arrayBuffer();
+      const wb = X.read(buf, { type: "array", cellDates: true });
+      const parsed = parseExcel(wb);
+      setClients(parsed);
+    } catch (err) {
+      console.error("Parsing error", err);
+      alert("Erreur lors de la lecture du fichier Excel.");
+    }
   }, []);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
