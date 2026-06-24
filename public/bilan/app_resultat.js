@@ -158,26 +158,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const capaciteEndettement = capaciteRemboursementMensuelle > 0
         ? capaciteRemboursementMensuelle * (1 - Math.pow(1 + tauxMensuel, -240)) / tauxMensuel : 0;
 
-    // Épargne — capital RP remboursé sur l'année civile en cours (= CUMPRINC Excel)
+    // Épargne — capital RP remboursé sur l'année civile en cours
+    // Amortisation ANNUELLE pour matcher Excel CUMPRINC(rate, nper_years, pv, yearNum, yearNum, 0)
     let rpPrincipalAnnuel = 0;
     if (rpPrincipal > 0 && rpYears > 0 && rpDate) {
         const evalDateVal = getDateVal('date_evaluation');
         const evalYear = evalDateVal ? new Date(evalDateVal).getFullYear() : new Date().getFullYear();
         const startYear = new Date(rpDate).getFullYear();
         const yearNum = Math.max(1, evalYear - startYear);   // ex. 2026-2022 = 4
-        const totalMonths = rpYears * 12;
-        const mRateRp = (rpRate / 100) / 12;
-        function balAtMonth(n) {
+        const r = rpRate / 100;                               // taux annuel
+        function balAtYear(n) {
             if (n <= 0) return rpPrincipal;
-            if (n >= totalMonths) return 0;
-            if (mRateRp === 0) return rpPrincipal - (rpPrincipal / totalMonths) * n;
-            const pmt = rpPrincipal * mRateRp / (1 - Math.pow(1 + mRateRp, -totalMonths));
-            const growth = Math.pow(1 + mRateRp, n);
-            return Math.max(0, rpPrincipal * growth - pmt * (growth - 1) / mRateRp);
+            if (n >= rpYears) return 0;
+            if (r === 0) return rpPrincipal - (rpPrincipal / rpYears) * n;
+            const pmt = rpPrincipal * r / (1 - Math.pow(1 + r, -rpYears));
+            const growth = Math.pow(1 + r, n);
+            return Math.max(0, rpPrincipal * growth - pmt * (growth - 1) / r);
         }
-        const startM = (yearNum - 1) * 12;
-        const endM   = Math.min(yearNum * 12, totalMonths);
-        rpPrincipalAnnuel = Math.max(0, balAtMonth(startM) - balAtMonth(endM));
+        rpPrincipalAnnuel = Math.max(0, balAtYear(yearNum - 1) - balAtYear(Math.min(yearNum, rpYears)));
     }
 
     const epargneAnnuelleDecla = epargneMensuelle * 12;
@@ -392,7 +390,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (currentAge < 65) {
                 currentYear++;
-                bourseOptimise = (bourseOptimise * (1 + anneeRendementR)) + epargneTotaleProjection;
+                const epargneAInvestir = epargneAnnuelleDecla + currentEconomiesSuppAnnuel + surplusEmpruntActuel;
+                bourseOptimise = (bourseOptimise * (1 + anneeRendementR)) + epargneAInvestir;
                 annualNouvelImmoEpargne = 0;
                 if (!locatifInvested) {
                     nouvelImmoBrut = capaciteEndettement;
