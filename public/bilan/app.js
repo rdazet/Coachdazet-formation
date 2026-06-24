@@ -61,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentStep < totalSteps - 1) {
             currentStep++;
             updateUI();
+            window.scrollTo({ top: 0, behavior: 'instant' });
         }
     });
 
