@@ -158,21 +158,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const capaciteEndettement = capaciteRemboursementMensuelle > 0
         ? capaciteRemboursementMensuelle * (1 - Math.pow(1 + tauxMensuel, -240)) / tauxMensuel : 0;
 
-    // Épargne
+    // Épargne — capital RP remboursé sur l'année civile en cours (= CUMPRINC Excel)
     let rpPrincipalAnnuel = 0;
-    let tempRp = rpRemaining;
-    const mRateRp = (rpRate / 100) / 12;
-    if (tempRp > 0 && mRateRp > 0) {
-        let fullM = (rpPrincipal * mRateRp * Math.pow(1 + mRateRp, rpYears * 12)) / (Math.pow(1 + mRateRp, rpYears * 12) - 1);
-        for (let m = 0; m < 12; m++) {
-            if (tempRp > 0) {
-                let cap = fullM - tempRp * mRateRp;
-                tempRp -= cap;
-                rpPrincipalAnnuel += Math.max(0, cap);
-            }
+    if (rpPrincipal > 0 && rpYears > 0 && rpDate) {
+        const evalDateVal = getDateVal('date_evaluation');
+        const evalYear = evalDateVal ? new Date(evalDateVal).getFullYear() : new Date().getFullYear();
+        const startYear = new Date(rpDate).getFullYear();
+        const yearNum = Math.max(1, evalYear - startYear);   // ex. 2026-2022 = 4
+        const totalMonths = rpYears * 12;
+        const mRateRp = (rpRate / 100) / 12;
+        function balAtMonth(n) {
+            if (n <= 0) return rpPrincipal;
+            if (n >= totalMonths) return 0;
+            if (mRateRp === 0) return rpPrincipal - (rpPrincipal / totalMonths) * n;
+            const pmt = rpPrincipal * mRateRp / (1 - Math.pow(1 + mRateRp, -totalMonths));
+            const growth = Math.pow(1 + mRateRp, n);
+            return Math.max(0, rpPrincipal * growth - pmt * (growth - 1) / mRateRp);
         }
-    } else if (tempRp > 0) {
-        rpPrincipalAnnuel = Math.min((rpPrincipal / (rpYears * 12)) * 12, tempRp);
+        const startM = (yearNum - 1) * 12;
+        const endM   = Math.min(yearNum * 12, totalMonths);
+        rpPrincipalAnnuel = Math.max(0, balAtMonth(startM) - balAtMonth(endM));
     }
 
     const epargneAnnuelleDecla = epargneMensuelle * 12;
