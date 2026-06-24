@@ -31,6 +31,11 @@
   }
 }
 
+/* Bilan iframe pages: masquer le scrollbar du main layout */
+body.bilan-iframe-active main {
+  overflow: hidden !important;
+}
+
 @layer components {
   /* ── Buttons ── */
   .btn-primary {

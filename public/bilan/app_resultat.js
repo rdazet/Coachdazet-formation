@@ -453,7 +453,7 @@ document.addEventListener('DOMContentLoaded', () => {
                              title: { display: true, text: 'patrimoine en euros', color: '#1F2A44', font: { family: 'Inter', size: 12 } },
                              ticks: { callback: v => v.toLocaleString('fr-FR') + ' €' } },
                         y2: { position: 'right', display: showY2, grid: { drawOnChartArea: false },
-                              title: { display: true, text: 'patrimoine en années de dépenses', color: '#FF8C42', font: { family: 'Inter', size: 12 } },
+                              title: { display: true, text: 'patrimoine en années de dépenses', color: '#1F2A44', font: { family: 'Inter', size: 12 } },
                               ticks: { callback: v => v.toFixed(0) + ' ans' } }
                     }
                 }

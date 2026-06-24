@@ -3,12 +3,9 @@ import { useEffect } from "react";
 
 export default function BilanDonneesPage() {
   useEffect(() => {
-    const main = document.querySelector("main");
-    if (!main) return;
-    const prev = main.style.overflowY;
-    main.style.overflowY = "hidden";
+    document.body.classList.add("bilan-iframe-active");
     return () => {
-      main.style.overflowY = prev;
+      document.body.classList.remove("bilan-iframe-active");
     };
   }, []);
 
