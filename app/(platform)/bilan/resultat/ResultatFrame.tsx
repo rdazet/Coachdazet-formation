@@ -3,11 +3,13 @@ import { useEffect } from "react";
 
 export default function ResultatFrame({ src }: { src: string }) {
   useEffect(() => {
-    // Double mécanisme pour garantir qu'un seul scrollbar reste visible
+    const html = document.documentElement;
     const main = document.querySelector("main");
+    html.style.overflowY = "hidden";
     if (main) main.style.overflowY = "hidden";
     document.body.classList.add("bilan-iframe-active");
     return () => {
+      html.style.overflowY = "";
       if (main) main.style.overflowY = "";
       document.body.classList.remove("bilan-iframe-active");
     };
