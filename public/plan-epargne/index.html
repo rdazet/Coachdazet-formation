@@ -182,8 +182,7 @@
         <th>PATRIMOINE HORS IMMOBILIER</th>
         <th>Actuel</th>
         <th>Cible</th>
-        <th>Mouvements</th>
-        <th>Épargne future</th>
+        <th>Actions à mener</th>
       </tr>
     </thead>
     <tbody id="pat-tbody"></tbody>
@@ -310,8 +309,7 @@ PAT_ROWS.forEach(row => {
     <td>${row.label}</td>
     <td id="act-${row.id}" class="${actCls}">${fmt(row.actuel)}</td>
     <td id="cible-${row.id}" class="col-cible val-calc">—</td>
-    <td id="mouv-${row.id}">—</td>
-    <td id="epf-${row.id}" style="color:#9CA3AF; font-size:0.82rem; line-height:1.4">—</td>`;
+    <td id="action-${row.id}" style="font-size:0.83rem; line-height:1.5; color:#374151">—</td>`;
   patTbody.appendChild(tr);
 });
 
@@ -322,7 +320,6 @@ totalRow.innerHTML = `
   <td>TOTAL</td>
   <td id="total-act">—</td>
   <td id="total-cible" class="col-cible">—</td>
-  <td id="total-mouv">—</td>
   <td></td>`;
 patTbody.appendChild(totalRow);
 
@@ -330,7 +327,7 @@ patTbody.appendChild(totalRow);
 const COLORS = {
   dettes: '#E74C3C',
   secu:   '#1B2B4A',
-  mt:     '#1B2B4A',
+  mt:     '#4B9E8F',   // teal — distinct du navy sécu
   bourse: '#C0603A',
 };
 const LABELS = { dettes: 'Dettes', secu: 'Fonds de sécurité', mt: 'Fonds moyen terme', bourse: 'Bourse' };
@@ -414,30 +411,68 @@ function recalculate() {
   document.getElementById('cible-mt').innerHTML     = `<span class="val-calc">${cMt > 0 ? fmt(cMt) : '—'}</span>`;
   document.getElementById('cible-bourse').innerHTML = `<span class="val-calc">${fmt(cBourse)}</span>`;
 
-  // Mouvements
-  document.getElementById('mouv-dettes').innerHTML = fmtMouv(cDettes - actDettes);
-  document.getElementById('mouv-secu').innerHTML   = fmtMouv(cSecu   - actSecu);
-  document.getElementById('mouv-mt').innerHTML     = fmtMouv(cMt     - actMt);
-  document.getElementById('mouv-bourse').innerHTML = fmtMouv(cBourse - actBourse);
-
   // Totaux
   document.getElementById('total-act').innerHTML   = `<span class="${totalAct < 0 ? 'val-neg' : 'val-calc'}">${fmt(totalAct)}</span>`;
   document.getElementById('total-cible').innerHTML = `<span class="val-calc">${fmt(totalC)}</span>`;
-  document.getElementById('total-mouv').innerHTML  = fmtMouv(totalC - totalAct);
 
-  // ── Épargne future — cascade dettes → secu → MT → bourse ──
-  const moisDettes = detteCRD > 0 && epargne > 0 ? Math.ceil(detteCRD / epargne) : 0;
-  const needSecu   = Math.max(0, cSecu - actSecu);
-  const moisSecu   = needSecu > 0 && epargne > 0 ? Math.ceil(needSecu / epargne) : 0;
-  const needMt     = cMt > 0 ? Math.max(0, cMt - actMt) : -1; // -1 = sans objet
-  const moisMt     = needMt > 0 && epargne > 0 ? Math.ceil(needMt / epargne) : 0;
+  // ── Actions à mener ──────────────────────────────────────
+  function fmtEur(v) {
+    return new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(v);
+  }
+  function addMonths(n) {
+    const d = new Date();
+    d.setMonth(d.getMonth() + n);
+    return d.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+  }
 
-  document.getElementById('epf-dettes').innerHTML = moisDettes > 0
-    ? `<span style="color:#DC2626;font-weight:600">${new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(epargne)}/mois</span><br><span style="color:#6B7280;font-size:0.75rem">${moisDettes} mois</span>`
-    : '<span style="color:#16A34A;font-weight:600">✓ Remboursée</span>';
-  document.getElementById('epf-secu').innerHTML   = fmtEpf(moisSecu, false, false);
-  document.getElementById('epf-mt').innerHTML     = fmtEpf(needMt < 0 ? 0 : moisMt, false, needMt < 0);
-  document.getElementById('epf-bourse').innerHTML = fmtEpf(0, true, false);
+  // Dettes
+  const actionDettes = actDettes < 0
+    ? '<span style="color:#DC2626;font-weight:600">Remboursez vos dettes en priorité</span>'
+    : '<span style="color:#16A34A;font-weight:600">Rien à faire</span>';
+
+  // Fonds de sécurité
+  let actionSecu;
+  if (cSecu > actSecu) {
+    const mois_s = Math.ceil((cSecu - actSecu) / epargne);
+    actionSecu = `Placez votre épargne mensuelle (<strong>${fmtEur(epargne)}</strong>) dans votre fonds de sécurité jusqu'en <strong>${addMonths(mois_s)}</strong>`;
+  } else if (Math.round(cSecu) === Math.round(actSecu)) {
+    actionSecu = '<span style="color:#16A34A;font-weight:600">Rien à faire</span>';
+  } else {
+    const Z = Math.round(actSecu - cSecu);
+    actionSecu = `Investissez <strong>${fmtEur(Z)}</strong>`;
+  }
+
+  // Fonds moyen terme
+  const Z_secu = actSecu - cSecu; // peut être négatif si secu pas encore plein
+  let actionMt;
+  if (cMt <= 0) {
+    actionMt = '<span style="color:#9CA3AF">—</span>';
+  } else if (cMt > actMt + Z_secu) {
+    const shortfall = cMt - (actMt + Math.max(0, Z_secu));
+    const mois_mt   = Math.ceil(shortfall / epargne);
+    actionMt = `Placez votre épargne mensuelle (<strong>${fmtEur(epargne)}</strong>) dans votre fonds moyen terme jusqu'en <strong>${addMonths(mois_mt)}</strong>`;
+  } else if (Math.round(cMt) === Math.round(actMt + Z_secu)) {
+    actionMt = '<span style="color:#16A34A;font-weight:600">Rien à faire</span>';
+  } else {
+    const A = Math.round(actMt + Z_secu - cMt);
+    actionMt = `Investissez <strong>${fmtEur(A)}</strong> en Bourse`;
+  }
+
+  // Bourse
+  const patrimoineFinancier = actSecu + actMt + actBourse;
+  let actionBourse;
+  if (patrimoineFinancier >= cSecu + cMt) {
+    actionBourse = `Placez votre épargne mensuelle (<strong>${fmtEur(epargne)}</strong>) en Bourse`;
+  } else {
+    const shortfall_b = (cSecu + cMt) - patrimoineFinancier;
+    const mois_b      = Math.ceil(shortfall_b / epargne);
+    actionBourse = `Ne pas investir en Bourse avant <strong>${addMonths(mois_b)}</strong>`;
+  }
+
+  document.getElementById('action-dettes').innerHTML = actionDettes;
+  document.getElementById('action-secu').innerHTML   = actionSecu;
+  document.getElementById('action-mt').innerHTML     = actionMt;
+  document.getElementById('action-bourse').innerHTML = actionBourse;
 
   // Charts (exclure les valeurs négatives = dettes)
   const KEYS    = ['dettes','secu','mt','bourse'];

@@ -196,7 +196,12 @@
             });
             localStorage.setItem('bilan_donnees', JSON.stringify(data));
             // Navigate to bilan page
-            window.location.href = '/bilan/resultat.html';
+            // Navigate parent window to the Next.js route (fixes sidebar active state)
+            if (window.parent !== window) {
+              window.parent.location.href = '/bilan/resultat';
+            } else {
+              window.location.href = '/bilan/resultat';
+            }
         });
 
         updateUI();
