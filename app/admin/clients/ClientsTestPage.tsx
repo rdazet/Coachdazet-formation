@@ -86,6 +86,7 @@ interface ClientData {
   av_fonds_euros: number;
   av_uc: number;
   autres_invests: number;
+  date_evaluation: string;
 }
 
 type RowDef =
@@ -162,6 +163,7 @@ function parseExcel(wb: unknown): ClientData[] {
     if (!nom) continue;
     clients.push({
       nom: str(nom),
+      date_evaluation: parseDate(getCellValue(ws, 8, col)),
       age: num(getCellValue(ws, 9, col)),
       situation_familiale: str(getCellValue(ws, 10, col)),
       salaire_net: num(getCellValue(ws, 13, col)),
@@ -220,11 +222,11 @@ function parseExcel(wb: unknown): ClientData[] {
 // CALCULATION ENGINE
 // ═══════════════════════════════════════════════════════════
 
-// CRD aujourd'hui (depuis date de début jusqu'à aujourd'hui)
-function crdMonthly(principal: number, tauxPct: number, years: number, startDate: string): number {
+// CRD aujourd'hui (depuis date de début jusqu'à refDate, ou aujourd'hui si non fournie)
+function crdMonthly(principal: number, tauxPct: number, years: number, startDate: string, refDate?: string): number {
   if (!principal || !years || !startDate) return 0;
   const start = new Date(startDate);
-  const today = new Date();
+  const today = refDate ? new Date(refDate) : new Date();
   if (isNaN(start.getTime()) || start > today) return principal;
   let months = (today.getFullYear() - start.getFullYear()) * 12 + (today.getMonth() - start.getMonth());
   if (today.getDate() < start.getDate()) months--;
@@ -239,11 +241,11 @@ function crdMonthly(principal: number, tauxPct: number, years: number, startDate
   return Math.max(0, bal);
 }
 
-// CRD à un horizon futur (yearsAhead depuis aujourd'hui)
-function crdAtFuture(principal: number, tauxPct: number, years: number, startDate: string, yearsAhead: number): number {
+// CRD à un horizon futur (yearsAhead depuis refDate, ou aujourd'hui si non fournie)
+function crdAtFuture(principal: number, tauxPct: number, years: number, startDate: string, yearsAhead: number, refDate?: string): number {
   if (!principal || !years || !startDate) return 0;
   const start = new Date(startDate);
-  const today = new Date();
+  const today = refDate ? new Date(refDate) : new Date();
   if (isNaN(start.getTime())) return 0;
   let pastMonths = (today.getFullYear() - start.getFullYear()) * 12 + (today.getMonth() - start.getMonth());
   if (today.getDate() < start.getDate()) pastMonths--;
@@ -277,16 +279,17 @@ function base(d: ClientData) {
   const salaire = d.salaire_net + d.bonus_net;
   const epargne = d.epargne_mensuelle;
   const cashBrut = d.comptes_cheques + d.cel + d.pel + d.livret_a + d.ldd + d.lep + d.divers_liquidites;
+  const ref = d.date_evaluation || undefined;
   const detteCRD = d.dette_capital_direct > 0
     ? d.dette_capital_direct
-    : crdMonthly(d.dette_montant, d.dette_taux_pct, d.dette_duree, d.dette_debut);
+    : crdMonthly(d.dette_montant, d.dette_taux_pct, d.dette_duree, d.dette_debut, ref);
   const cashNet = cashBrut - detteCRD;
   const bourse = d.cto + d.pea + d.per + d.pee + d.av_uc + d.autres_invests;
-  const rpCRD = crdMonthly(d.rp_emprunt, d.rp_taux_pct, d.rp_duree, d.rp_debut);
+  const rpCRD = crdMonthly(d.rp_emprunt, d.rp_taux_pct, d.rp_duree, d.rp_debut, ref);
   const rpNet = d.rp_valeur - rpCRD;
-  const locCRD = crdMonthly(d.loc_emprunt, d.loc_taux_pct, d.loc_duree, d.loc_debut);
+  const locCRD = crdMonthly(d.loc_emprunt, d.loc_taux_pct, d.loc_duree, d.loc_debut, ref);
   const locNet = d.loc_valeur - locCRD;
-  const loc2CRD = crdMonthly(d.loc2_emprunt, d.loc2_taux_pct, d.loc2_duree, d.loc2_debut);
+  const loc2CRD = crdMonthly(d.loc2_emprunt, d.loc2_taux_pct, d.loc2_duree, d.loc2_debut, ref);
   const loc2Net = d.loc2_valeur - loc2CRD;
   const allLocNet = locNet + loc2Net;
   const rpMens = d.rp_emprunt > 0 && d.rp_duree > 0
@@ -320,10 +323,11 @@ function patrimoine65(d: ClientData, rendement: number): number {
   const bourseAt65 = bourseInit * Math.pow(1 + r, months)
     + d.epargne_mensuelle * (Math.pow(1 + r, months) - 1) / r;
 
+  const ref = d.date_evaluation || undefined;
   // Immobilier : valeur stable, CRD s'amortit
-  const rpNet65 = d.rp_valeur - crdAtFuture(d.rp_emprunt, d.rp_taux_pct, d.rp_duree, d.rp_debut, yearsTo65);
-  const locNet65 = d.loc_valeur - crdAtFuture(d.loc_emprunt, d.loc_taux_pct, d.loc_duree, d.loc_debut, yearsTo65);
-  const loc2Net65 = d.loc2_valeur - crdAtFuture(d.loc2_emprunt, d.loc2_taux_pct, d.loc2_duree, d.loc2_debut, yearsTo65);
+  const rpNet65 = d.rp_valeur - crdAtFuture(d.rp_emprunt, d.rp_taux_pct, d.rp_duree, d.rp_debut, yearsTo65, ref);
+  const locNet65 = d.loc_valeur - crdAtFuture(d.loc_emprunt, d.loc_taux_pct, d.loc_duree, d.loc_debut, yearsTo65, ref);
+  const loc2Net65 = d.loc2_valeur - crdAtFuture(d.loc2_emprunt, d.loc2_taux_pct, d.loc2_duree, d.loc2_debut, yearsTo65, ref);
 
   return b.cashNet + bourseAt65 + rpNet65 + locNet65 + loc2Net65 + d.scpi;
 }
@@ -1010,16 +1014,4 @@ export default function ClientsTestPage() {
         <>
           <div className="mb-4 text-xs text-gray-500">
             <span className="font-medium">{clients.length} clients :</span> {clients.map(c => c.nom).join(" · ")}
-            <span className="ml-4 text-amber-600">⚠ Plan Immo Locataire : loyer supposé = 0 € · annuité = {LOC_ANNEES} ans · taux = {LOC_TAUX_PCT}%</span>
-          </div>
-
-          <SyntheseTable clients={clients} />
-
-          {TABLES.map(t => (
-            <TableSection key={t.id} table={t} clients={clients} />
-          ))}
-        </>
-      )}
-    </div>
-  );
-}
+            <s
