@@ -23,7 +23,6 @@ export default async function PlanImmoPage() {
       <div className="px-6 py-4 border-b border-gray-200 bg-white flex items-center justify-between shrink-0">
         <div>
           <h1 className="font-display text-xl font-semibold text-navy">Plan Immobilier</h1>
-          <p className="text-sm text-gray-500 mt-0.5">« Propriétaire » ou « locataire » (selon la valeur de la résidence principale)</p>
         </div>
         <a href={iframeSrc} target="_blank" rel="noopener noreferrer" className="text-xs text-gray-400 hover:text-navy transition-colors">
           Ouvrir en plein écran ↗
