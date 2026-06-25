@@ -1014,4 +1014,16 @@ export default function ClientsTestPage() {
         <>
           <div className="mb-4 text-xs text-gray-500">
             <span className="font-medium">{clients.length} clients :</span> {clients.map(c => c.nom).join(" · ")}
-            <s
+            <span className="ml-4 text-amber-600">⚠ Plan Immo Locataire : loyer supposé = 0 € · annuité = {LOC_ANNEES} ans · taux = {LOC_TAUX_PCT}%</span>
+          </div>
+
+          <SyntheseTable clients={clients} />
+
+          {TABLES.map(t => (
+            <TableSection key={t.id} table={t} clients={clients} />
+          ))}
+        </>
+      )}
+    </div>
+  );
+}
