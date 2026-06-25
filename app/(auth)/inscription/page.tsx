@@ -60,7 +60,7 @@ export default function InscriptionPage() {
       body: JSON.stringify({ email, fullName, userId: signUpData.user?.id }),
     });
 
-    router.push("/en-attente");
+    router.push("/dashboard");
   }
 
   return (
