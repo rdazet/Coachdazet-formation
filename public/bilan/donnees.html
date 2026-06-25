@@ -94,6 +94,10 @@
                         <div class="input-group"><label>Taux d'intérêt annuel (%)</label><input type="number" step="0.01" name="rp_taux" value="0"></div>
                         <div class="input-group"><label>Date de début</label><input type="date" name="rp_debut"></div>
                         <div class="input-group"><label>Durée (Années)</label><input type="number" name="rp_duree" value="0"></div>
+                        <div class="input-group full-width">
+                            <label>Ou bien, indiquez directement le capital restant dû RP (€)</label>
+                            <input type="number" name="rp_capital_du_direct" value="0">
+                        </div>
                     </div>
                 </div>
                 <div class="asset-card">
@@ -105,6 +109,10 @@
                         <div class="input-group"><label>Taux d'intérêt annuel (%)</label><input type="number" step="0.01" name="loc_taux" value="0"></div>
                         <div class="input-group"><label>Date de début</label><input type="date" name="loc_debut"></div>
                         <div class="input-group"><label>Durée (Années)</label><input type="number" name="loc_duree" value="0"></div>
+                        <div class="input-group full-width">
+                            <label>Ou bien, indiquez directement le capital restant dû locatif (€)</label>
+                            <input type="number" name="loc_capital_du_direct" value="0">
+                        </div>
                         <div class="input-group"><label>Loyers mensuels reçus (€)</label><input type="number" name="loc_loyers" value="0"></div>
                         <div class="input-group"><label>Charges mensuelles (€)</label><input type="number" name="loc_charges" value="0"></div>
                         <div class="input-group full-width"><label>Parts de SCPI (€)</label><input type="number" name="scpi" class="savings" value="0"></div>
@@ -191,21 +199,4 @@
         btnSubmit.addEventListener('click', () => {
             // Collect all form data
             const data = {};
-            document.querySelectorAll('[name]').forEach(el => {
-                if (el.name) data[el.name] = el.value;
-            });
-            localStorage.setItem('bilan_donnees', JSON.stringify(data));
-            // Navigate to bilan page
-            // Navigate parent window to the Next.js route (fixes sidebar active state)
-            if (window.parent !== window) {
-              window.parent.location.href = '/bilan/resultat';
-            } else {
-              window.location.href = '/bilan/resultat';
-            }
-        });
-
-        updateUI();
-    });
-    </script>
-</body>
-</html>
+            document.queryS

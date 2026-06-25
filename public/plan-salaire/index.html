@@ -163,6 +163,7 @@ async function validerPlan() {
     if (data.success) {
       btn.innerHTML = '✓ Plan envoyé avec succès !';
       btn.style.background = '#16A34A';
+      window.parent.postMessage({ type: 'coachd_validated', key: 'plan_salaire_data' }, '*');
     } else {
       btn.innerHTML = 'Erreur — réessayez';
       btn.style.background = '#DC2626';
@@ -170,10 +171,4 @@ async function validerPlan() {
     }
   } catch(e) {
     btn.innerHTML = 'Erreur réseau — réessayez';
-    btn.style.background = '#DC2626';
-    btn.disabled = false;
-  }
-}
-</script>
-</body>
-</html>
+  

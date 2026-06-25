@@ -90,13 +90,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const rpRate = getVal('rp_taux');
     const rpYears = getVal('rp_duree');
     const rpDate = getDateVal('rp_debut');
-    const rpRemaining = calculateRemainingPrincipal(rpPrincipal, rpRate, rpYears, rpDate);
+    const rpDirect = getVal('rp_capital_du_direct');
+    const rpRemaining = rpDirect > 0 ? rpDirect : calculateRemainingPrincipal(rpPrincipal, rpRate, rpYears, rpDate);
 
     const locPrincipal = getVal('loc_emprunt_initial');
     const locRate = getVal('loc_taux');
     const locYears = getVal('loc_duree');
     const locDate = getDateVal('loc_debut');
-    const locRemaining = calculateRemainingPrincipal(locPrincipal, locRate, locYears, locDate);
+    const locDirect = getVal('loc_capital_du_direct');
+    const locRemaining = locDirect > 0 ? locDirect : calculateRemainingPrincipal(locPrincipal, locRate, locYears, locDate);
 
     const detteDirect = getVal('dette_capital_du_direct');
     let autreRemaining = detteDirect > 0 ? detteDirect :
@@ -461,11 +463,4 @@ document.addEventListener('DOMContentLoaded', () => {
                              title: { display: true, text: 'patrimoine en euros', color: '#1F2A44', font: { family: 'Inter', size: 12 } },
                              ticks: { callback: v => v.toLocaleString('fr-FR') + ' €' } },
                         y2: { position: 'right', display: showY2, grid: { drawOnChartArea: false },
-                              title: { display: true, text: 'patrimoine en années de dépenses', color: '#1F2A44', font: { family: 'Inter', size: 12 } },
-                              ticks: { callback: v => v.toFixed(0) + ' ans' } }
-                    }
-                }
-            });
-        }
-    }
-});
+                              title: { display: true, text: 'patrimoine en années de dépenses', color: '#1F2A44', font: { family: 'Inter', size: 12

@@ -32,6 +32,7 @@ export default function Sidebar({
   const [hasEpargneData, setHasEpargneData] = useState(false);
   const [hasBudgetData, setHasBudgetData] = useState(false);
   const [hasSalaireData, setHasSalaireData] = useState(false);
+  const [hasPlanImmoData, setHasPlanImmoData] = useState(false);
 
   useEffect(() => {
     setHasBilanData(!!localStorage.getItem("bilan_donnees"));
@@ -39,6 +40,19 @@ export default function Sidebar({
     setHasEpargneData(!!localStorage.getItem("plan_epargne_data"));
     setHasBudgetData(!!localStorage.getItem("plan_budget_data"));
     setHasSalaireData(!!localStorage.getItem("plan_salaire_data"));
+    setHasPlanImmoData(!!localStorage.getItem("plan_immo_data"));
+
+    const onMessage = (e: MessageEvent) => {
+      if (e.data?.type !== 'coachd_validated') return;
+      const key = e.data.key as string;
+      if (key === 'plan_epargne_data') setHasEpargneData(true);
+      else if (key === 'plan_bourse_data') setHasBourseData(true);
+      else if (key === 'plan_budget_data') setHasBudgetData(true);
+      else if (key === 'plan_salaire_data') setHasSalaireData(true);
+      else if (key === 'plan_immo_data') setHasPlanImmoData(true);
+    };
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
   }, []);
 
   // Derive currentVideoId from URL if not passed
@@ -292,7 +306,7 @@ export default function Sidebar({
                             : "text-gray-600 hover:text-navy hover:bg-white/70"
                         )}
                       >
-                        {hasBilanData ? (
+                        {hasPlanImmoData ? (
                           <CheckCircle size={14} className="text-terracotta shrink-0" />
                         ) : (
                           <Circle size={14} className="text-gray-300 shrink-0" />
@@ -358,31 +372,4 @@ export default function Sidebar({
                           <Circle size={14} className="text-gray-300 shrink-0" />
                         )}
                         <span className="leading-tight">Plan Salaire</span>
-                      </Link>
-                    </li>
-                  )}
-                </ul>
-              )}
-            </div>
-          );
-        })}
-      </nav>
-
-      {/* User footer */}
-      <div className="border-t border-gray-200 px-5 py-4">
-        <div className="flex items-center justify-between">
-          <div className="min-w-0">
-            <p className="text-sm font-medium text-navy truncate">{profileName}</p>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="text-gray-400 hover:text-navy transition-colors ml-3 shrink-0"
-            title="Se déconnecter"
-          >
-            <LogOut size={18} />
-          </button>
-        </div>
-      </div>
-    </aside>
-  );
-}
+          

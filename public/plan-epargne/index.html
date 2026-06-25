@@ -304,12 +304,11 @@ const patTbody = document.getElementById('pat-tbody');
 PAT_ROWS.forEach(row => {
   const tr = document.createElement('tr');
   tr.id = 'row-' + row.id;
-  const actCls = row.actuel < 0 ? 'val-neg' : 'val-calc';
   tr.innerHTML = `
     <td>${row.label}</td>
-    <td id="act-${row.id}" class="${actCls}">${fmt(row.actuel)}</td>
+    <td id="act-${row.id}" class="val-calc">${fmt(row.actuel)}</td>
     <td id="cible-${row.id}" class="col-cible val-calc">—</td>
-    <td id="action-${row.id}" style="font-size:0.83rem; line-height:1.5; color:#374151">—</td>`;
+    <td id="action-${row.id}" class="val-calc" style="font-size:0.83rem; line-height:1.5; text-align:left">—</td>`;
   patTbody.appendChild(tr);
 });
 
@@ -611,6 +610,7 @@ async function validerPlan() {
     if (data.success) {
       btn.innerHTML = '✓ Plan envoyé avec succès !';
       btn.style.background = '#16A34A';
+      window.parent.postMessage({ type: 'coachd_validated', key: 'plan_epargne_data' }, '*');
     } else {
       btn.innerHTML = 'Erreur — réessayez';
       btn.style.background = '#DC2626';
@@ -619,9 +619,4 @@ async function validerPlan() {
   } catch(e) {
     btn.innerHTML = 'Erreur réseau — réessayez';
     btn.style.background = '#DC2626';
-    btn.disabled = false;
-  }
-}
-</script>
-</body>
-</html>
+    
