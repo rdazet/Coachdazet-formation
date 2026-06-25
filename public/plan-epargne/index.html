@@ -213,26 +213,62 @@ try { d = JSON.parse(localStorage.getItem('bilan_donnees') || '{}'); } catch(e) 
 
 function n(k) { return parseFloat(d[k]) || 0; }
 
-// Pre-computed from bilan
-const age                 = n('age');
-const revenusMensuels     = n('salaire_net') + n('bonus_net');
-const epargneMensuelleBase = n('epargne_mensuelle');
-const grossesDepenses     = n('grosses_depenses');
+// ── Calcul CRD dette hors immobilier ─────────────────────
+function crdDette() {
+  const direct = n('dette_capital_du_direct');
+  if (direct > 0) return direct;
+  const capital = n('dette_montant');
+  const taux    = n('dette_taux');
+  const duree   = n('dette_duree');
+  const debut   = d['dette_debut'] || '';
+  if (!capital || !duree || !debut) return 0;
+  const parts = debut.split('-');
+  if (parts.length < 3) return 0;
+  const start = new Date(+parts[0], +parts[1]-1, +parts[2].substring(0,2));
+  const today = new Date();
+  if (isNaN(start.getTime()) || start > today) return capital;
+  let months = (today.getFullYear()-start.getFullYear())*12 + (today.getMonth()-start.getMonth());
+  if (today.getDate() < start.getDate()) months--;
+  months = Math.max(0, months);
+  const total = duree * 12;
+  if (months >= total) return 0;
+  const r = taux / 100 / 12;
+  if (r === 0) return capital - (capital/total)*months;
+  const pmt = (capital*r)/(1-Math.pow(1+r,-total));
+  let bal = capital;
+  for (let i = 0; i < months; i++) bal -= pmt - bal*r;
+  return Math.max(0, bal);
+}
 
-// Actuel values — fixed from bilan, not editable
-const dettesActuel = n('dette_capital_du_direct');
-const secuActuel   = n('av_fonds_euros');
-const mtActuel     = 0;
-const bourseActuel = n('cto') + n('pea') + n('per') + n('pee') + n('av_uc') + n('autres_invests');
+// Pre-computed from bilan
+const age                  = n('age');
+const revenusMensuels      = n('salaire_net') + n('bonus_net');
+const epargneMensuelleBase = n('epargne_mensuelle');
+const grossesDepenses      = n('grosses_depenses');
+
+// ── Valeurs Actuelles ────────────────────────────────────
+const detteCRD    = crdDette();
+const dettesActuel = -detteCRD;  // affiché en négatif (passif)
+
+// Fonds de sécurité = tous les comptes cash
+const secuActuel = n('comptes_cheques') + n('cel') + n('pel')
+                 + n('livret_a') + n('ldd') + n('lep') + n('divers_liquidites');
+
+// Fonds moyen terme = assurance-vie fonds euros
+const mtActuel = n('av_fonds_euros');
+
+// Bourse = CTO + PEA + PER + PEE + AV UC + Autres
+const bourseActuel = n('cto') + n('pea') + n('per') + n('pee')
+                   + n('av_uc') + n('autres_invests');
 
 // Computed constants
 const depensesMensuelles  = Math.max(0, revenusMensuels - epargneMensuelleBase);
 const moisFondsSecuDefaut = defaultMois(age);
 
-function defaultMois(age) {
-  if (age < 30) return 3;
-  if (age < 50) return 6;
-  if (age < 65) return 12;
+function defaultMois(a) {
+  if (a < 30) return 3;
+  if (a < 50) return 6;
+  if (a < 65) return 12;
   return 24;
 }
 
@@ -269,12 +305,13 @@ const patTbody = document.getElementById('pat-tbody');
 PAT_ROWS.forEach(row => {
   const tr = document.createElement('tr');
   tr.id = 'row-' + row.id;
+  const actCls = row.actuel < 0 ? 'val-neg' : 'val-calc';
   tr.innerHTML = `
     <td>${row.label}</td>
-    <td id="act-${row.id}" class="val-calc">${fmt(row.actuel)}</td>
+    <td id="act-${row.id}" class="${actCls}">${fmt(row.actuel)}</td>
     <td id="cible-${row.id}" class="col-cible val-calc">—</td>
     <td id="mouv-${row.id}">—</td>
-    <td style="color:#9CA3AF">—</td>`;
+    <td id="epf-${row.id}" style="color:#9CA3AF; font-size:0.82rem; line-height:1.4">—</td>`;
   patTbody.appendChild(tr);
 });
 
@@ -330,31 +367,44 @@ function fmtMouv(v) {
   return `<span style="color:#6B7280">0 €</span>`;
 }
 
+// ── Helpers affichage ─────────────────────────────────────
+function fmtEpf(mois, isLast, noTarget) {
+  const e = epargneMensuelleBase;
+  const eMois = new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(e);
+  if (noTarget) return '<span style="color:#9CA3AF">—</span>';
+  if (isLast)   return `<span style="color:#1B2B4A;font-weight:600">${eMois}/mois</span><br><span style="color:#9CA3AF;font-size:0.75rem">à vie</span>`;
+  if (mois === 0) return '<span style="color:#16A34A;font-weight:600">✓ Complet</span>';
+  return `<span style="color:#1B2B4A;font-weight:600">${eMois}/mois</span><br><span style="color:#6B7280;font-size:0.75rem">${mois} mois</span>`;
+}
+
 // ── Calculate ────────────────────────────────────────────
 function recalculate() {
   const depenses = depensesMensuelles;
   const mois     = parseFloat(document.getElementById('inp-mois')?.value) || moisFondsSecuDefaut;
   const gt5      = grossesDepenses;
+  const epargne  = epargneMensuelleBase;
 
-  // Actuel (fixed)
+  // Actuel (fixed, dettesActuel est négatif)
   const actDettes = dettesActuel;
   const actSecu   = secuActuel;
   const actMt     = mtActuel;
   const actBourse = bourseActuel;
+  // totalAct = patrimoine net hors immo (actifs - dettes)
   const totalAct  = actDettes + actSecu + actMt + actBourse;
 
-  // Cible values
+  // Cible
   const cDettes = 0;
   const cSecu   = depenses * mois;
   const cMt     = gt5;
+  // Le bourse cible reçoit tout ce qui reste après remboursement dettes + secu + MT
   const cBourse = Math.max(0, totalAct - cSecu - cMt);
   const totalC  = cDettes + cSecu + cMt + cBourse;
 
-  // Update cible cells
-  document.getElementById('cible-dettes').innerHTML = fmt(cDettes);
-  document.getElementById('cible-secu').innerHTML   = fmt(cSecu);
-  document.getElementById('cible-mt').innerHTML     = fmt(cMt);
-  document.getElementById('cible-bourse').innerHTML = fmt(cBourse);
+  // Cible cells
+  document.getElementById('cible-dettes').innerHTML = `<span class="val-calc">${fmt(cDettes)}</span>`;
+  document.getElementById('cible-secu').innerHTML   = `<span class="val-calc">${fmt(cSecu)}</span>`;
+  document.getElementById('cible-mt').innerHTML     = `<span class="val-calc">${cMt > 0 ? fmt(cMt) : '—'}</span>`;
+  document.getElementById('cible-bourse').innerHTML = `<span class="val-calc">${fmt(cBourse)}</span>`;
 
   // Mouvements
   document.getElementById('mouv-dettes').innerHTML = fmtMouv(cDettes - actDettes);
@@ -362,12 +412,26 @@ function recalculate() {
   document.getElementById('mouv-mt').innerHTML     = fmtMouv(cMt     - actMt);
   document.getElementById('mouv-bourse').innerHTML = fmtMouv(cBourse - actBourse);
 
-  // Totals
-  document.getElementById('total-act').textContent  = fmt(totalAct);
-  document.getElementById('total-cible').innerHTML  = `<span class="val-calc">${fmt(totalC)}</span>`;
-  document.getElementById('total-mouv').innerHTML   = fmtMouv(totalC - totalAct);
+  // Totaux
+  document.getElementById('total-act').innerHTML   = `<span class="${totalAct < 0 ? 'val-neg' : 'val-calc'}">${fmt(totalAct)}</span>`;
+  document.getElementById('total-cible').innerHTML = `<span class="val-calc">${fmt(totalC)}</span>`;
+  document.getElementById('total-mouv').innerHTML  = fmtMouv(totalC - totalAct);
 
-  // Charts
+  // ── Épargne future — cascade dettes → secu → MT → bourse ──
+  const moisDettes = detteCRD > 0 && epargne > 0 ? Math.ceil(detteCRD / epargne) : 0;
+  const needSecu   = Math.max(0, cSecu - actSecu);
+  const moisSecu   = needSecu > 0 && epargne > 0 ? Math.ceil(needSecu / epargne) : 0;
+  const needMt     = cMt > 0 ? Math.max(0, cMt - actMt) : -1; // -1 = sans objet
+  const moisMt     = needMt > 0 && epargne > 0 ? Math.ceil(needMt / epargne) : 0;
+
+  document.getElementById('epf-dettes').innerHTML = moisDettes > 0
+    ? `<span style="color:#DC2626;font-weight:600">${new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(epargne)}/mois</span><br><span style="color:#6B7280;font-size:0.75rem">${moisDettes} mois</span>`
+    : '<span style="color:#16A34A;font-weight:600">✓ Remboursée</span>';
+  document.getElementById('epf-secu').innerHTML   = fmtEpf(moisSecu, false, false);
+  document.getElementById('epf-mt').innerHTML     = fmtEpf(needMt < 0 ? 0 : moisMt, false, needMt < 0);
+  document.getElementById('epf-bourse').innerHTML = fmtEpf(0, true, false);
+
+  // Charts (exclure les valeurs négatives = dettes)
   const KEYS    = ['dettes','secu','mt','bourse'];
   const actVals = [actDettes, actSecu, actMt, actBourse];
   const cVals   = [cDettes,   cSecu,   cMt,   cBourse];
@@ -439,37 +503,41 @@ async function validerPlan() {
   });
 
   // Section 2
-  const depenses = depensesMensuelles;
-  const mois     = parseFloat(document.getElementById('inp-mois')?.value) || moisFondsSecuDefaut;
-  const gt5      = grossesDepenses;
+  const depenses  = depensesMensuelles;
+  const mois      = parseFloat(document.getElementById('inp-mois')?.value) || moisFondsSecuDefaut;
+  const gt5       = grossesDepenses;
+  const cSecu     = depenses * mois;
+  const cMt       = gt5;
+  const totalAct  = dettesActuel + secuActuel + mtActuel + bourseActuel;
+  const cBourse   = Math.max(0, totalAct - cSecu - cMt);
+  const epargne   = epargneMensuelleBase;
 
-  const cSecu   = depenses * mois;
-  const cMt     = gt5;
-  const totalAct = dettesActuel + secuActuel + mtActuel + bourseActuel;
-  const cBourse = Math.max(0, totalAct - cSecu - cMt);
+  const moisD = detteCRD > 0 && epargne > 0 ? Math.ceil(detteCRD / epargne) : 0;
+  const moisS = Math.max(0, cSecu - secuActuel) > 0 && epargne > 0 ? Math.ceil(Math.max(0, cSecu - secuActuel) / epargne) : 0;
+  const moisM = cMt > 0 && Math.max(0, cMt - mtActuel) > 0 && epargne > 0 ? Math.ceil(Math.max(0, cMt - mtActuel) / epargne) : 0;
 
   function fmtNum(v) { return String(Math.round(v)).padStart(12) + ' €'; }
 
   let part2 = 'PLAN ÉPARGNE\n' + '─'.repeat(38) + '\n\n';
   part2 += `Revenus mensuels : ${revenusMensuels} €\n`;
   part2 += `Dépenses mensuelles : ${depenses} €\n`;
-  part2 += `Épargne mensuelle : ${epargneMensuelleBase} €\n`;
+  part2 += `Épargne mensuelle : ${epargne} €\n`;
   part2 += `Mois requis — fonds de sécurité : ${mois}\n`;
   part2 += `Grosses dépenses prévues (5 ans) : ${gt5} €\n\n`;
   part2 += 'PATRIMOINE HORS IMMOBILIER\n';
   part2 += `${'─'.repeat(38)}\n`;
-  part2 += `                     | Actuel       | Cible        | Mouvement\n`;
+  part2 += `                     | Actuel       | Cible        | Mvt          | Épargne future\n`;
 
   const rows = [
-    { label: 'Dettes',            act: dettesActuel, cible: 0       },
-    { label: 'Fonds de sécurité', act: secuActuel,   cible: cSecu   },
-    { label: 'Fonds moyen terme', act: mtActuel,     cible: cMt     },
-    { label: 'Bourse',            act: bourseActuel, cible: cBourse },
+    { label: 'Dettes',            act: dettesActuel, cible: 0,       fut: moisD > 0 ? `${epargne} €/mois · ${moisD} mois` : '✓ Remboursée' },
+    { label: 'Fonds de sécurité', act: secuActuel,   cible: cSecu,   fut: moisS > 0 ? `${epargne} €/mois · ${moisS} mois` : '✓ Complet'    },
+    { label: 'Fonds moyen terme', act: mtActuel,     cible: cMt,     fut: cMt === 0 ? '—' : moisM > 0 ? `${epargne} €/mois · ${moisM} mois` : '✓ Complet' },
+    { label: 'Bourse',            act: bourseActuel, cible: cBourse, fut: `${epargne} €/mois · à vie` },
   ];
   rows.forEach(r => {
     const m = r.cible - r.act;
     const mStr = (m >= 0 ? '+' : '') + Math.round(m) + ' €';
-    part2 += `${r.label.padEnd(20)} | ${fmtNum(r.act)} | ${fmtNum(r.cible)} | ${mStr}\n`;
+    part2 += `${r.label.padEnd(20)} | ${fmtNum(r.act)} | ${fmtNum(r.cible)} | ${mStr.padEnd(12)} | ${r.fut}\n`;
   });
   const tAct = rows.reduce((s,r) => s + r.act,   0);
   const tC   = rows.reduce((s,r) => s + r.cible, 0);

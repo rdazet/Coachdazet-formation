@@ -23,7 +23,6 @@ export default async function PlanBoursePage() {
       <div className="px-6 py-4 border-b border-gray-200 bg-white flex items-center justify-between shrink-0">
         <div>
           <h1 className="font-display text-xl font-semibold text-navy">Plan Bourse</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Mesurez vos progrès et définissez votre stratégie d&apos;investissement</p>
         </div>
         <a
           href={iframeSrc}
