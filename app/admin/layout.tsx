@@ -87,4 +87,18 @@ export default async function AdminLayout({
           <div className="flex items-center justify-between">
             <p className="text-sm text-white/70 truncate">{profile.full_name}</p>
             <form action="/api/auth/signout" method="POST">
-              <button className="t
+              <button className="text-white/50 hover:text-white transition-colors ml-2">
+                <LogOut size={16} />
+              </button>
+            </form>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main content */}
+      <main className="flex-1 overflow-y-auto">
+        {children}
+      </main>
+    </div>
+  );
+}

@@ -124,3 +124,8 @@ export default async function UtilisateursPage() {
             </tbody>
           </table>
     
+        </div>
+      </div>
+    </div>
+  );
+}
