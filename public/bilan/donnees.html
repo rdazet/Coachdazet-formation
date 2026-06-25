@@ -8,6 +8,27 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <style>
+        .btn-add-loc {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            width: 100%; margin-top: 0.75rem; padding: 10px 20px;
+            background: #fff; color: #1B2B4A; border: 2px dashed #CBD5E0;
+            border-radius: 10px; font-family: 'Outfit', sans-serif;
+            font-size: 0.9rem; font-weight: 600; cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .btn-add-loc:hover { border-color: #1B2B4A; background: #F8F9FB; }
+        .loc-extra-card { position: relative; }
+        .btn-remove-loc {
+            position: absolute; top: 12px; right: 12px;
+            background: #FEE2E2; color: #DC2626; border: none;
+            border-radius: 6px; width: 28px; height: 28px;
+            font-size: 1rem; cursor: pointer; display: flex;
+            align-items: center; justify-content: center;
+            transition: background 0.15s;
+        }
+        .btn-remove-loc:hover { background: #FECACA; }
+    </style>
 </head>
 <body>
     <main class="app-container">
@@ -85,6 +106,8 @@
             <!-- STEP 5: IMMOBILIER -->
             <div class="step" id="step-5">
                 <h2 class="step-title">Patrimoine Immobilier</h2>
+
+                <!-- Résidence Principale -->
                 <div class="asset-card">
                     <h3>Résidence Principale</h3>
                     <div class="input-group"><label>Lieu</label><input type="text" name="rp_lieu" placeholder="Ex: Paris"></div>
@@ -100,24 +123,34 @@
                         </div>
                     </div>
                 </div>
-                <div class="asset-card">
-                    <h3>Investissement Locatif & SCPI</h3>
-                    <div class="grid-2">
-                        <div class="input-group"><label>Lieu</label><input type="text" name="loc_lieu" placeholder="Ex: Lyon"></div>
-                        <div class="input-group"><label>Valeur estimée (€)</label><input type="number" name="loc_valeur" class="real-estate" value="0"></div>
-                        <div class="input-group"><label>Montant emprunté initial (€)</label><input type="number" name="loc_emprunt_initial" value="0"></div>
-                        <div class="input-group"><label>Taux d'intérêt annuel (%)</label><input type="number" step="0.01" name="loc_taux" value="0"></div>
-                        <div class="input-group"><label>Date de début</label><input type="date" name="loc_debut"></div>
-                        <div class="input-group"><label>Durée (Années)</label><input type="number" name="loc_duree" value="0"></div>
-                        <div class="input-group full-width">
-                            <label>Ou bien, indiquez directement le capital restant dû locatif (€)</label>
-                            <input type="number" name="loc_capital_du_direct" value="0">
+
+                <!-- Locatifs (dynamiques) -->
+                <div id="loc-cards-container">
+                    <!-- Locatif 1 (toujours présent) -->
+                    <div class="asset-card" id="loc-card-1">
+                        <h3>Investissement Locatif 1 &amp; SCPI</h3>
+                        <div class="grid-2">
+                            <div class="input-group"><label>Lieu</label><input type="text" name="loc_lieu" placeholder="Ex: Lyon"></div>
+                            <div class="input-group"><label>Valeur estimée (€)</label><input type="number" name="loc_valeur" class="real-estate" value="0"></div>
+                            <div class="input-group"><label>Montant emprunté initial (€)</label><input type="number" name="loc_emprunt_initial" value="0"></div>
+                            <div class="input-group"><label>Taux d'intérêt annuel (%)</label><input type="number" step="0.01" name="loc_taux" value="0"></div>
+                            <div class="input-group"><label>Date de début</label><input type="date" name="loc_debut"></div>
+                            <div class="input-group"><label>Durée (Années)</label><input type="number" name="loc_duree" value="0"></div>
+                            <div class="input-group full-width">
+                                <label>Ou bien, indiquez directement le capital restant dû locatif (€)</label>
+                                <input type="number" name="loc_capital_du_direct" value="0">
+                            </div>
+                            <div class="input-group"><label>Loyers mensuels reçus (€)</label><input type="number" name="loc_loyers" value="0"></div>
+                            <div class="input-group"><label>Charges mensuelles (€)</label><input type="number" name="loc_charges" value="0"></div>
+                            <div class="input-group full-width"><label>Parts de SCPI (€)</label><input type="number" name="scpi" class="savings" value="0"></div>
                         </div>
-                        <div class="input-group"><label>Loyers mensuels reçus (€)</label><input type="number" name="loc_loyers" value="0"></div>
-                        <div class="input-group"><label>Charges mensuelles (€)</label><input type="number" name="loc_charges" value="0"></div>
-                        <div class="input-group full-width"><label>Parts de SCPI (€)</label><input type="number" name="scpi" class="savings" value="0"></div>
                     </div>
                 </div>
+
+                <!-- Bouton ajouter -->
+                <button type="button" class="btn-add-loc" id="btn-add-loc" onclick="addLocatif()">
+                    + Ajouter un investissement locatif
+                </button>
             </div>
 
             <!-- STEP 6: ENDETTEMENT -->
@@ -147,6 +180,61 @@
     </main>
 
     <script>
+    // ── Gestion des locatifs dynamiques ──────────────────────
+    let locCount = 1; // nombre de cartes locatif actuellement affichées
+
+    function locCardHTML(n) {
+        const p = 'loc' + n;
+        return `
+        <div class="asset-card loc-extra-card" id="loc-card-${n}">
+            <button type="button" class="btn-remove-loc" onclick="removeLocatif(${n})" title="Supprimer">✕</button>
+            <h3>Investissement Locatif ${n}</h3>
+            <div class="grid-2">
+                <div class="input-group"><label>Lieu</label><input type="text" name="${p}_lieu" placeholder="Ex: Bordeaux"></div>
+                <div class="input-group"><label>Valeur estimée (€)</label><input type="number" name="${p}_valeur" class="real-estate" value="0"></div>
+                <div class="input-group"><label>Montant emprunté initial (€)</label><input type="number" name="${p}_emprunt_initial" value="0"></div>
+                <div class="input-group"><label>Taux d'intérêt annuel (%)</label><input type="number" step="0.01" name="${p}_taux" value="0"></div>
+                <div class="input-group"><label>Date de début</label><input type="date" name="${p}_debut"></div>
+                <div class="input-group"><label>Durée (Années)</label><input type="number" name="${p}_duree" value="0"></div>
+                <div class="input-group full-width">
+                    <label>Capital restant dû direct (€)</label>
+                    <input type="number" name="${p}_capital_du_direct" value="0">
+                </div>
+                <div class="input-group"><label>Loyers mensuels reçus (€)</label><input type="number" name="${p}_loyers" value="0"></div>
+                <div class="input-group"><label>Charges mensuelles (€)</label><input type="number" name="${p}_charges" value="0"></div>
+            </div>
+        </div>`;
+    }
+
+    function addLocatif(restoreN) {
+        locCount++;
+        const n = restoreN || locCount;
+        if (!restoreN) locCount = n; // keep in sync when called manually
+        const container = document.getElementById('loc-cards-container');
+        const btn = document.getElementById('btn-add-loc');
+        const div = document.createElement('div');
+        div.innerHTML = locCardHTML(n);
+        container.insertBefore(div.firstElementChild, null); // append inside container
+        // ensure button stays after container (already is, since button is outside)
+    }
+
+    function removeLocatif(n) {
+        const card = document.getElementById('loc-card-' + n);
+        if (card) card.remove();
+        // clear saved data keys for this locatif
+        const saved = localStorage.getItem('bilan_donnees');
+        if (saved) {
+            try {
+                const data = JSON.parse(saved);
+                Object.keys(data).forEach(k => {
+                    if (k.startsWith('loc' + n + '_')) delete data[k];
+                });
+                localStorage.setItem('bilan_donnees', JSON.stringify(data));
+            } catch(e) {}
+        }
+    }
+
+    // ── Formulaire ────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', () => {
         let currentStep = 1;
         const totalSteps = 6;
@@ -167,8 +255,21 @@
         }
 
         function restoreFromData(data) {
+            // Detect and create additional locatif cards BEFORE populating fields
+            const extraNums = new Set();
+            Object.keys(data).forEach(k => {
+                const m = k.match(/^loc(\d+)_/);
+                if (m && parseInt(m[1]) >= 2) extraNums.add(parseInt(m[1]));
+            });
+            Array.from(extraNums).sort((a,b)=>a-b).forEach(n => {
+                if (!document.getElementById('loc-card-' + n)) {
+                    addLocatif(n);
+                    locCount = Math.max(locCount, n);
+                }
+            });
+            // Populate all fields
             Object.entries(data).forEach(([name, value]) => {
-                const el = document.querySelector(`[name="${name}"]`);
+                const el = document.querySelector('[name="' + name + '"]');
                 if (el) el.value = value;
             });
         }
@@ -204,13 +305,11 @@
         btnPrev.addEventListener('click', () => { if (currentStep > 1) { currentStep--; updateUI(); } });
 
         btnSubmit.addEventListener('click', () => {
-            // Collect all form data
             const data = {};
             document.querySelectorAll('[name]').forEach(el => {
                 if (el.name) data[el.name] = el.value;
             });
             localStorage.setItem('bilan_donnees', JSON.stringify(data));
-            // Navigate parent window to the Next.js route (fixes sidebar active state)
             if (window.parent !== window) {
               window.parent.location.href = '/bilan/resultat';
             } else {

@@ -93,12 +93,56 @@ document.addEventListener('DOMContentLoaded', () => {
     const rpDirect = getVal('rp_capital_du_direct');
     const rpRemaining = rpDirect > 0 ? rpDirect : calculateRemainingPrincipal(rpPrincipal, rpRate, rpYears, rpDate);
 
-    const locPrincipal = getVal('loc_emprunt_initial');
-    const locRate = getVal('loc_taux');
-    const locYears = getVal('loc_duree');
-    const locDate = getDateVal('loc_debut');
-    const locDirect = getVal('loc_capital_du_direct');
-    const locRemaining = locDirect > 0 ? locDirect : calculateRemainingPrincipal(locPrincipal, locRate, locYears, locDate);
+    // --- Locatifs : loc1 + tous les locatifs supplémentaires ---
+    const loc1Principal = getVal('loc_emprunt_initial');
+    const loc1Rate = getVal('loc_taux');
+    const loc1Years = getVal('loc_duree');
+    const loc1Date = getDateVal('loc_debut');
+    const loc1Direct = getVal('loc_capital_du_direct');
+    const loc1Remaining = loc1Direct > 0 ? loc1Direct : calculateRemainingPrincipal(loc1Principal, loc1Rate, loc1Years, loc1Date);
+
+    const allLocs = [{
+        principal: loc1Principal, rate: loc1Rate, years: loc1Years, date: loc1Date,
+        remaining: loc1Remaining,
+        valeur: getVal('loc_valeur'), loyers: getVal('loc_loyers'), charges: getVal('loc_charges'),
+    }];
+
+    // Détecter les locatifs supplémentaires (loc2, loc3, …) depuis localStorage
+    try {
+        const savedObj = JSON.parse(saved);
+        const extraNums = new Set();
+        Object.keys(savedObj).forEach(k => {
+            const m = k.match(/^loc(\d+)_/);
+            if (m && parseInt(m[1]) >= 2) extraNums.add(parseInt(m[1]));
+        });
+        Array.from(extraNums).sort((a, b) => a - b).forEach(n => {
+            const p = 'loc' + n;
+            const principal = getVal(p + '_emprunt_initial');
+            const rate = getVal(p + '_taux');
+            const years = getVal(p + '_duree');
+            const date = getDateVal(p + '_debut');
+            const direct = getVal(p + '_capital_du_direct');
+            const remaining = direct > 0 ? direct : calculateRemainingPrincipal(principal, rate, years, date);
+            allLocs.push({
+                principal, rate, years, date, remaining,
+                valeur: getVal(p + '_valeur'),
+                loyers: getVal(p + '_loyers'),
+                charges: getVal(p + '_charges'),
+            });
+        });
+    } catch(e) {}
+
+    // Agrégats locatifs
+    const totalLocValeur    = allLocs.reduce((s, l) => s + l.valeur, 0);
+    const totalLocRemaining = allLocs.reduce((s, l) => s + l.remaining, 0);
+    const totalLocLoyers    = allLocs.reduce((s, l) => s + l.loyers, 0);
+
+    // Compatibilité avec le reste du code (loc1 = ancien locRemaining)
+    const locPrincipal = loc1Principal;
+    const locRate      = loc1Rate;
+    const locYears     = loc1Years;
+    const locDate      = loc1Date;
+    const locRemaining = loc1Remaining; // utilisé uniquement pour check-loc-remaining
 
     const detteDirect = getVal('dette_capital_du_direct');
     let autreRemaining = detteDirect > 0 ? detteDirect :
@@ -109,17 +153,16 @@ document.addEventListener('DOMContentLoaded', () => {
     cashNames.forEach(n => rawCash += getVal(n));
     const patrimoineCash = rawCash - autreRemaining;
 
-    const valeurRp = getVal('rp_valeur');
-    const valeurLoc = getVal('loc_valeur');
+    const valeurRp   = getVal('rp_valeur');
     const valeurScpi = getVal('scpi');
-    const patrimoineImmo = (valeurRp + valeurLoc + valeurScpi) - (rpRemaining + locRemaining);
+    const patrimoineImmo = (valeurRp + totalLocValeur + valeurScpi) - (rpRemaining + totalLocRemaining);
 
     const bourseNames = ['cto','pea','per','pee','av_fonds_euros','av_uc','autres_invests'];
     let patrimoineBourse = 0;
     bourseNames.forEach(n => patrimoineBourse += getVal(n));
 
     const patrimoineTotal = patrimoineCash + patrimoineImmo + patrimoineBourse;
-    const totalDebt = rpRemaining + locRemaining + autreRemaining;
+    const totalDebt = rpRemaining + totalLocRemaining + autreRemaining;
 
     const salaireMensuel = getVal('salaire_net') + getVal('bonus_net');
     const epargneMensuelle = getVal('epargne_mensuelle');
@@ -132,8 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
         : "Dépenses non définies.";
 
     // Endettement
-    const locLoyers = getVal('loc_loyers');
-    const revenusAnnuels = (salaireMensuel + locLoyers) * 12;
+    const revenusAnnuels = (salaireMensuel + totalLocLoyers) * 12;
 
     function calcMonthlyPayment(p, r, y) {
         if (!p || !y) return 0;
@@ -147,8 +189,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let remboursementsAnnuels = 0;
     const rpMensualite = calcMonthlyPayment(rpPrincipal, rpRate, rpYears);
     if (rpMensualite && rpRemaining > 0) remboursementsAnnuels += rpMensualite * 12;
-    const locMensualite = calcMonthlyPayment(locPrincipal, locRate, locYears);
-    if (locMensualite && locRemaining > 0) remboursementsAnnuels += locMensualite * 12;
+    // Tous les locatifs
+    allLocs.forEach(l => {
+        const m = calcMonthlyPayment(l.principal, l.rate, l.years);
+        if (m && l.remaining > 0) remboursementsAnnuels += m * 12;
+    });
 
     let tauxEndettement = revenusAnnuels > 0 ? (remboursementsAnnuels / revenusAnnuels) * 100 : 0;
 
@@ -161,14 +206,13 @@ document.addEventListener('DOMContentLoaded', () => {
         ? capaciteRemboursementMensuelle * (1 - Math.pow(1 + tauxMensuel, -240)) / tauxMensuel : 0;
 
     // Épargne — capital RP remboursé sur l'année civile en cours
-    // Amortisation ANNUELLE pour matcher Excel CUMPRINC(rate, nper_years, pv, yearNum, yearNum, 0)
     let rpPrincipalAnnuel = 0;
     if (rpPrincipal > 0 && rpYears > 0 && rpDate) {
         const evalDateVal = getDateVal('date_evaluation');
         const evalYear = evalDateVal ? new Date(evalDateVal).getFullYear() : new Date().getFullYear();
         const startYear = new Date(rpDate).getFullYear();
-        const yearNum = Math.max(1, evalYear - startYear);   // ex. 2026-2022 = 4
-        const r = rpRate / 100;                               // taux annuel
+        const yearNum = Math.max(1, evalYear - startYear);
+        const r = rpRate / 100;
         function balAtYear(n) {
             if (n <= 0) return rpPrincipal;
             if (n >= rpYears) return 0;
@@ -187,7 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tauxIdeal = salaireAnnuelComplet > 60000 ? 0.30 : 0.20;
     const epargneCibleeMensuelle = salaireMensuel * tauxIdeal;
     const economiesSupplementairesMensuelles = epargneTotaleAnnuelle / 12 >= epargneCibleeMensuelle
-        ? (epargneAnnuelleDecla * 0.1) / 12   // bonus 10% si déjà au-dessus du taux idéal
+        ? (epargneAnnuelleDecla * 0.1) / 12
         : Math.max(0, epargneCibleeMensuelle - epargneTotaleAnnuelle / 12);
 
     // --- AFFICHAGE ---
@@ -203,7 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
     set('res-annees-depenses', anneesDepensesText);
     set('res-remboursements-immo', formatCurrency(remboursementsAnnuels) + " / an");
     set('res-salaire-annuel', formatCurrency(salaireMensuel * 12) + " / an");
-    set('res-revenus-locatifs', formatCurrency(locLoyers * 12) + " / an");
+    set('res-revenus-locatifs', formatCurrency(totalLocLoyers * 12) + " / an");
     set('res-total-revenus', formatCurrency(revenusAnnuels) + " / an");
     set('res-cr-mensuel', formatCurrency(capaciteRemboursementMensuelle) + ' / mois');
     set('res-cape-endettement', formatCurrency(capaciteEndettement));
@@ -223,7 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
     set('check-pat-bourse', formatCurrency(patrimoineBourse));
     set('check-pat-total', formatCurrency(patrimoineTotal));
     set('check-rp-remaining', formatCurrency(rpRemaining));
-    set('check-loc-remaining', formatCurrency(locRemaining));
+    set('check-loc-remaining', formatCurrency(totalLocRemaining));
     set('check-autre-remaining', formatCurrency(autreRemaining));
     set('check-total-debt', formatCurrency(totalDebt));
     set('check-salaire-complet', formatCurrency(salaireMensuel));
@@ -267,7 +311,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let currentAge = ageActuel;
         let currentCash = rawCash;
         const annualSavings = epargneMensuelle * 12;
-        let currentImmoBrut = valeurRp + valeurLoc + valeurScpi;
+        let currentImmoBrut = valeurRp + totalLocValeur + valeurScpi;
         let bourseSafe = getVal('av_fonds_euros') + getVal('autres_invests');
         let bourseDynamique = getVal('cto') + getVal('pea') + getVal('per') + getVal('pee') + getVal('av_uc');
         let totalLiquid = patrimoineCash + patrimoineBourse;
@@ -281,7 +325,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const nouvelImmoMensualite = capaciteEndettement > 0 ? (capaciteEndettement * nouvelImmoRateMensuel) / (1 - Math.pow(1 + nouvelImmoRateMensuel, -nouvelImmoDureeMois)) : 0;
 
         const rpMensualiteProj = calcMonthlyPayment(rpPrincipal, rpRate, rpYears);
-        const locMensualiteProj = calcMonthlyPayment(locPrincipal, locRate, locYears);
+        // Mensualités pour tous les locatifs
+        const locMensualitesProj = allLocs.map(l => calcMonthlyPayment(l.principal, l.rate, l.years));
 
         function getMonthsPassed(startDate) {
             if (!startDate) return 0;
@@ -294,8 +339,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let rpMonthsLoop = getMonthsPassed(rpDate);
         const rpTotalMonths = rpYears * 12;
-        let locMonthsLoop = getMonthsPassed(locDate);
-        const locTotalMonths = locYears * 12;
+        // Boucle de mois passés pour chaque locatif
+        let locMonthsLoops = allLocs.map(l => getMonthsPassed(l.date));
         const autreDate = getDateVal('dette_debut');
         let autreMonthsLoop = getMonthsPassed(autreDate);
         const autrePrincipalInit = getVal('dette_montant');
@@ -306,7 +351,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let annualEpargneImmo = 0;
         let cumulativeNouvelImmoEpargne = 0;
         let annualNouvelImmoEpargne = 0;
-        let currentRpLocBrut = valeurRp + valeurLoc;
+        let currentRpLocBrut = valeurRp + totalLocValeur;
         let currentScpi = valeurScpi;
 
         const tableBodyMain = document.querySelector('#projection-table-main tbody');
@@ -332,7 +377,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         while (currentAge <= 65) {
             let currentRpDebt = remainingLoop(rpPrincipal, rpRate, rpTotalMonths, rpMonthsLoop);
-            let currentLocDebt = remainingLoop(locPrincipal, locRate, locTotalMonths, locMonthsLoop);
+            // Somme des CRD de tous les locatifs
+            let currentLocDebt = allLocs.reduce((s, l, i) =>
+                s + remainingLoop(l.principal, l.rate, l.years * 12, locMonthsLoops[i]), 0);
             let currentAutreDebt = remainingLoop(autrePrincipalInit, autreRateAnnual, autreTotalMonths, autreMonthsLoop);
             let currentTotalDebtImmo = currentRpDebt + currentLocDebt;
             let currentImmoNet = currentImmoBrut - currentTotalDebtImmo + cumulativeEpargneImmo;
@@ -422,7 +469,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 let yearlyEpargneSuppl = 0;
                 for (let m = 0; m < 12; m++) {
                     if (rpPrincipal > 0 && rpTotalMonths > 0) { rpMonthsLoop++; if (rpMonthsLoop > rpTotalMonths) yearlyEpargneSuppl += rpMensualiteProj; }
-                    if (locPrincipal > 0 && locTotalMonths > 0) { locMonthsLoop++; if (locMonthsLoop > locTotalMonths) yearlyEpargneSuppl += locMensualiteProj; }
+                    // Tous les locatifs
+                    allLocs.forEach((l, i) => {
+                        if (l.principal > 0 && l.years > 0) {
+                            locMonthsLoops[i]++;
+                            if (locMonthsLoops[i] > l.years * 12) yearlyEpargneSuppl += locMensualitesProj[i];
+                        }
+                    });
                     if (autrePrincipalInit > 0 && autreTotalMonths > 0) autreMonthsLoop++;
                 }
                 annualEpargneImmo = yearlyEpargneSuppl;
@@ -463,4 +516,11 @@ document.addEventListener('DOMContentLoaded', () => {
                              title: { display: true, text: 'patrimoine en euros', color: '#1F2A44', font: { family: 'Inter', size: 12 } },
                              ticks: { callback: v => v.toLocaleString('fr-FR') + ' €' } },
                         y2: { position: 'right', display: showY2, grid: { drawOnChartArea: false },
-                              title: { display: true, text: 'patrimoine en années de dépenses', color: '#1F2A44', font: { family: 'Inter', size: 12
+                              title: { display: true, text: 'patrimoine en années de dépenses', color: '#1F2A44', font: { family: 'Inter', size: 12 } },
+                              ticks: { callback: v => v.toFixed(0) + ' ans' } }
+                    }
+                }
+            });
+        }
+    }
+});
