@@ -315,7 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let bourseSafe = getVal('av_fonds_euros') + getVal('autres_invests');
         let bourseDynamique = getVal('cto') + getVal('pea') + getVal('per') + getVal('pee') + getVal('av_uc');
         let totalLiquid = patrimoineCash + patrimoineBourse;
-        let cibleSecurite = depensesMensuelles * 6;
+        let cibleSecurite = (depensesMensuelles * 6) + getVal('grosses_depenses');
         let currentCashOptimise = Math.min(totalLiquid, cibleSecurite);
         let bourseOptimise = Math.max(0, totalLiquid - cibleSecurite);
         let nouvelImmoBrut = 0, nouvelImmoDebt = 0;
