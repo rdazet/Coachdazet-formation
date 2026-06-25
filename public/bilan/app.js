@@ -69,6 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentStep > 1) {
             currentStep--;
             updateUI();
+            window.scrollTo({ top: 0, behavior: 'instant' });
         }
     });
 

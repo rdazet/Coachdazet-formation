@@ -301,8 +301,8 @@
             }
         }
 
-        btnNext.addEventListener('click', () => { if (currentStep < totalSteps) { currentStep++; updateUI(); } });
-        btnPrev.addEventListener('click', () => { if (currentStep > 1) { currentStep--; updateUI(); } });
+        btnNext.addEventListener('click', () => { if (currentStep < totalSteps) { currentStep++; updateUI(); window.scrollTo({ top: 0, behavior: 'instant' }); } });
+        btnPrev.addEventListener('click', () => { if (currentStep > 1) { currentStep--; updateUI(); window.scrollTo({ top: 0, behavior: 'instant' }); } });
 
         btnSubmit.addEventListener('click', () => {
             const data = {};
