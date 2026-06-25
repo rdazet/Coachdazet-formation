@@ -166,17 +166,24 @@
             dateInput.value = today.toISOString().split('T')[0];
         }
 
+        function restoreFromData(data) {
+            Object.entries(data).forEach(([name, value]) => {
+                const el = document.querySelector(`[name="${name}"]`);
+                if (el) el.value = value;
+            });
+        }
+
         // Restore from localStorage if available
         const saved = localStorage.getItem('bilan_donnees');
         if (saved) {
-            try {
-                const data = JSON.parse(saved);
-                Object.entries(data).forEach(([name, value]) => {
-                    const el = document.querySelector(`[name="${name}"]`);
-                    if (el) el.value = value;
-                });
-            } catch(e) {}
+            try { restoreFromData(JSON.parse(saved)); } catch(e) {}
         }
+
+        // Refresh form when admin loads a different client (cross-tab storage event)
+        window.addEventListener('storage', (e) => {
+            if (e.key !== 'bilan_donnees' || !e.newValue) return;
+            try { restoreFromData(JSON.parse(e.newValue)); } catch(err) {}
+        });
 
         function updateUI() {
             steps.forEach((step, i) => step.classList.toggle('active', i + 1 === currentStep));
@@ -199,4 +206,20 @@
         btnSubmit.addEventListener('click', () => {
             // Collect all form data
             const data = {};
-            document.queryS
+            document.querySelectorAll('[name]').forEach(el => {
+                if (el.name) data[el.name] = el.value;
+            });
+            localStorage.setItem('bilan_donnees', JSON.stringify(data));
+            // Navigate parent window to the Next.js route (fixes sidebar active state)
+            if (window.parent !== window) {
+              window.parent.location.href = '/bilan/resultat';
+            } else {
+              window.location.href = '/bilan/resultat';
+            }
+        });
+
+        updateUI();
+    });
+    </script>
+</body>
+</html>
