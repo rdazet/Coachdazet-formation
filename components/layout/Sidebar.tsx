@@ -55,13 +55,11 @@ export default function Sidebar({
     return () => window.removeEventListener('message', onMessage);
   }, []);
 
-  // Derive currentVideoId from URL if not passed
   const videoIdFromUrl = pathname.startsWith("/formation/")
     ? pathname.split("/formation/")[1]
     : null;
   const activeVideoId = currentVideoId || videoIdFromUrl || null;
 
-  // Flatten and sort all videos alphabetically for prev/next navigation
   const allVideos = modules
     .flatMap((mod) => mod.videos || [])
     .sort((a, b) => a.title.localeCompare(b.title, "fr", { numeric: true }));
@@ -99,7 +97,6 @@ export default function Sidebar({
 
   return (
     <aside className="sidebar w-72 min-h-screen flex flex-col">
-      {/* Logo */}
       <div className="bg-navy px-6 py-4">
         <Link href="/dashboard" className="block">
           <Image
@@ -113,7 +110,6 @@ export default function Sidebar({
         </Link>
       </div>
 
-      {/* Progress */}
       <div className="px-5 py-4 border-b border-gray-200">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Progression</span>
@@ -127,7 +123,6 @@ export default function Sidebar({
         </p>
       </div>
 
-      {/* Prev / Next — only on video pages */}
       {activeVideoId && (
         <div className="px-4 py-3 border-b border-gray-200 flex gap-2">
           {prevVideo ? (
@@ -161,7 +156,6 @@ export default function Sidebar({
         </div>
       )}
 
-      {/* Nav */}
       <nav className="flex-1 overflow-y-auto py-3">
         <Link
           href="/dashboard"
@@ -176,7 +170,6 @@ export default function Sidebar({
           Vue d&apos;ensemble
         </Link>
 
-        {/* Bilan — top-level items */}
         <div className="mt-3 mb-1 px-5">
           <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Bilan</span>
         </div>
@@ -372,4 +365,30 @@ export default function Sidebar({
                           <Circle size={14} className="text-gray-300 shrink-0" />
                         )}
                         <span className="leading-tight">Plan Salaire</span>
-          
+                      </Link>
+                    </li>
+                  )}
+                </ul>
+              )}
+            </div>
+          );
+        })}
+      </nav>
+
+      <div className="border-t border-gray-200 px-5 py-4">
+        <div className="flex items-center justify-between">
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-navy truncate">{profileName}</p>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="text-gray-400 hover:text-navy transition-colors ml-3 shrink-0"
+            title="Se déconnecter"
+          >
+            <LogOut size={18} />
+          </button>
+        </div>
+      </div>
+    </aside>
+  );
+}
