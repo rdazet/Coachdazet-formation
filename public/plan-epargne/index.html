@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="/bilan/style.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <style>
-    .container { padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
+    .container { padding-left: 1rem !important; padding-right: 1rem !important; }
 
     .section-title {
       font-family: 'Outfit', sans-serif;
@@ -182,7 +182,7 @@
         <th>PATRIMOINE HORS IMMOBILIER</th>
         <th>Actuel</th>
         <th>Cible</th>
-        <th>Actions à mener</th>
+        <th>Transferts</th>
       </tr>
     </thead>
     <tbody id="pat-tbody"></tbody>
@@ -308,7 +308,7 @@ PAT_ROWS.forEach(row => {
     <td>${row.label}</td>
     <td id="act-${row.id}" class="val-calc">${fmt(row.actuel)}</td>
     <td id="cible-${row.id}" class="col-cible val-calc">—</td>
-    <td id="action-${row.id}" class="val-calc" style="font-size:0.83rem; line-height:1.5; text-align:left">—</td>`;
+    <td id="transfert-${row.id}" class="val-calc">—</td>`;
   patTbody.appendChild(tr);
 });
 
@@ -414,64 +414,11 @@ function recalculate() {
   document.getElementById('total-act').innerHTML   = `<span class="${totalAct < 0 ? 'val-neg' : 'val-calc'}">${fmt(totalAct)}</span>`;
   document.getElementById('total-cible').innerHTML = `<span class="val-calc">${fmt(totalC)}</span>`;
 
-  // ── Actions à mener ──────────────────────────────────────
-  function fmtEur(v) {
-    return new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(v);
-  }
-  function addMonths(n) {
-    const d = new Date();
-    d.setMonth(d.getMonth() + n);
-    return d.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
-  }
-
-  // Dettes
-  const actionDettes = actDettes < 0
-    ? '<span style="color:#DC2626;font-weight:600">Remboursez vos dettes en priorité</span>'
-    : '<span style="color:#16A34A;font-weight:600">Rien à faire</span>';
-
-  // Fonds de sécurité
-  let actionSecu;
-  if (cSecu > actSecu) {
-    const mois_s = Math.ceil((cSecu - actSecu) / epargne);
-    actionSecu = `Placez votre épargne mensuelle (<strong>${fmtEur(epargne)}</strong>) dans votre fonds de sécurité jusqu'en <strong>${addMonths(mois_s)}</strong>`;
-  } else if (Math.round(cSecu) === Math.round(actSecu)) {
-    actionSecu = '<span style="color:#16A34A;font-weight:600">Rien à faire</span>';
-  } else {
-    const Z = Math.round(actSecu - cSecu);
-    actionSecu = `Investissez <strong>${fmtEur(Z)}</strong>`;
-  }
-
-  // Fonds moyen terme
-  const Z_secu = actSecu - cSecu; // peut être négatif si secu pas encore plein
-  let actionMt;
-  if (cMt <= 0) {
-    actionMt = '<span style="color:#9CA3AF">—</span>';
-  } else if (cMt > actMt + Z_secu) {
-    const shortfall = cMt - (actMt + Math.max(0, Z_secu));
-    const mois_mt   = Math.ceil(shortfall / epargne);
-    actionMt = `Placez votre épargne mensuelle (<strong>${fmtEur(epargne)}</strong>) dans votre fonds moyen terme jusqu'en <strong>${addMonths(mois_mt)}</strong>`;
-  } else if (Math.round(cMt) === Math.round(actMt + Z_secu)) {
-    actionMt = '<span style="color:#16A34A;font-weight:600">Rien à faire</span>';
-  } else {
-    const A = Math.round(actMt + Z_secu - cMt);
-    actionMt = `Investissez <strong>${fmtEur(A)}</strong> en Bourse`;
-  }
-
-  // Bourse
-  const patrimoineFinancier = actSecu + actMt + actBourse;
-  let actionBourse;
-  if (patrimoineFinancier >= cSecu + cMt) {
-    actionBourse = `Placez votre épargne mensuelle (<strong>${fmtEur(epargne)}</strong>) en Bourse`;
-  } else {
-    const shortfall_b = (cSecu + cMt) - patrimoineFinancier;
-    const mois_b      = Math.ceil(shortfall_b / epargne);
-    actionBourse = `Ne pas investir en Bourse avant <strong>${addMonths(mois_b)}</strong>`;
-  }
-
-  document.getElementById('action-dettes').innerHTML = actionDettes;
-  document.getElementById('action-secu').innerHTML   = actionSecu;
-  document.getElementById('action-mt').innerHTML     = actionMt;
-  document.getElementById('action-bourse').innerHTML = actionBourse;
+  // ── Transferts (cible − actuel) ─────────────────────────
+  document.getElementById('transfert-dettes').innerHTML = fmtMouv(cDettes - actDettes);
+  document.getElementById('transfert-secu').innerHTML   = fmtMouv(cSecu   - actSecu);
+  document.getElementById('transfert-mt').innerHTML     = fmtMouv(cMt     - actMt);
+  document.getElementById('transfert-bourse').innerHTML = fmtMouv(cBourse - actBourse);
 
   // Charts (exclure les valeurs négatives = dettes)
   const KEYS    = ['dettes','secu','mt','bourse'];
