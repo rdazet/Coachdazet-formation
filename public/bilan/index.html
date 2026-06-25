@@ -9,6 +9,27 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      #client-bar {
+        background: #1B2B4A; color: #fff;
+        padding: 7px 14px; margin-bottom: 14px;
+        display: flex; align-items: center; gap: 10px;
+        border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 0.82rem;
+      }
+      #client-bar span.cb-label { opacity: 0.7; white-space: nowrap; }
+      #client-bar select {
+        padding: 3px 8px; border-radius: 6px; border: none;
+        font-size: 0.82rem; background: #fff; color: #1B2B4A; cursor: pointer;
+        flex: 1; max-width: 160px;
+      }
+      #client-bar button {
+        padding: 4px 14px; background: #C0603A; color: #fff;
+        border: none; border-radius: 6px; font-size: 0.82rem;
+        font-weight: 600; cursor: pointer; white-space: nowrap;
+      }
+      #client-bar button:hover { background: #a85230; }
+      #client-toast { color: #4ade80; font-weight: 600; font-size: 0.8rem; }
+    </style>
 </head>
 <body>
     <div class="background-elements">
@@ -25,6 +46,24 @@
             </div>
             <p class="step-indicator">Étape <span id="current-step-display">1</span> / <span id="total-steps-display">7</span></p>
         </header>
+
+        <!-- ── Sélecteur client ──────────────────────────── -->
+        <div id="client-bar">
+          <span class="cb-label">🗂 Client :</span>
+          <select id="client-select">
+            <option value="">— Sélectionner —</option>
+            <option value="aurora">Aurora</option>
+            <option value="quentin">Quentin</option>
+            <option value="sybille">Sybille</option>
+            <option value="alexandre">Alexandre</option>
+            <option value="benedicte">Bénédicte</option>
+            <option value="benoit">Benoit</option>
+            <option value="emma">Emma</option>
+            <option value="zineb">Zineb</option>
+          </select>
+          <button onclick="loadClient()">Charger →</button>
+          <span id="client-toast"></span>
+        </div>
 
         <form id="questionnaire-form" class="wizard-form">
             
@@ -312,5 +351,160 @@
     </main>
 
     <script src="app.js"></script>
+    <script>
+    // ── Données clients de test ───────────────────────────────
+    const CLIENTS = {
+      aurora: {
+        _label: 'Aurora chargée ✅',
+        date_evaluation:'2025-09-10', age:'38', situation:'couple',
+        salaire_net:'4200', bonus_net:'0', salaire_3ans:'5500',
+        epargne_mensuelle:'500', grosses_depenses:'60000',
+        comptes_cheques:'2000', cel:'0', pel:'0', livret_a:'24700',
+        ldd:'17000', lep:'0', divers_liquidites:'0',
+        dette_montant:'0', dette_taux:'0', dette_debut:'', dette_duree:'0', dette_capital_du_direct:'0',
+        rp_lieu:'Arcueil', rp_valeur:'250000', rp_emprunt_initial:'250000',
+        rp_taux:'3.6', rp_debut:'2023-09-01', rp_duree:'25',
+        loc_lieu:'', loc_valeur:'0', loc_emprunt_initial:'0', loc_taux:'0',
+        loc_debut:'', loc_duree:'0', loc_loyers:'0', loc_charges:'0', scpi:'0',
+        cto:'0', pea:'0', per:'21000', pee:'10000',
+        av_fonds_euros:'16000', av_uc:'0', autres_invests:'0',
+      },
+      quentin: {
+        _label: 'Quentin chargé ✅',
+        date_evaluation:'2026-03-30', age:'26', situation:'couple',
+        salaire_net:'5500', bonus_net:'458', salaire_3ans:'6750',
+        epargne_mensuelle:'2600', grosses_depenses:'0',
+        comptes_cheques:'8000', cel:'0', pel:'6600', livret_a:'0',
+        ldd:'0', lep:'0', divers_liquidites:'0',
+        dette_montant:'30000', dette_taux:'1.9', dette_debut:'', dette_duree:'0', dette_capital_du_direct:'18300',
+        rp_lieu:'Doubs', rp_valeur:'175000', rp_emprunt_initial:'107500',
+        rp_taux:'3.25', rp_debut:'2024-07-17', rp_duree:'15',
+        loc_lieu:'', loc_valeur:'0', loc_emprunt_initial:'0', loc_taux:'0',
+        loc_debut:'', loc_duree:'0', loc_loyers:'0', loc_charges:'0', scpi:'0',
+        cto:'7250', pea:'2900', per:'10600', pee:'0',
+        av_fonds_euros:'9000', av_uc:'0', autres_invests:'0',
+      },
+      sybille: {
+        _label: 'Sybille chargée ✅',
+        date_evaluation:'2026-01-03', age:'42', situation:'marie',
+        salaire_net:'10545', bonus_net:'0', salaire_3ans:'10000',
+        epargne_mensuelle:'105', grosses_depenses:'0',
+        comptes_cheques:'10000', cel:'0', pel:'75000', livret_a:'76500',
+        ldd:'0', lep:'0', divers_liquidites:'400',
+        dette_montant:'0', dette_taux:'0', dette_debut:'', dette_duree:'0', dette_capital_du_direct:'0',
+        rp_lieu:'Reims', rp_valeur:'700000', rp_emprunt_initial:'737965',
+        rp_taux:'1.15', rp_debut:'2022-01-05', rp_duree:'25',
+        loc_lieu:'Franconville', loc_valeur:'275000', loc_emprunt_initial:'251100',
+        loc_taux:'1.6', loc_debut:'2018-11-10', loc_duree:'25',
+        loc_loyers:'840', loc_charges:'200', scpi:'0',
+        cto:'0', pea:'11000', per:'0', pee:'13573',
+        av_fonds_euros:'38000', av_uc:'0', autres_invests:'0',
+      },
+      alexandre: {
+        _label: 'Alexandre chargé ✅',
+        date_evaluation:'2026-05-01', age:'32', situation:'couple',
+        salaire_net:'4800', bonus_net:'0', salaire_3ans:'6100',
+        epargne_mensuelle:'1495', grosses_depenses:'0',
+        comptes_cheques:'213000', cel:'0', pel:'0', livret_a:'14000',
+        ldd:'0', lep:'0', divers_liquidites:'0',
+        dette_montant:'20000', dette_taux:'3.75', dette_debut:'2024-10-14', dette_duree:'5', dette_capital_du_direct:'14036',
+        rp_lieu:'Dettwiller', rp_valeur:'400000', rp_emprunt_initial:'301000',
+        rp_taux:'1.1', rp_debut:'2021-03-01', rp_duree:'20',
+        loc_lieu:'Dettwiller', loc_valeur:'200000', loc_emprunt_initial:'234000',
+        loc_taux:'1.2', loc_debut:'2021-03-01', loc_duree:'20',
+        loc_loyers:'1900', loc_charges:'300', scpi:'0',
+        cto:'500', pea:'3500', per:'0', pee:'0',
+        av_fonds_euros:'0', av_uc:'0', autres_invests:'530800',
+      },
+      benedicte: {
+        _label: 'Bénédicte chargée ✅',
+        date_evaluation:'2026-05-07', age:'35', situation:'couple',
+        salaire_net:'3637', bonus_net:'418', salaire_3ans:'4547',
+        epargne_mensuelle:'2000', grosses_depenses:'40000',
+        comptes_cheques:'0', cel:'0', pel:'0', livret_a:'25490',
+        ldd:'12243', lep:'0', divers_liquidites:'25299',
+        dette_montant:'0', dette_taux:'0', dette_debut:'', dette_duree:'0', dette_capital_du_direct:'0',
+        rp_lieu:'Clamart (92)', rp_valeur:'500000', rp_emprunt_initial:'263000',
+        rp_taux:'3.7', rp_debut:'2024-07-01', rp_duree:'25',
+        loc_lieu:'Montrouge (92)', loc_valeur:'155000', loc_emprunt_initial:'100000',
+        loc_taux:'3.17', loc_debut:'2026-04-15', loc_duree:'20',
+        loc_loyers:'950', loc_charges:'75', scpi:'0',
+        cto:'0', pea:'0', per:'12625', pee:'38374',
+        av_fonds_euros:'20000', av_uc:'0', autres_invests:'0',
+      },
+      benoit: {
+        _label: 'Benoit chargé ✅',
+        date_evaluation:'2026-06-12', age:'47', situation:'couple',
+        salaire_net:'10000', bonus_net:'0', salaire_3ans:'12000',
+        epargne_mensuelle:'2000', grosses_depenses:'50000',
+        comptes_cheques:'5000', cel:'15300', pel:'0', livret_a:'25000',
+        ldd:'12800', lep:'0', divers_liquidites:'0',
+        dette_montant:'0', dette_taux:'0', dette_debut:'', dette_duree:'0', dette_capital_du_direct:'0',
+        rp_lieu:'Bègles (33)', rp_valeur:'450000', rp_emprunt_initial:'310000',
+        rp_taux:'1.4', rp_debut:'2026-09-10', rp_duree:'20',
+        loc_lieu:'Biscarosse', loc_valeur:'220000', loc_emprunt_initial:'205000',
+        loc_taux:'2.42', loc_debut:'2025-10-10', loc_duree:'20',
+        loc_loyers:'550', loc_charges:'100', scpi:'0',
+        cto:'1000', pea:'45000', per:'5800', pee:'38000',
+        av_fonds_euros:'11000', av_uc:'0', autres_invests:'854000',
+      },
+      emma: {
+        _label: 'Emma chargée ✅',
+        date_evaluation:'2025-10-23', age:'28', situation:'couple',
+        salaire_net:'3200', bonus_net:'0', salaire_3ans:'3840',
+        epargne_mensuelle:'1000', grosses_depenses:'0',
+        comptes_cheques:'3000', cel:'0', pel:'40000', livret_a:'20805',
+        ldd:'12888', lep:'0', divers_liquidites:'20000',
+        dette_montant:'0', dette_taux:'0', dette_debut:'', dette_duree:'0', dette_capital_du_direct:'0',
+        rp_lieu:'', rp_valeur:'0', rp_emprunt_initial:'0',
+        rp_taux:'0', rp_debut:'', rp_duree:'0',
+        loc_lieu:'', loc_valeur:'0', loc_emprunt_initial:'0', loc_taux:'0',
+        loc_debut:'', loc_duree:'0', loc_loyers:'0', loc_charges:'0', scpi:'0',
+        cto:'0', pea:'100', per:'592', pee:'27954',
+        av_fonds_euros:'36311', av_uc:'57592', autres_invests:'0',
+      },
+      zineb: {
+        _label: 'Zineb chargée ✅',
+        date_evaluation:'2025-05-01', age:'25', situation:'celibataire',
+        salaire_net:'2200', bonus_net:'450', salaire_3ans:'3500',
+        epargne_mensuelle:'550', grosses_depenses:'0',
+        comptes_cheques:'0', cel:'0', pel:'0', livret_a:'0',
+        ldd:'0', lep:'0', divers_liquidites:'0',
+        dette_montant:'0', dette_taux:'0', dette_debut:'', dette_duree:'0', dette_capital_du_direct:'0',
+        rp_lieu:'', rp_valeur:'0', rp_emprunt_initial:'0',
+        rp_taux:'0', rp_debut:'', rp_duree:'0',
+        loc_lieu:'', loc_valeur:'0', loc_emprunt_initial:'0', loc_taux:'0',
+        loc_debut:'', loc_duree:'0', loc_loyers:'0', loc_charges:'0', scpi:'0',
+        cto:'505', pea:'513', per:'8132', pee:'0',
+        av_fonds_euros:'0', av_uc:'0', autres_invests:'0',
+      },
+    };
+
+    function loadClient() {
+      const key = document.getElementById('client-select').value;
+      if (!key) return;
+      const data = { ...CLIENTS[key] };
+      delete data._label;
+
+      // Populate every named form field
+      Object.entries(data).forEach(([name, val]) => {
+        const el = document.querySelector(`[name="${name}"]`);
+        if (el) { el.value = val; el.dispatchEvent(new Event('change', { bubbles: true })); }
+      });
+
+      // Save to localStorage (pour resultat.html)
+      localStorage.setItem('bilan_donnees', JSON.stringify(data));
+      ['plan_immo_data','plan_bourse_data','plan_epargne_data',
+       'plan_budget_data','plan_salaire_data'].forEach(k => localStorage.removeItem(k));
+
+      // Sauter directement aux résultats
+      document.getElementById('btn-shortcut-step7')?.click();
+
+      // Toast
+      const toast = document.getElementById('client-toast');
+      toast.textContent = CLIENTS[key]._label;
+      setTimeout(() => { toast.textContent = ''; }, 3000);
+    }
+    </script>
 </body>
 </html>
