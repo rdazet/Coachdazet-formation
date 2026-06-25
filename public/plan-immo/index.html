@@ -237,11 +237,11 @@
 
   <!-- ── SECTION 3 : Valider ──────────────────────────────── -->
   <div style="text-align:center">
-    <button id="btn-valider" class="btn-validate" onclick="validerPlan()">
+    <button id="btn-valider" class="btn-validate" onclick="ouvrirPopup()">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
       </svg>
-      Validez votre Plan Immobilier
+      Posez-moi vos questions
     </button>
   </div>
 
@@ -548,7 +548,7 @@ window.addEventListener('load', notifyHeight);
 new MutationObserver(() => setTimeout(notifyHeight, 50)).observe(document.body, { childList: true, subtree: true });
 
 // ── Email ─────────────────────────────────────────────────
-async function validerPlan() {
+async function validerPlan(questions) {
   const prenom = PRENOM || '[Prénom]';
   const nom    = NOM    || '[Nom]';
 
@@ -585,7 +585,7 @@ async function validerPlan() {
   const subject = `Plan Immobilier ${prenom} ${nom}`;
   const text =
     `Bonjour Raphael,\n\nVoici mon plan Immobilier, dis-moi ce que tu en penses.\n\n` +
-    `[Vos questions éventuelles ici]\n\n` +
+    `${questions ? questions + '\n\n' : ''}` +
     `${'═'.repeat(42)}\n\n` + txt +
     `\n${'═'.repeat(42)}\n\nCordialement,\n${prenom}`;
 
@@ -615,6 +615,39 @@ async function validerPlan() {
     btn.disabled = false;
   }
 }
+
+// ── Popup questions ───────────────────────────────
+function ouvrirPopup() {
+  const m = document.getElementById('modal-questions');
+  m.style.display = 'flex';
+  document.getElementById('questions-textarea').focus();
+}
+function fermerPopup() {
+  document.getElementById('modal-questions').style.display = 'none';
+}
+async function envoyerPlan() {
+  const questions = document.getElementById('questions-textarea').value.trim();
+  document.getElementById('btn-envoyer').disabled = true;
+  fermerPopup();
+  await validerPlan(questions);
+}
+// Close modal on backdrop click
+document.getElementById('modal-questions').addEventListener('click', function(e) {
+  if (e.target === this) fermerPopup();
+});
 </script>
+
+<!-- ── Modal questions ────────────────────────────── -->
+<div id="modal-questions" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:1000; align-items:center; justify-content:center;">
+  <div style="background:#fff; border-radius:14px; padding:2rem; max-width:500px; width:92%; box-shadow:0 8px 40px rgba(0,0,0,0.2);">
+    <h3 style="font-family:'Outfit',sans-serif; color:#1B2B4A; margin:0 0 0.5rem; font-size:1.05rem; font-weight:700;">Vos questions pour Raphaël</h3>
+    <p style="font-size:0.82rem; color:#6B7280; margin:0 0 1rem;">Posez toutes vos questions ci-dessous. Elles seront incluses dans votre email.</p>
+    <textarea id="questions-textarea" placeholder="Écrivez vos questions ici..." style="width:100%; min-height:130px; padding:0.75rem; border:1px solid #E5E7EB; border-radius:8px; font-size:0.88rem; font-family:'Inter',sans-serif; resize:vertical; box-sizing:border-box; outline:none;"></textarea>
+    <div style="display:flex; gap:0.75rem; margin-top:1rem; justify-content:flex-end;">
+      <button onclick="fermerPopup()" style="padding:9px 20px; border:1px solid #E5E7EB; border-radius:8px; background:#fff; color:#6B7280; cursor:pointer; font-family:'Inter',sans-serif; font-size:0.88rem;">Annuler</button>
+      <button onclick="envoyerPlan()" id="btn-envoyer" style="padding:9px 22px; background:#C0603A; color:#fff; border:none; border-radius:8px; font-family:'Outfit',sans-serif; font-weight:600; font-size:0.95rem; cursor:pointer;">Envoyer ✉</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

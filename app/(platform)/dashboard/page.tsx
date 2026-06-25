@@ -68,7 +68,7 @@ export default async function DashboardPage() {
         </h1>
         <p className="text-gray-500">
           {completedCount === 0
-            ? "Bienvenue dans votre formation ! Commencez par le Module 1."
+            ? "Bienvenue dans votre formation ! Commencez par remplir vos données."
             : completedCount === totalVideos
             ? "Félicitations ! Vous avez terminé toute la formation 🎉"
             : `Vous avez complété ${completedCount} vidéo${completedCount > 1 ? "s" : ""} sur ${totalVideos}.`}
@@ -90,15 +90,17 @@ export default async function DashboardPage() {
           </p>
         </div>
 
-        {resumeVideoId && (
-          <Link
-            href={`/formation/${resumeVideoId}`}
-            className="btn-cta shrink-0"
-          >
+        {completedCount === 0 ? (
+          <Link href="/bilan/donnees" className="btn-cta shrink-0">
             <PlayCircle size={18} />
-            {completedCount === 0 ? "Commencer" : "Reprendre"}
+            Commencer
           </Link>
-        )}
+        ) : resumeVideoId ? (
+          <Link href={`/formation/${resumeVideoId}`} className="btn-cta shrink-0">
+            <PlayCircle size={18} />
+            Reprendre
+          </Link>
+        ) : null}
       </div>
 
       {/* Bilan section */}
