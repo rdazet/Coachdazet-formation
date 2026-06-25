@@ -69,4 +69,35 @@ export default function UserActions({ userId, currentStatus, currentTier }: User
             disabled={loading !== null}
             className="text-xs bg-green-600 text-white px-3 py-1.5 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 font-medium"
           >
-          
+                      {loading === "approved" ? "..." : "Approuver"}
+          </button>
+          <button
+            onClick={() => updateStatus("rejected")}
+            disabled={loading !== null}
+            className="text-xs border border-red-300 text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50 font-medium"
+          >
+            {loading === "rejected" ? "..." : "Refuser"}
+          </button>
+        </>
+      )}
+      {currentStatus === "approved" && (
+        <button
+          onClick={() => updateStatus("disabled")}
+          disabled={loading !== null}
+          className="text-xs border border-gray-300 text-gray-600 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 font-medium"
+        >
+          {loading === "disabled" ? "..." : "Désactiver"}
+        </button>
+      )}
+      {(currentStatus === "disabled" || currentStatus === "rejected") && (
+        <button
+          onClick={() => updateStatus("approved")}
+          disabled={loading !== null}
+          className="text-xs bg-navy text-white px-3 py-1.5 rounded-lg hover:bg-navy-600 transition-colors disabled:opacity-50 font-medium"
+        >
+          {loading === "approved" ? "..." : "Réactiver"}
+        </button>
+      )}
+    </div>
+  );
+}
