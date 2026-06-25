@@ -786,10 +786,10 @@ export default function ClientsTestPage() {
           <>
             <span className="text-green-400 font-semibold text-sm">{bilanToast}</span>
             <a
-              href="/bilan"
+              href="/bilan/donnees"
               className="text-green-300 underline text-sm hover:text-green-100"
             >
-              Ouvrir le bilan →
+              Ouvrir Vos données →
             </a>
           </>
         )}
@@ -829,6 +829,4 @@ export default function ClientsTestPage() {
           ))}
         </>
       )}
-    </div>
-  );
-}
+    </
