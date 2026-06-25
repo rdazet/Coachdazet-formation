@@ -338,6 +338,7 @@ function patrimoine65(d: ClientData, rendement: number): number {
 
 const TABLE_DONNEES: RowDef[] = [
   { type: "section", label: "IDENTITÉ" },
+  { type: "row", label: "Date d'évaluation", fmt: "text", value: d => d.date_evaluation || "(vide)" },
   { type: "row", label: "Âge", fmt: "number", value: d => d.age },
   { type: "row", label: "Situation familiale", fmt: "text", value: d => d.situation_familiale },
   { type: "section", label: "REVENUS ET DÉPENSES" },
@@ -1020,10 +1021,4 @@ export default function ClientsTestPage() {
           <SyntheseTable clients={clients} />
 
           {TABLES.map(t => (
-            <TableSection key={t.id} table={t} clients={clients} />
-          ))}
-        </>
-      )}
-    </div>
-  );
-}
+            <Tabl
