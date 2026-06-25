@@ -456,51 +456,44 @@ const TABLE_PLAN_EPARGNE: RowDef[] = [
   { type: "row", label: "Grosses dépenses prévues (5 ans)", fmt: "currency", value: d => d.grosses_depenses },
   { type: "section", label: "ACTUEL" },
   { type: "row", label: "Dettes — Actuel", fmt: "currency", value: d => base(d).detteCRD },
-  { type: "row", label: "Fonds de sécurité — Actuel", fmt: "currency", value: d => d.av_fonds_euros },
-  { type: "row", label: "Fonds moyen terme — Actuel", fmt: "currency", value: () => 0 },
+  { type: "row", label: "Cash (livrets + comptes) — Actuel", fmt: "currency", value: d => base(d).cashNet },
+  { type: "row", label: "AV fonds euros — Actuel", fmt: "currency", value: d => d.av_fonds_euros },
   { type: "row", label: "Bourse — Actuel", fmt: "currency", value: d => base(d).bourse },
   { type: "row", label: "TOTAL Actuel", fmt: "currency", value: d => {
     const b = base(d);
-    return b.detteCRD + d.av_fonds_euros + 0 + b.bourse;
+    return b.cashNet + d.av_fonds_euros + b.bourse;
   }},
   { type: "section", label: "CIBLE" },
-  { type: "row", label: "Dettes — Cible", fmt: "currency", value: () => 0 },
   { type: "row", label: "Fonds de sécurité — Cible", fmt: "currency", value: d => {
     const depenses = Math.max(0, d.salaire_net + d.bonus_net - d.epargne_mensuelle);
     return depenses * defaultMois(d.age);
   }},
-  { type: "row", label: "Fonds moyen terme — Cible", fmt: "currency", value: d => d.grosses_depenses },
   { type: "row", label: "Bourse — Cible", fmt: "currency", value: d => {
     const b = base(d);
-    const total = b.detteCRD + d.av_fonds_euros + 0 + b.bourse;
+    const total = b.cashNet + d.av_fonds_euros + b.bourse;
     const depenses = Math.max(0, d.salaire_net + d.bonus_net - d.epargne_mensuelle);
     const cSecu = depenses * defaultMois(d.age);
-    const cMt = d.grosses_depenses;
-    return Math.max(0, total - cSecu - cMt);
+    return Math.max(0, total - cSecu);
   }},
   { type: "row", label: "TOTAL Cible", fmt: "currency", value: d => {
     const b = base(d);
-    const total = b.detteCRD + d.av_fonds_euros + 0 + b.bourse;
-    const depenses = Math.max(0, d.salaire_net + d.bonus_net - d.epargne_mensuelle);
-    const cSecu = depenses * defaultMois(d.age);
-    const cMt = d.grosses_depenses;
-    const cBourse = Math.max(0, total - cSecu - cMt);
-    return 0 + cSecu + cMt + cBourse;
+    return b.cashNet + d.av_fonds_euros + b.bourse;
   }},
   { type: "section", label: "MOUVEMENTS (Cible − Actuel)" },
   { type: "row", label: "Dettes — Mouvement", fmt: "currency", value: d => 0 - base(d).detteCRD },
-  { type: "row", label: "Fonds de sécurité — Mouvement", fmt: "currency", value: d => {
-    const depenses = Math.max(0, d.salaire_net + d.bonus_net - d.epargne_mensuelle);
-    return depenses * defaultMois(d.age) - d.av_fonds_euros;
-  }},
-  { type: "row", label: "Fonds moyen terme — Mouvement", fmt: "currency", value: d => d.grosses_depenses - 0 },
-  { type: "row", label: "Bourse — Mouvement", fmt: "currency", value: d => {
+  { type: "row", label: "Cash — Mouvement", fmt: "currency", value: d => {
     const b = base(d);
-    const total = b.detteCRD + d.av_fonds_euros + 0 + b.bourse;
     const depenses = Math.max(0, d.salaire_net + d.bonus_net - d.epargne_mensuelle);
     const cSecu = depenses * defaultMois(d.age);
-    const cMt = d.grosses_depenses;
-    const cBourse = Math.max(0, total - cSecu - cMt);
+    return cSecu - b.cashNet;
+  }},
+  { type: "row", label: "AV fonds euros — Mouvement", fmt: "currency", value: d => 0 - d.av_fonds_euros },
+  { type: "row", label: "Bourse — Mouvement", fmt: "currency", value: d => {
+    const b = base(d);
+    const total = b.cashNet + d.av_fonds_euros + b.bourse;
+    const depenses = Math.max(0, d.salaire_net + d.bonus_net - d.epargne_mensuelle);
+    const cSecu = depenses * defaultMois(d.age);
+    const cBourse = Math.max(0, total - cSecu);
     return cBourse - b.bourse;
   }},
 ];
@@ -1028,3 +1021,4 @@ export default function ClientsTestPage() {
     </div>
   );
 }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
