@@ -29,8 +29,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "userId and tier required" }, { status: 400 });
   }
 
-  if (![1, 2, 3].includes(tier)) {
-    return NextResponse.json({ error: "Tier must be 1, 2 or 3" }, { status: 400 });
+  if (![0, 1, 2, 3].includes(tier)) {
+    return NextResponse.json({ error: "Tier must be 0, 1, 2 or 3" }, { status: 400 });
   }
 
   const adminClient = createAdminClient();
