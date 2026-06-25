@@ -1021,4 +1021,10 @@ export default function ClientsTestPage() {
           <SyntheseTable clients={clients} />
 
           {TABLES.map(t => (
-            <Tabl
+            <TableSection key={t.id} table={t} clients={clients} />
+          ))}
+        </>
+      )}
+    </div>
+  );
+}
