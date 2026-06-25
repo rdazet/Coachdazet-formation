@@ -162,6 +162,43 @@ export default function Sidebar({
           Vue d&apos;ensemble
         </Link>
 
+        {/* Bilan — top-level items */}
+        <div className="mt-3 mb-1 px-5">
+          <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Bilan</span>
+        </div>
+        <Link
+          href="/bilan/donnees"
+          className={clsx(
+            "flex items-center gap-2.5 px-5 py-2 text-sm transition-colors",
+            pathname === "/bilan/donnees"
+              ? "text-navy font-semibold bg-white border-l-2 border-terracotta"
+              : "text-gray-600 hover:text-navy hover:bg-white/50"
+          )}
+        >
+          {hasBilanData ? (
+            <CheckCircle size={14} className="text-terracotta shrink-0" />
+          ) : (
+            <Circle size={14} className="text-gray-300 shrink-0" />
+          )}
+          <span>Vos données</span>
+        </Link>
+        <Link
+          href="/bilan/resultat"
+          className={clsx(
+            "flex items-center gap-2.5 px-5 py-2 text-sm transition-colors",
+            pathname === "/bilan/resultat"
+              ? "text-navy font-semibold bg-white border-l-2 border-terracotta"
+              : "text-gray-600 hover:text-navy hover:bg-white/50"
+          )}
+        >
+          {hasBilanData ? (
+            <CheckCircle size={14} className="text-terracotta shrink-0" />
+          ) : (
+            <Circle size={14} className="text-gray-300 shrink-0" />
+          )}
+          <span>Bilan patrimonial</span>
+        </Link>
+
         <div className="mt-3 mb-1 px-5">
           <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Modules</span>
         </div>
@@ -199,46 +236,6 @@ export default function Sidebar({
 
               {isOpen && (
                 <ul className="bg-white/40">
-                  {index === 0 && (
-                    <>
-                      <li>
-                        <Link
-                          href="/bilan/donnees"
-                          className={clsx(
-                            "flex items-center gap-2.5 px-5 py-2 pl-12 text-sm transition-colors",
-                            pathname === "/bilan/donnees"
-                              ? "text-navy font-semibold bg-white border-l-2 border-terracotta"
-                              : "text-gray-600 hover:text-navy hover:bg-white/70"
-                          )}
-                        >
-                          {hasBilanData ? (
-                            <CheckCircle size={14} className="text-terracotta shrink-0" />
-                          ) : (
-                            <Circle size={14} className="text-gray-300 shrink-0" />
-                          )}
-                          <span className="leading-tight">Vos données</span>
-                        </Link>
-                      </li>
-                      <li>
-                        <Link
-                          href="/bilan/resultat"
-                          className={clsx(
-                            "flex items-center gap-2.5 px-5 py-2 pl-12 text-sm transition-colors",
-                            pathname === "/bilan/resultat"
-                              ? "text-navy font-semibold bg-white border-l-2 border-terracotta"
-                              : "text-gray-600 hover:text-navy hover:bg-white/70"
-                          )}
-                        >
-                          {hasBilanData ? (
-                            <CheckCircle size={14} className="text-terracotta shrink-0" />
-                          ) : (
-                            <Circle size={14} className="text-gray-300 shrink-0" />
-                          )}
-                          <span className="leading-tight">Bilan patrimonial</span>
-                        </Link>
-                      </li>
-                    </>
-                  )}
                   {moduleVideos.map((video) => {
                     const isCompleted = completedVideoIds.includes(video.id);
                     const isCurrent = video.id === activeVideoId;

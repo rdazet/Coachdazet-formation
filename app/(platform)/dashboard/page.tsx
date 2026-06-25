@@ -101,6 +101,14 @@ export default async function DashboardPage() {
         )}
       </div>
 
+      {/* Bilan section */}
+      <h2 className="font-display text-xl font-semibold text-navy mb-4">
+        Votre bilan
+      </h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+        <BilanLinks dashboard />
+      </div>
+
       {/* Modules grid */}
       <h2 className="font-display text-xl font-semibold text-navy mb-4">
         Les 5 modules
@@ -149,7 +157,6 @@ export default async function DashboardPage() {
 
                   {/* Video list preview */}
                   <ul className="space-y-1">
-                    {index === 0 && <BilanLinks />}
                     {moduleVideos.map((video) => (
                       <li key={video.id}>
                         <Link
