@@ -471,4 +471,122 @@ function restoreData() {
   try {
     const raw = localStorage.getItem('plan_epargne_data');
     const moisEl = document.getElementById('inp-mois');
-    if (moisEl) moisEl.value = moisFondsSecuDefaut; // valeur par dé
+    if (moisEl) moisEl.value = moisFondsSecuDefaut; // valeur par défaut
+    if (!raw) return;
+    const saved = JSON.parse(raw);
+    if (saved['inp-mois'] && moisEl) moisEl.value = saved['inp-mois'];
+    PROGRES_ITEMS.forEach((_,i) => {
+      if (saved[`prog-sel-${i}`]) document.getElementById(`prog-sel-${i}`).value = saved[`prog-sel-${i}`];
+      if (saved[`prog-com-${i}`]) document.getElementById(`prog-com-${i}`).value = saved[`prog-com-${i}`];
+    });
+  } catch(e) {
+    const moisEl = document.getElementById('inp-mois');
+    if (moisEl) moisEl.value = moisFondsSecuDefaut;
+  }
+}
+
+document.addEventListener('input',  saveData);
+document.addEventListener('change', saveData);
+restoreData();
+recalculate();
+
+// ── Auto-resize iframe ────────────────────────────────────
+function notifyHeight() {
+  window.parent.postMessage({ type: 'iframeHeight', height: document.documentElement.scrollHeight }, '*');
+}
+window.addEventListener('load', notifyHeight);
+new MutationObserver(() => setTimeout(notifyHeight, 50)).observe(document.body, { childList: true, subtree: true });
+
+// ── Email ─────────────────────────────────────────────────
+async function validerPlan() {
+  const prenom = PRENOM || '[Prénom]';
+  const nom    = NOM    || '[Nom]';
+
+  // Section 1
+  let part1 = 'MESUREZ VOS PROGRÈS\n' + '─'.repeat(38) + '\n\n';
+  PROGRES_ITEMS.forEach((item, i) => {
+    const sel = document.getElementById(`prog-sel-${i}`)?.value || '—';
+    const com = document.getElementById(`prog-com-${i}`)?.value.trim() || '';
+    part1 += `${item}\n  → ${sel}${com ? '  |  ' + com : ''}\n\n`;
+  });
+
+  // Section 2
+  const depenses  = depensesMensuelles;
+  const mois      = parseFloat(document.getElementById('inp-mois')?.value) || moisFondsSecuDefaut;
+  const gt5       = grossesDepenses;
+  const totalAct  = dettesActuel + secuActuel + mtActuel + bourseActuel;
+  // Formules Excel cascade
+  const _G7e = totalAct, _cSecuTe = depenses * mois, _cMtTe = gt5;
+  const _cDe = _G7e >= 0 ? 0 : _G7e;
+  const cSecu   = _G7e >= _cSecuTe ? _cSecuTe : Math.max(0, _G7e - _cDe);
+  const cMt     = _G7e >= _cDe + cSecu + _cMtTe ? _cMtTe : Math.max(0, _G7e - _cDe - cSecu);
+  const cBourse = _G7e - _cDe - cSecu - cMt;
+  const epargne = epargneMensuelleBase;
+
+  const moisD = detteCRD > 0 && epargne > 0 ? Math.ceil(detteCRD / epargne) : 0;
+  const moisS = Math.max(0, cSecu - secuActuel) > 0 && epargne > 0 ? Math.ceil(Math.max(0, cSecu - secuActuel) / epargne) : 0;
+  const moisM = cMt > 0 && Math.max(0, cMt - mtActuel) > 0 && epargne > 0 ? Math.ceil(Math.max(0, cMt - mtActuel) / epargne) : 0;
+
+  function fmtNum(v) { return String(Math.round(v)).padStart(12) + ' €'; }
+
+  let part2 = 'PLAN ÉPARGNE\n' + '─'.repeat(38) + '\n\n';
+  part2 += `Revenus mensuels : ${revenusMensuels} €\n`;
+  part2 += `Dépenses mensuelles : ${depenses} €\n`;
+  part2 += `Épargne mensuelle : ${epargne} €\n`;
+  part2 += `Mois requis — fonds de sécurité : ${mois}\n`;
+  part2 += `Grosses dépenses prévues (5 ans) : ${gt5} €\n\n`;
+  part2 += 'PATRIMOINE HORS IMMOBILIER\n';
+  part2 += `${'─'.repeat(38)}\n`;
+  part2 += `                     | Actuel       | Cible        | Mvt          | Épargne future\n`;
+
+  const rows = [
+    { label: 'Dettes',            act: dettesActuel, cible: _cDe,    fut: moisD > 0 ? `${epargne} €/mois · ${moisD} mois` : '✓ Remboursée' },
+    { label: 'Fonds de sécurité', act: secuActuel,   cible: cSecu,   fut: moisS > 0 ? `${epargne} €/mois · ${moisS} mois` : '✓ Complet'    },
+    { label: 'Fonds moyen terme', act: mtActuel,     cible: cMt,     fut: cMt === 0 ? '—' : moisM > 0 ? `${epargne} €/mois · ${moisM} mois` : '✓ Complet' },
+    { label: 'Bourse',            act: bourseActuel, cible: cBourse, fut: `${epargne} €/mois · à vie` },
+  ];
+  rows.forEach(r => {
+    const m = r.cible - r.act;
+    const mStr = (m >= 0 ? '+' : '') + Math.round(m) + ' €';
+    part2 += `${r.label.padEnd(20)} | ${fmtNum(r.act)} | ${fmtNum(r.cible)} | ${mStr.padEnd(12)} | ${r.fut}\n`;
+  });
+  const tAct = rows.reduce((s,r) => s + r.act,   0);
+  const tC   = rows.reduce((s,r) => s + r.cible, 0);
+  part2 += `${'─'.repeat(38)}\n`;
+  part2 += `${'TOTAL'.padEnd(20)} | ${fmtNum(tAct)} | ${fmtNum(tC)} | ${(tC >= tAct ? '+' : '') + Math.round(tC - tAct)} €\n`;
+
+  const subject = `Plan Épargne ${prenom} ${nom}`;
+  const text =
+    `Bonjour Raphael,\n\nVoici mon plan Épargne, dis-moi ce que tu en penses.\n\n` +
+    `[Vos questions éventuelles ici]\n\n` +
+    `${'═'.repeat(38)}\n\n` + part1 + '\n' + part2 +
+    `\n${'═'.repeat(38)}\n\nCordialement,\n${prenom}`;
+
+  const btn = document.getElementById('btn-valider');
+  btn.disabled = true;
+  btn.innerHTML = 'Envoi en cours…';
+
+  try {
+    const res  = await fetch('/api/plan/send-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ subject, text }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      btn.innerHTML = '✓ Plan envoyé avec succès !';
+      btn.style.background = '#16A34A';
+    } else {
+      btn.innerHTML = 'Erreur — réessayez';
+      btn.style.background = '#DC2626';
+      btn.disabled = false;
+    }
+  } catch(e) {
+    btn.innerHTML = 'Erreur réseau — réessayez';
+    btn.style.background = '#DC2626';
+    btn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>
