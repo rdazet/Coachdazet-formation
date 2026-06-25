@@ -518,18 +518,18 @@ async function validerPlan() {
   part2 += `Grosses dépenses prévues (5 ans) : ${gt5} €\n\n`;
   part2 += 'PATRIMOINE HORS IMMOBILIER\n';
   part2 += `${'─'.repeat(38)}\n`;
-  part2 += `                     | Actuel       | Cible        | Mvt          | Épargne future\n`;
+  part2 += `                     | Actuel       | Cible        | Transfert\n`;
 
   const rows = [
-    { label: 'Dettes',            act: dettesActuel, cible: _cDe,    fut: moisD > 0 ? `${epargne} €/mois · ${moisD} mois` : '✓ Remboursée' },
-    { label: 'Fonds de sécurité', act: secuActuel,   cible: cSecu,   fut: moisS > 0 ? `${epargne} €/mois · ${moisS} mois` : '✓ Complet'    },
-    { label: 'Fonds moyen terme', act: mtActuel,     cible: cMt,     fut: cMt === 0 ? '—' : moisM > 0 ? `${epargne} €/mois · ${moisM} mois` : '✓ Complet' },
-    { label: 'Bourse',            act: bourseActuel, cible: cBourse, fut: `${epargne} €/mois · à vie` },
+    { label: 'Dettes',            act: dettesActuel, cible: _cDe    },
+    { label: 'Fonds de sécurité', act: secuActuel,   cible: cSecu   },
+    { label: 'Fonds moyen terme', act: mtActuel,     cible: cMt     },
+    { label: 'Bourse',            act: bourseActuel, cible: cBourse },
   ];
   rows.forEach(r => {
     const m = r.cible - r.act;
     const mStr = (m >= 0 ? '+' : '') + Math.round(m) + ' €';
-    part2 += `${r.label.padEnd(20)} | ${fmtNum(r.act)} | ${fmtNum(r.cible)} | ${mStr.padEnd(12)} | ${r.fut}\n`;
+    part2 += `${r.label.padEnd(20)} | ${fmtNum(r.act)} | ${fmtNum(r.cible)} | ${mStr}\n`;
   });
   const tAct = rows.reduce((s,r) => s + r.act,   0);
   const tC   = rows.reduce((s,r) => s + r.cible, 0);
