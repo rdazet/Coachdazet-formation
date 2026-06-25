@@ -6,7 +6,7 @@ export default async function UtilisateursPage() {
 
   const { data: users } = await supabase
     .from("profiles")
-    .select("id, full_name, email, status, role, created_at, approved_at")
+    .select("id, full_name, email, status, role, tier, created_at, approved_at")
     .eq("role", "client")
     .order("created_at", { ascending: false });
 
@@ -50,7 +50,7 @@ export default async function UtilisateursPage() {
                 <th className="text-left px-5 py-3 font-semibold text-gray-600">Statut</th>
                 <th className="text-left px-5 py-3 font-semibold text-gray-600">Progression</th>
                 <th className="text-left px-5 py-3 font-semibold text-gray-600">Inscrit le</th>
-                <th className="text-right px-5 py-3 font-semibold text-gray-600">Actions</th>
+                <th className="text-right px-5 py-3 font-semibold text-gray-600">Tier / Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -116,15 +116,11 @@ export default async function UtilisateursPage() {
                       })}
                     </td>
                     <td className="px-5 py-3.5 text-right">
-                      <UserActions userId={user.id} currentStatus={user.status} />
+                      <UserActions userId={user.id} currentStatus={user.status} currentTier={user.tier ?? 1} />
                     </td>
                   </tr>
                 ))
               )}
             </tbody>
           </table>
-        </div>
-      </div>
-    </div>
-  );
-}
+    
