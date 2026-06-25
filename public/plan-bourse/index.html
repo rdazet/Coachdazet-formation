@@ -46,7 +46,8 @@
       letter-spacing: 0.07em;
     }
     .prog-table td {
-      padding: 7px 10px;
+      padding: 0 10px;
+      height: 36px;
       border-bottom: 1px solid #F0F0F0;
       vertical-align: middle;
       font-size: 0.88rem;
@@ -54,11 +55,13 @@
     .prog-table tr:last-child td { border-bottom: none; }
     .prog-table tr:hover td { background: #FAFAFA; }
     .prog-table td:first-child { color: #374151; font-weight: 500; background: #F8F9FB; width: 52%; }
-    .prog-table td:nth-child(2) { background: #fff; text-align: center; width: 90px; }
-    .prog-table td:nth-child(3) { background: #fff; }
+    .prog-table td:nth-child(2) { background: #fff; text-align: center; width: 90px; padding: 0 6px; }
+    .prog-table td:nth-child(3) { background: #fff; padding: 0 6px; }
 
     select.oui-non {
-      padding: 5px 8px;
+      padding: 3px 8px;
+      height: 28px;
+      box-sizing: border-box;
       border: 1px solid #D1D5DB;
       border-radius: 6px;
       font-size: 0.85rem;
@@ -72,7 +75,8 @@
 
     input.comment-input {
       width: 100%;
-      padding: 5px 8px;
+      padding: 3px 8px;
+      height: 28px;
       border: 1px solid #E5E7EB;
       border-radius: 6px;
       font-size: 0.85rem;
@@ -103,7 +107,8 @@
       letter-spacing: 0.07em;
     }
     .plan-table td {
-      padding: 7px 10px;
+      padding: 0 10px;
+      height: 36px;
       border-bottom: 1px solid #F0F0F0;
       vertical-align: middle;
       font-size: 0.88rem;
@@ -115,7 +120,7 @@
       background: #F8F9FB;
       width: 46%;
     }
-    .plan-table td.input-cell { background: #fff; }
+    .plan-table td.input-cell { background: #fff; padding: 4px 4px; }
     .plan-table tr.section-row td {
       background: #1B2B4A;
       color: #fff;
@@ -124,7 +129,8 @@
       font-size: 0.78rem;
       text-transform: uppercase;
       letter-spacing: 0.06em;
-      padding: 9px 12px;
+      padding: 0 12px;
+      height: 36px;
     }
     .plan-table tr.note-row td {
       text-align: center;
@@ -137,7 +143,8 @@
 
     input.plan-input {
       width: 100%;
-      padding: 5px 8px;
+      padding: 2px 8px;
+      height: 28px;
       border: 1px solid #E5E7EB;
       border-radius: 6px;
       font-size: 0.85rem;
@@ -150,13 +157,15 @@
 
     input.pct-input {
       width: 68px;
-      padding: 5px 8px;
+      padding: 2px 8px;
+      height: 28px;
       border: 1px solid #E5E7EB;
       border-radius: 6px;
       font-size: 0.85rem;
       font-family: 'Inter', sans-serif;
       color: #1B2B4A;
       text-align: right;
+      box-sizing: border-box;
       background: #fff;
     }
     input.pct-input:focus { outline: none; border-color: #1B2B4A; }
