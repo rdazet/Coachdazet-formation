@@ -96,7 +96,7 @@ export default function Sidebar({
   }
 
   return (
-    <aside className="sidebar w-72 min-h-screen flex flex-col">
+    <aside className="sidebar w-72 h-screen sticky top-0 flex flex-col">
       <div className="bg-navy px-6 py-4">
         <Link href="/dashboard" className="block">
           <Image
@@ -389,6 +389,4 @@ export default function Sidebar({
           </button>
         </div>
       </div>
-    </aside>
-  );
-}
+    </aside

@@ -10,7 +10,7 @@ const IBAN = "GB08 REVO 2301 2041 1490 20";
 const MESSAGES: Record<number, { ordinal: string; montant: string }> = {
   0: { ordinal: "premier",     montant: "330" },
   1: { ordinal: "second",      montant: "330" },
-  2: { ordinal: "troisième",   montant: "330" },
+  2: { ordinal: "dernier",      montant: "330" },
 };
 
 export default async function PaiementRequisPage({ searchParams }: Props) {
