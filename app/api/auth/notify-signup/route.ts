@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/email/send";
-import { approvalRequestEmail } from "@/lib/email/templates";
-import { v4 as uuidv4 } from "uuid";
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,65 +11,50 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = createAdminClient();
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
     // Try to find existing profile first
-    let { data: profile } = await supabase
+    const { data: profile } = await supabase
       .from("profiles")
       .select("id")
       .eq("id", userId)
       .single();
 
-    // If profile doesn't exist (trigger not fired), create it manually
     if (!profile) {
-      console.log("Profile not found — creating manually for userId:", userId);
-      const { data: newProfile, error: createError } = await supabase
+      // Profile not created by trigger — create manually with auto-approval
+      const { error: createError } = await supabase
         .from("profiles")
         .insert({
           id: userId,
           email,
           full_name: fullName,
           role: "client",
-          status: "pending",
-        })
-        .select("id")
-        .single();
+          status: "approved",
+          tier: 1,
+        });
 
-      if (createError || !newProfile) {
+      if (createError) {
         console.error("Failed to create profile:", createError);
-        return NextResponse.json({ error: "Failed to create profile", details: createError?.message }, { status: 500 });
+        return NextResponse.json({ error: "Failed to create profile", details: createError.message }, { status: 500 });
       }
-      profile = newProfile;
-      console.log("Profile created manually ✅");
+    } else {
+      // Profile exists (from trigger) — ensure approved + tier 1
+      await supabase
+        .from("profiles")
+        .update({ status: "approved", tier: 1 })
+        .eq("id", userId);
     }
 
-    // Create approve and reject tokens
-    const approveToken = uuidv4();
-    const rejectToken = uuidv4();
-
-    const { error: insertError } = await supabase.from("approval_tokens").insert([
-      { user_id: userId, token: approveToken, action: "approve" },
-      { user_id: userId, token: rejectToken, action: "reject" },
-    ]);
-
-    if (insertError) {
-      console.error("Token insert error:", insertError);
-      return NextResponse.json({ error: "Failed to create tokens", details: insertError.message }, { status: 500 });
-    }
-
-    const approveUrl = `${appUrl}/api/auth/approve?token=${approveToken}`;
-    const rejectUrl = `${appUrl}/api/auth/reject?token=${rejectToken}`;
-
-    // Send notification to admin
+    // Notify admin (info only, no action required)
     await sendEmail({
       to: process.env.ADMIN_EMAIL || "rdazet@hotmail.com",
       subject: `Nouvelle inscription — ${fullName}`,
-      html: approvalRequestEmail({
-        clientName: fullName,
-        clientEmail: email,
-        approveUrl,
-        rejectUrl,
-      }),
+      html: `
+        <p style="font-family:sans-serif">
+          Nouveau compte créé sur Coachdazet Formation :<br><br>
+          <strong>${fullName}</strong> — ${email}<br><br>
+          Accès automatique accordé (5 premières vidéos, tier 1).
+        </p>
+      `,
     });
 
     return NextResponse.json({ success: true });

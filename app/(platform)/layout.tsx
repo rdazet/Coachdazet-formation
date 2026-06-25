@@ -59,15 +59,7 @@ export default async function PlatformLayout({
     .eq("id", user.id)
     .single();
 
-  console.log("🔍 user.id:", user.id);
-  console.log("🔍 profile:", profile);
-  console.log("🔍 profileError:", profileError);
-
-  if (!profile || profile.status === "pending") {
-    redirect("/en-attente");
-  }
-
-  if (profile.status === "rejected" || profile.status === "disabled") {
+  if (!profile || profile.status === "rejected" || profile.status === "disabled") {
     redirect("/connexion");
   }
 

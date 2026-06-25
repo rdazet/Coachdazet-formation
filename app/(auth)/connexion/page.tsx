@@ -35,11 +35,6 @@ export default function ConnexionPage() {
       .select("status, role")
       .single();
 
-    if (profile?.status === "pending") {
-      router.push("/en-attente");
-      return;
-    }
-
     if (profile?.status === "rejected" || profile?.status === "disabled") {
       await supabase.auth.signOut();
       setError("Votre compte n'est pas actif. Contactez-nous pour plus d'informations.");
