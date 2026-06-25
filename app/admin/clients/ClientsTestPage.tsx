@@ -750,4 +750,276 @@ function SyntheseTable({ clients }: { clients: ClientData[] }) {
   return (
     <div className="mb-8 rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-white">
       <div className="px-5 py-3.5 bg-[#1B2B4A]">
-        <span className="font-semibold font-display text-sm tracking-wide uppercase tex
+        <span className="font-semibold font-display text-sm tracking-wide uppercase text-white">
+          Synthèse patrimoine — {clients.length} clients
+        </span>
+        <span className="ml-3 text-white/50 text-xs">Immobilier stable · Cash en livrets · Bourse + épargne mensuelle projetée</span>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse text-sm" style={{ minWidth: `${220 + clients.length * 130}px` }}>
+          <thead>
+            <tr>
+              <th className="sticky left-0 z-10 bg-[#F8F9FB] border-b border-gray-200 text-left px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wider" style={{ minWidth: 260 }}>
+                Métrique
+              </th>
+              {clients.map(c => (
+                <th key={c.nom} className="border-b border-gray-200 bg-[#F8F9FB] px-3 py-2.5 text-center text-xs font-semibold text-[#1B2B4A] uppercase tracking-wider" style={{ minWidth: 110 }}>
+                  {c.nom}
+                  <div className="text-gray-400 font-normal normal-case">{c.age} ans</div>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, i) => (
+              <tr key={i} className={`border-b border-gray-100 ${i === 2 ? "bg-emerald-50/40" : ""}`}>
+                <td className="sticky left-0 z-10 bg-white px-4 py-3 font-semibold text-xs text-gray-700" style={{ minWidth: 260, borderRight: "1px solid #e5e7eb" }}>
+                  {row.label}
+                </td>
+                {row.values.map((v, j) => (
+                  <td key={j} className={`px-3 py-3 text-right text-xs font-mono font-bold ${row.color} ${v < 0 ? "!text-red-500" : ""}`}>
+                    {fmtEUR.format(Math.round(v))}
+                  </td>
+                ))}
+              </tr>
+            ))}
+            {/* Ligne delta */}
+            <tr className="bg-[#1B2B4A]/5">
+              <td className="sticky left-0 z-10 px-4 py-2.5 text-xs font-semibold text-[#1B2B4A] italic" style={{ minWidth: 260, borderRight: "1px solid #e5e7eb", backgroundColor: "rgba(27,43,74,0.05)" }}>
+                Gain optimisation (opti − base)
+              </td>
+              {clients.map((c, j) => {
+                const delta = patrimoine65(c, RENDEMENT_OPTI) - patrimoine65(c, RENDEMENT_BASE);
+                return (
+                  <td key={j} className={`px-3 py-2.5 text-right text-xs font-mono font-semibold ${delta >= 0 ? "text-emerald-700" : "text-red-500"}`}>
+                    +{fmtEUR.format(Math.round(delta))}
+                  </td>
+                );
+              })}
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+// COMPONENT — TABLE DÉPLIABLE
+// ═══════════════════════════════════════════════════════════
+
+function TableSection({ table, clients }: { table: typeof TABLES[number]; clients: ClientData[] }) {
+  const [open, setOpen] = useState(true);
+
+  return (
+    <div className="mb-8 rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-white">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between px-5 py-3.5 bg-[#1B2B4A] text-white hover:bg-[#243657] transition-colors"
+      >
+        <span className="font-semibold font-display text-sm tracking-wide uppercase">{table.label}</span>
+        {open ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+      </button>
+
+      {open && (
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse text-sm" style={{ minWidth: `${220 + clients.length * 130}px` }}>
+            <thead>
+              <tr>
+                <th className="sticky left-0 z-10 bg-[#F8F9FB] border-b border-gray-200 text-left px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider" style={{ minWidth: 220 }}>
+                  Intitulé
+                </th>
+                {clients.map(c => (
+                  <th key={c.nom} className="border-b border-gray-200 bg-[#F8F9FB] px-3 py-2 text-center text-xs font-semibold text-[#1B2B4A] uppercase tracking-wider" style={{ minWidth: 120 }}>
+                    {c.nom}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {table.rows.map((row, i) => {
+                if (row.type === "section") {
+                  return (
+                    <tr key={i} className="bg-[#44546A]">
+                      <td colSpan={clients.length + 1} className="sticky left-0 px-4 py-2 text-xs font-bold text-white uppercase tracking-wider">
+                        {row.label}
+                      </td>
+                    </tr>
+                  );
+                }
+                if (row.type === "note") {
+                  return (
+                    <tr key={i} className="bg-amber-50">
+                      <td colSpan={clients.length + 1} className="px-4 py-1.5 text-xs text-amber-700 italic">
+                        ⚠ {row.label}
+                      </td>
+                    </tr>
+                  );
+                }
+                return (
+                  <tr key={i} className="border-b border-gray-100 hover:bg-gray-50">
+                    <td className="sticky left-0 z-10 bg-white px-4 py-2 text-gray-700 font-medium text-xs" style={{ minWidth: 220 }}>
+                      {row.label}
+                    </td>
+                    {clients.map(c => {
+                      const rawVal = row.value(c);
+                      const isIrrelevant =
+                        (table.id === "immo-loc" && c.rp_valeur > 0) ||
+                        (table.id === "immo-prop" && c.rp_valeur === 0);
+                      const display = isIrrelevant ? "—" : formatValue(rawVal, row.fmt);
+                      const isNeg = typeof rawVal === "number" && rawVal < 0;
+                      const isBig = typeof rawVal === "number" && rawVal > 0 &&
+                        (row.label.includes("Budget résidence") || row.label.includes("Patrimoine net") || row.label.includes("TOTAL"));
+                      return (
+                        <td key={c.nom} className={`px-3 py-2 text-right text-xs font-mono ${isNeg ? "text-red-600" : isBig ? "text-[#C0603A] font-bold" : "text-gray-700"}`}>
+                          {display}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+// PAGE PRINCIPALE
+// ═══════════════════════════════════════════════════════════
+
+export default function ClientsTestPage() {
+  const [clients, setClients] = useState<ClientData[]>([]);
+  const [fileName, setFileName] = useState<string>("");
+  const [dragging, setDragging] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const [bilanKey, setBilanKey] = useState<string>("");
+  const [bilanToast, setBilanToast] = useState<string>("");
+
+  function chargerDansBilan() {
+    if (!bilanKey) return;
+    const raw = { ...BILAN_CLIENTS[bilanKey] };
+    const label = raw._label;
+    const { _label: _unused, ...data } = raw;
+    void _unused;
+    localStorage.setItem("bilan_donnees", JSON.stringify(data));
+    ["plan_immo_data","plan_bourse_data","plan_epargne_data",
+     "plan_budget_data","plan_salaire_data"].forEach(k => localStorage.removeItem(k));
+    setBilanToast(`${label} chargé${label.endsWith("e") ? "e" : ""} ✅ — `);
+    setTimeout(() => setBilanToast(""), 4000);
+  }
+
+  const processFile = useCallback(async (file: File) => {
+    setFileName(file.name);
+    try {
+      const X = await loadXLSX() as {
+        read: (data: ArrayBuffer, opts: { type: string; cellDates: boolean }) => unknown;
+      };
+      const buf = await file.arrayBuffer();
+      const wb = X.read(buf, { type: "array", cellDates: true });
+      const parsed = parseExcel(wb);
+      setClients(parsed);
+    } catch (err) {
+      console.error("Parsing error", err);
+      alert("Erreur lors de la lecture du fichier Excel.");
+    }
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file) processFile(file);
+  }, [processFile]);
+
+  return (
+    <div className="p-6 max-w-full">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="font-display text-2xl font-semibold text-[#1B2B4A]">Test clients</h1>
+          <p className="text-sm text-gray-500 mt-0.5">Vérification des calculs bilan + plans sur données réelles</p>
+        </div>
+        {clients.length > 0 && (
+          <button
+            onClick={() => exportToExcel(clients)}
+            className="flex items-center gap-2 px-4 py-2 bg-[#1B2B4A] text-white rounded-lg text-sm font-medium hover:bg-[#243657] transition-colors"
+          >
+            <Download size={16} />
+            Exporter Excel
+          </button>
+        )}
+      </div>
+
+      {/* Sélecteur bilan client */}
+      <div className="mb-6 flex items-center gap-3 bg-[#1B2B4A] text-white px-5 py-3.5 rounded-xl flex-wrap">
+        <span className="text-sm opacity-70 whitespace-nowrap">🗂 Simuler le bilan de :</span>
+        <select
+          value={bilanKey}
+          onChange={e => setBilanKey(e.target.value)}
+          className="bg-white text-[#1B2B4A] px-3 py-1.5 rounded-lg text-sm border-0 cursor-pointer font-medium"
+        >
+          <option value="">— Sélectionner un client —</option>
+          {Object.entries(BILAN_CLIENTS).map(([k, v]) => (
+            <option key={k} value={k}>{v._label}</option>
+          ))}
+        </select>
+        <button
+          onClick={chargerDansBilan}
+          disabled={!bilanKey}
+          className="px-4 py-1.5 bg-[#C0603A] text-white rounded-lg text-sm font-semibold hover:bg-[#a85230] disabled:opacity-40 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+        >
+          Charger dans le bilan
+        </button>
+        {bilanToast && (
+          <>
+            <span className="text-green-400 font-semibold text-sm">{bilanToast}</span>
+            <a href="/bilan/donnees" className="text-green-300 underline text-sm hover:text-green-100">
+              Ouvrir Vos données →
+            </a>
+          </>
+        )}
+      </div>
+
+      {/* Upload zone */}
+      <div
+        onDragOver={e => { e.preventDefault(); setDragging(true); }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={handleDrop}
+        onClick={() => inputRef.current?.click()}
+        className={`mb-8 border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${
+          dragging ? "border-[#C0603A] bg-orange-50" : "border-gray-300 hover:border-[#1B2B4A] hover:bg-gray-50"
+        }`}
+      >
+        <Upload size={32} className="mx-auto mb-3 text-gray-400" />
+        {fileName ? (
+          <p className="text-sm font-medium text-[#1B2B4A]">✓ {fileName} · {clients.length} clients chargés</p>
+        ) : (
+          <>
+            <p className="text-sm font-medium text-gray-600">Glissez le fichier Excel ici ou cliquez pour choisir</p>
+            <p className="text-xs text-gray-400 mt-1">Format : feuille « Questionnaire » · noms ligne 7 · bourse lignes 66-72 · locatif 2 lignes 57-63</p>
+          </>
+        )}
+        <input ref={inputRef} type="file" accept=".xlsx,.xls" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) processFile(f); }} />
+      </div>
+
+      {clients.length > 0 && (
+        <>
+          <div className="mb-4 text-xs text-gray-500">
+            <span className="font-medium">{clients.length} clients :</span> {clients.map(c => c.nom).join(" · ")}
+            <span className="ml-4 text-amber-600">⚠ Plan Immo Locataire : loyer supposé = 0 € · annuité = {LOC_ANNEES} ans · taux = {LOC_TAUX_PCT}%</span>
+          </div>
+
+          <SyntheseTable clients={clients} />
+
+          {TABLES.map(t => (
+            <TableSection key={t.id} table={t} clients={clients} />
+          ))}
+        </>
+      )}
+    </div>
+  );
+}
