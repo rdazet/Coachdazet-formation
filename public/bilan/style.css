@@ -174,13 +174,23 @@ header {
 }
 
 @media (max-width: 600px) {
+    .app-container {
+        padding: 1.25rem;
+    }
     .input-group {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
         gap: 0.5rem;
     }
     .input-group input, .input-group select {
         width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+    }
+    input[type="date"] {
+        padding: 0.6rem 0.5rem;
+        font-size: 0.9rem;
     }
 }
 
