@@ -131,7 +131,8 @@ window.addEventListener('load', notifyHeight);
 new MutationObserver(() => setTimeout(notifyHeight, 50)).observe(document.body, { childList: true, subtree: true });
 
 // ── Email ─────────────────────────────────────────────────
-async function validerPlan(questions) {
+function buildEmailBody() {
+
   const prenom = PRENOM || '[Prénom]';
   const nom    = NOM    || '[Nom]';
 
@@ -141,12 +142,19 @@ async function validerPlan(questions) {
     const com = document.getElementById(`prog-com-${i}`)?.value.trim() || '';
     bodyText += `${item}\n  → ${sel}${com ? '  |  ' + com : ''}\n\n`;
   });
+  return bodyText;
+}
 
+// ── Email ─────────────────────────────────────────────────
+async function validerPlan(questions) {
+  const prenom = PRENOM || '[Prénom]';
+  const nom    = NOM    || '[Nom]';
+  const emailBody = buildEmailBody();
   const subject = `Plan Salaire ${prenom} ${nom}`;
   const text =
     `Bonjour Raphael,\n\nVoici mon plan Salaire, dis-moi ce que tu en penses.\n\n` +
     `${questions ? questions + '\n\n' : ''}` +
-    `${'═'.repeat(40)}\n\n` + bodyText +
+    `${'═'.repeat(40)}\n\n` + emailBody +
     `${'═'.repeat(40)}\n\nCordialement,\n${prenom}`;
 
   const btn = document.getElementById('btn-valider');
@@ -178,6 +186,7 @@ async function validerPlan(questions) {
 
 // ── Popup questions ───────────────────────────────
 function ouvrirPopup() {
+  document.getElementById('email-preview').textContent = buildEmailBody();
   const m = document.getElementById('modal-questions');
   m.style.display = 'flex';
   document.getElementById('questions-textarea').focus();
@@ -198,11 +207,15 @@ document.getElementById('modal-questions').addEventListener('click', function(e)
 </script>
 
 <!-- ── Modal questions ────────────────────────────── -->
-<div id="modal-questions" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:1000; align-items:center; justify-content:center;">
-  <div style="background:#fff; border-radius:14px; padding:2rem; max-width:500px; width:92%; box-shadow:0 8px 40px rgba(0,0,0,0.2);">
+<div id="modal-questions" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:1000; align-items:center; justify-content:center; padding:1rem;">
+  <div style="background:#fff; border-radius:14px; padding:2rem; max-width:520px; width:92%; max-height:88vh; overflow-y:auto; box-shadow:0 8px 40px rgba(0,0,0,0.2);">
     <h3 style="font-family:'Outfit',sans-serif; color:#1B2B4A; margin:0 0 0.5rem; font-size:1.05rem; font-weight:700;">Vos questions pour Raphaël</h3>
     <p style="font-size:0.82rem; color:#6B7280; margin:0 0 1rem;">Posez toutes vos questions ci-dessous. Elles seront incluses dans votre email.</p>
-    <textarea id="questions-textarea" placeholder="Écrivez vos questions ici..." style="width:100%; min-height:130px; padding:0.75rem; border:1px solid #E5E7EB; border-radius:8px; font-size:0.88rem; font-family:'Inter',sans-serif; resize:vertical; box-sizing:border-box; outline:none;"></textarea>
+    <textarea id="questions-textarea" placeholder="Écrivez vos questions ici..." style="width:100%; min-height:100px; padding:0.75rem; border:1px solid #E5E7EB; border-radius:8px; font-size:0.88rem; font-family:'Inter',sans-serif; resize:vertical; box-sizing:border-box; outline:none;"></textarea>
+    <div style="margin-top:1.25rem; border-top:1px solid #F3F4F6; padding-top:1rem;">
+      <p style="font-size:0.7rem; color:#9CA3AF; margin:0 0 0.5rem; text-transform:uppercase; letter-spacing:0.08em; font-family:'Outfit',sans-serif; font-weight:600;">Aperçu de l'email</p>
+      <pre id="email-preview" style="font-size:0.75rem; color:#6B7280; white-space:pre-wrap; max-height:220px; overflow-y:auto; background:#F9FAFB; border:1px solid #E5E7EB; border-radius:8px; padding:0.75rem; font-family:'Inter',sans-serif; line-height:1.5; margin:0;"></pre>
+    </div>
     <div style="display:flex; gap:0.75rem; margin-top:1rem; justify-content:flex-end;">
       <button onclick="fermerPopup()" style="padding:9px 20px; border:1px solid #E5E7EB; border-radius:8px; background:#fff; color:#6B7280; cursor:pointer; font-family:'Inter',sans-serif; font-size:0.88rem;">Annuler</button>
       <button onclick="envoyerPlan()" id="btn-envoyer" style="padding:9px 22px; background:#C0603A; color:#fff; border:none; border-radius:8px; font-family:'Outfit',sans-serif; font-weight:600; font-size:0.95rem; cursor:pointer;">Envoyer ✉</button>

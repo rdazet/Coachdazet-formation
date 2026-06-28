@@ -1,623 +1,632 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Plan Immobilier — Coach Dazet</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/bilan/style.css">
-  <style>
-    .container { padding-left: 1rem !important; padding-right: 1rem !important; }
-
-    /* ── Section titles ──────────────────────────── */
-    .section-title {
-      font-family: 'Outfit', sans-serif;
-      font-size: 1.15rem; font-weight: 700; color: #1B2B4A;
-      margin: 2rem 0 0.75rem; padding-bottom: 0.4rem;
-      border-bottom: 2px solid #C0603A;
-    }
-    .section-title small {
-      font-size: 0.82rem; font-weight: 400; color: #6B7280; margin-left: 0.5rem;
-    }
-
-    /* ── Progress table ──────────────────────────── */
-    .prog-table { width: 100%; border-collapse: collapse; margin-bottom: 2rem; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-    .prog-table th { background: #1B2B4A; color: #fff; padding: 10px 12px; text-align: left; font-family: 'Outfit', sans-serif; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.07em; }
-    .prog-table td { padding: 0 10px; height: 36px; border-bottom: 1px solid #F0F0F0; vertical-align: middle; font-size: 0.88rem; }
-    .prog-table tr:last-child td { border-bottom: none; }
-    .prog-table td:first-child { color: #374151; font-weight: 500; width: 55%; }
-    .prog-table td:nth-child(2) { background: #fff; text-align: center; width: 90px; padding: 0 6px; }
-    .prog-table td:nth-child(3) { background: #fff; padding: 0 6px; }
-    select.oui-non { padding: 3px 8px; height: 28px; box-sizing: border-box; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 0.85rem; font-family: 'Inter', sans-serif; color: #374151; background: white; cursor: pointer; width: 74px; }
-    select.oui-non:focus { outline: none; border-color: #1B2B4A; }
-    input.comment-input { width: 100%; padding: 3px 8px; height: 28px; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.85rem; font-family: 'Inter', sans-serif; color: #374151; box-sizing: border-box; background: #fff; }
-    input.comment-input:focus { outline: none; border-color: #1B2B4A; }
-
-    /* ── "Quand" question card ───────────────────── */
-    .question-card {
-      display: flex; align-items: center; gap: 12px;
-      background: #F8F9FB; border: 1px solid #E5E7EB;
-      border-radius: 8px; padding: 0.65rem 1rem;
-      margin-bottom: 1.25rem;
-    }
-    .question-card label {
-      font-size: 0.88rem; font-weight: 500; color: #374151;
-      white-space: nowrap; flex-shrink: 0;
-    }
-    .question-card input[type="text"] {
-      flex: 1; padding: 5px 10px;
-      border: 1px solid #D1D5DB; border-radius: 6px;
-      font-size: 0.88rem; font-family: 'Inter', sans-serif;
-      color: #1B2B4A; background: #fff;
-    }
-    .question-card input:focus { outline: none; border-color: #C0603A; }
-
-    /* ── Plan tables ─────────────────────────────── */
-    .plan-header-dark {
-      background: #1B2B4A; color: #fff;
-      font-weight: 700; font-family: 'Outfit', sans-serif; font-size: 0.82rem;
-      padding: 0.55rem 0.75rem;
-      border-radius: 6px 6px 0 0;
-      margin-top: 1.5rem; margin-bottom: 0;
-      text-transform: uppercase; letter-spacing: 0.06em;
-    }
-
-    .plan-table {
-      width: 100%; border-collapse: collapse;
-      margin-bottom: 0;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.07);
-    }
-    .plan-table + .plan-table { margin-top: 1.5rem; }
-    .plan-table tr { border-bottom: 1px solid #F0F0F0; }
-    .plan-table tr:last-child { border-bottom: none; }
-    .plan-table td {
-      padding: 0 10px;
-      height: 36px;
-      font-size: 0.87rem;
-      font-family: 'Inter', sans-serif;
-      vertical-align: middle;
-    }
-    /* Label column */
-    .plan-table td:first-child {
-      color: #374151; font-weight: 500;
-      width: 62%;
-    }
-    /* Value column — white, no dark bg */
-    .plan-table td:last-child {
-      background: #fff; color: #1B2B4A;
-      font-weight: 600; text-align: right;
-      width: 38%; min-width: 130px;
-    }
-    /* Input cells */
-    .plan-table td.input-cell { padding: 4px 4px; }
-    .plan-table td.input-cell input {
-      width: 100%; border: 1px solid #D1D5DB;
-      border-radius: 5px; padding: 2px 8px;
-      height: 28px; box-sizing: border-box;
-      font-size: 0.87rem; font-family: 'Inter', sans-serif;
-      background: #fff; text-align: right; color: #1B2B4A;
-    }
-    .plan-table td.input-cell input:focus { outline: none; border-color: #C0603A; }
-    /* Result rows (highlighted) */
-    .plan-table tr.result-row td:last-child {
-      background: #1B2B4A; color: #C0603A;
-      font-weight: 700; font-size: 0.95rem;
-    }
-    /* Result rows — header colour */
-    .plan-table tr.result-row-header td:last-child {
-      background: #1B2B4A; color: #fff;
-      font-weight: 700; font-size: 0.95rem;
-    }
-    /* Summary rows (bilan sections) */
-    .plan-table tr.summary-row td:first-child { font-style: italic; color: #1B2B4A; }
-    .plan-table tr.summary-row td:last-child { color: #1B2B4A; font-style: italic; }
-    /* Taux link row */
-    .plan-table td.link-cell { font-size: 0.78rem; color: #6B7280; padding: 4px 10px; }
-    .plan-table td.link-cell a { color: #C0603A; text-decoration: none; }
-    .plan-table td.link-cell a:hover { text-decoration: underline; }
-    /* Inline taux link */
-    .taux-link { color: #C0603A; font-size: 0.78rem; font-weight: 400; text-decoration: none; margin-left: 0.4rem; }
-    .taux-link:hover { text-decoration: underline; }
-
-    /* ── Validate button ─────────────────────────── */
-    .btn-validate { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 2.5rem auto 1rem; padding: 14px 36px; background: #C0603A; color: white; border: none; border-radius: 10px; font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s, transform 0.1s; box-shadow: 0 2px 8px rgba(192,96,58,0.3); }
-    .btn-validate:hover { background: #A8522F; transform: translateY(-1px); }
-    .btn-validate:active { transform: translateY(0); }
-  </style>
-</head>
-<body>
-<div class="container">
-
-  <!-- ── SECTION 1 : Mesurez vos progrès ─────────────────── -->
-  <h2 class="section-title" style="margin-top:1.5rem">1 — Mesurez vos progrès</h2>
-
-  <table class="prog-table">
-    <thead>
-      <tr>
-        <th>IMMOBILIER</th>
-        <th style="text-align:center">OUI / NON</th>
-        <th>COMMENTAIRES</th>
-      </tr>
-    </thead>
-    <tbody id="progres-tbody"></tbody>
-  </table>
-
-  <!-- ── SECTION 2 : Plan Immobilier ─────────────────────── -->
-
-  <!-- No data -->
-  <div id="no-data" style="display:none;text-align:center;padding:2rem 0;">
-    <p style="color:#6B7280;">Aucune donnée trouvée. Remplis d'abord ton bilan patrimonial.</p>
-  </div>
-
-  <!-- LOCATAIRE -->
-  <div id="plan-locataire" style="display:none">
-    <h2 class="section-title" style="margin-top:3rem">2 — Quand pourrez-vous acheter votre résidence principale ?</h2>
-
-    <!-- CAS 1 + BUDGET SOUHAITÉ merged -->
-    <div class="plan-header-dark">CAS 1 — AVEC VOS FINANCES ACTUELLES</div>
-    <table class="plan-table">
-      <tr><td>Revenus nets mensuels</td><td id="l-revenus">—</td></tr>
-      <tr><td>Loyer mensuel</td><td class="input-cell"><input type="number" id="l-loyer" value="1000" min="0"></td></tr>
-      <tr><td>Épargne mensuelle</td><td id="l-epargne">—</td></tr>
-      <tr><td>Dépenses hors loyer</td><td id="l-depenses">—</td></tr>
-      <tr><td>Capacité de remboursement (1/3 revenus)</td><td id="l-cap-remb">—</td></tr>
-      <tr><td>Saut de charge (capacité de remboursement − loyer)</td><td id="l-saut">—</td></tr>
-      <tr><td>Nombre d'années de l'emprunt</td><td class="input-cell"><input type="number" id="l-annees" value="25" min="1" max="30"></td></tr>
-      <tr><td>Taux d'intérêt de l'emprunt (%)</td><td class="input-cell"><input type="number" id="l-taux" value="4" step="0.1" min="0"></td></tr>
-      <tr><td>Capacité d'endettement</td><td id="l-cap-endet">—</td></tr>
-      <tr><td>Apport actuel</td><td id="l-apport">—</td></tr>
-      <tr><td>Budget total (apport + capacité d'endettement)</td><td id="l-budget-total">—</td></tr>
-      <tr><td>Budget résidence principale (hors frais 10%)</td><td id="l-budget-rp" style="font-weight:700">—</td></tr>
-      <tr><td>Budget souhaité pour votre résidence principale</td><td class="input-cell"><input type="number" id="l-budget-souhaite" value="200000" min="0"></td></tr>
-      <tr><td>Apport supplémentaire requis</td><td id="l-apport-supp">—</td></tr>
-      <tr class="result-row-header"><td>Années pour constituer cet apport</td><td id="l-annees-apport">—</td></tr>
-      <tr><td>Manque à gagner / an (coût opportunité)</td><td id="l-manque">—</td></tr>
-    </table>
-
-    <div class="plan-header-dark" style="margin-top:1.75rem">CAS 2 — VOUS AUGMENTEZ VOTRE ÉPARGNE</div>
-    <table class="plan-table">
-      <tr><td>Épargne supplémentaire / mois</td><td class="input-cell"><input type="number" id="l-epargne-supp" value="100" min="0"></td></tr>
-      <tr><td>Nouvelle épargne totale</td><td id="l-nouvelle-epargne">—</td></tr>
-      <tr class="result-row-header"><td>Années pour constituer cet apport</td><td id="l-annees-apport-2">—</td></tr>
-    </table>
-  </div>
-
-  <!-- PROPRIÉTAIRE -->
-  <div id="plan-proprio" style="display:none">
-    <h2 class="section-title" style="margin-top:3rem">2 — Définissez votre Plan Immobilier</h2>
-
-    <!-- ① Taux d'endettement actuel -->
-    <div class="plan-header-dark">Quel est votre taux d'endettement actuel ?</div>
-    <table class="plan-table">
-      <tr><td>Valeur résidence principale</td><td id="p1-valeur-rp">—</td></tr>
-      <tr><td>Capital restant dû</td><td id="p1-crd">—</td></tr>
-      <tr><td>Patrimoine immobilier net</td><td id="p1-pat-immo">—</td></tr>
-      <tr><td>Montant emprunté</td><td id="p1-emprunt">—</td></tr>
-      <tr><td>Taux</td><td id="p1-taux">—</td></tr>
-      <tr><td>Début de l'emprunt</td><td id="p1-debut">—</td></tr>
-      <tr><td>Durée (années)</td><td id="p1-duree">—</td></tr>
-      <tr><td>Mensualités</td><td id="p1-mensualites">—</td></tr>
-      <tr><td>Revenus nets mensuels</td><td id="p1-revenus">—</td></tr>
-      <tr class="result-row"><td>Taux d'endettement actuel</td><td id="p1-taux-endet">—</td></tr>
-    </table>
-
-    <!-- ② Nouvelle RP -->
-    <div class="plan-header-dark" style="margin-top:1.75rem">Quel est votre budget pour acheter une nouvelle RP ? <span style="text-transform:none;font-weight:400;font-size:0.78rem;opacity:0.85">(hypothèse : vous vendez votre RP actuelle)</span></div>
-    <table class="plan-table">
-      <tr><td>Endettement max (%)</td><td class="input-cell"><input type="number" id="p2-endet-max" value="33" step="1" min="1" max="50"></td></tr>
-      <tr><td>Revenus nets mensuels</td><td id="p2-revenus">—</td></tr>
-      <tr><td>Remboursements possibles</td><td id="p2-remb-poss">—</td></tr>
-      <tr><td>Nombre d'années</td><td class="input-cell"><input type="number" id="p2-annees" value="25" min="1" max="30"></td></tr>
-      <tr><td>
-        Taux (%) — <a href="https://www.meilleurtaux.com/credit-immobilier/barometre-des-taux.html" target="_blank" class="taux-link">Baromètre des taux meilleurtaux.com</a>
-      </td><td class="input-cell"><input type="number" id="p2-taux" value="3.15" step="0.05" min="0"></td></tr>
-      <tr><td>Emprunt max</td><td id="p2-emprunt-max">—</td></tr>
-      <tr><td>Mensualités</td><td id="p2-mensualites">—</td></tr>
-      <tr><td>Apport max (vente RP + cash + bourse)</td><td id="p2-apport-max">—</td></tr>
-      <tr><td>Frais d'achat (10%)</td><td id="p2-frais">—</td></tr>
-      <tr class="result-row-header"><td>Valeur de votre nouvelle RP</td><td id="p2-valeur-rp">—</td></tr>
-    </table>
-
-    <!-- ③ Locatif -->
-    <div class="plan-header-dark" style="margin-top:1.75rem">Quel est votre budget pour un investissement locatif ? <span style="text-transform:none;font-weight:400;font-size:0.78rem;opacity:0.85">(hypothèse : vous gardez votre RP actuelle)</span></div>
-    <table class="plan-table">
-      <tr><td>Endettement max (%)</td><td class="input-cell"><input type="number" id="p3-endet-max" value="33" step="1" min="1" max="50"></td></tr>
-      <tr><td>Apport disponible (cash + bourse)</td><td id="p3-apport">—</td></tr>
-      <tr><td>Nombre d'années</td><td class="input-cell"><input type="number" id="p3-annees" value="20" min="1" max="30"></td></tr>
-      <tr><td>
-        Taux (%) — <a href="https://www.meilleurtaux.com/credit-immobilier/barometre-des-taux.html" target="_blank" class="taux-link">Baromètre des taux meilleurtaux.com</a>
-      </td><td class="input-cell"><input type="number" id="p3-taux" value="3.5" step="0.05" min="0"></td></tr>
-      <tr><td>Emprunt max</td><td id="p3-emprunt-max">—</td></tr>
-      <tr><td>Frais d'achat (10%)</td><td id="p3-frais">—</td></tr>
-      <tr class="result-row-header"><td>Valeur investissement locatif</td><td id="p3-valeur-loc">—</td></tr>
-    </table>
-  </div>
-
-  <!-- ── SECTION 3 : Valider ──────────────────────────────── -->
-  <div style="text-align:center">
-    <button id="btn-valider" class="btn-validate" onclick="ouvrirPopup()">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
-      </svg>
-      Posez-moi vos questions
-    </button>
-  </div>
-
-</div>
-
-<script>
-// ── URL params ────────────────────────────────────────────
-const params = new URLSearchParams(window.location.search);
-const PRENOM = params.get('prenom') || '';
-const NOM    = params.get('nom')    || '';
-
-// ── Progress items ────────────────────────────────────────
-const PROGRES_ITEMS = [
-  "Vous êtes convaincu de l'intérêt d'acheter un bien immobilier",
-  "Vous avez un projet immobilier dans les 5 prochaines années",
-  "Vous savez quel type de bien acheter (lieu, taille, budget approximatif…)",
-  "Vous avez calculé l'apport nécessaire",
-  "Vous avez obtenu le financement",
-  "Si vous n'avez pas encore le financement, vous avez calculé quand vous pourrez l'avoir",
-  "Vous avez réfléchi à des alternatives pour vous constituer votre apport plus rapidement",
-];
-
-const progTbody = document.getElementById('progres-tbody');
-PROGRES_ITEMS.forEach((item, i) => {
-  const tr = document.createElement('tr');
-  tr.innerHTML = `
-    <td>${item}</td>
-    <td><select class="oui-non" id="prog-sel-${i}">
-      <option value="">—</option>
-      <option value="Oui">Oui</option>
-      <option value="Non">Non</option>
-    </select></td>
-    <td><input class="comment-input" type="text" id="prog-com-${i}"></td>`;
-  progTbody.appendChild(tr);
-});
-
-// ── bilan_donnees ─────────────────────────────────────────
-const bilanRaw = localStorage.getItem('bilan_donnees');
-if (!bilanRaw) {
-  document.getElementById('no-data').style.display = 'block';
-} else {
-  const d = JSON.parse(bilanRaw);
-  const g  = k => parseFloat(d[k]) || 0;
-  const gs = k => d[k] || '';
-
-  // ── Helpers ────────────────────────────────────────────
-  function fmt(n)     { return Math.round(n).toLocaleString('fr-FR') + ' €'; }
-  function fmtPct(n)  { return (n * 100).toFixed(1) + ' %'; }
-  function fmtYears(n){ return n <= 0 ? '0 an' : n.toFixed(1) + ' ans'; }
-
-  function fmtDate(dateStr) {
-    if (!dateStr) return '—';
-    const parts = dateStr.split('-');
-    if (parts.length < 3) return dateStr;
-    const months = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
-    const dd  = parts[2].substring(0, 2);
-    const mmm = months[parseInt(parts[1]) - 1] || parts[1];
-    const yy  = parts[0].slice(-2);
-    return `${dd} / ${mmm} / ${yy}`;
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plan Immobilier — Coach Dazet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/bilan/style.css">
+  <style>
+    .container { padding-left: 1rem !important; padding-right: 1rem !important; }
+
+    /* ── Section titles ──────────────────────────── */
+    .section-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.15rem; font-weight: 700; color: #1B2B4A;
+      margin: 2rem 0 0.75rem; padding-bottom: 0.4rem;
+      border-bottom: 2px solid #C0603A;
+    }
+    .section-title small {
+      font-size: 0.82rem; font-weight: 400; color: #6B7280; margin-left: 0.5rem;
+    }
+
+    /* ── Progress table ──────────────────────────── */
+    .prog-table { width: 100%; border-collapse: collapse; margin-bottom: 2rem; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .prog-table th { background: #1B2B4A; color: #fff; padding: 10px 12px; text-align: left; font-family: 'Outfit', sans-serif; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.07em; }
+    .prog-table td { padding: 0 10px; height: 36px; border-bottom: 1px solid #F0F0F0; vertical-align: middle; font-size: 0.88rem; }
+    .prog-table tr:last-child td { border-bottom: none; }
+    .prog-table td:first-child { color: #374151; font-weight: 500; width: 55%; }
+    .prog-table td:nth-child(2) { background: #fff; text-align: center; width: 90px; padding: 0 6px; }
+    .prog-table td:nth-child(3) { background: #fff; padding: 0 6px; }
+    select.oui-non { padding: 3px 8px; height: 28px; box-sizing: border-box; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 0.85rem; font-family: 'Inter', sans-serif; color: #374151; background: white; cursor: pointer; width: 74px; }
+    select.oui-non:focus { outline: none; border-color: #1B2B4A; }
+    input.comment-input { width: 100%; padding: 3px 8px; height: 28px; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.85rem; font-family: 'Inter', sans-serif; color: #374151; box-sizing: border-box; background: #fff; }
+    input.comment-input:focus { outline: none; border-color: #1B2B4A; }
+
+    /* ── "Quand" question card ───────────────────── */
+    .question-card {
+      display: flex; align-items: center; gap: 12px;
+      background: #F8F9FB; border: 1px solid #E5E7EB;
+      border-radius: 8px; padding: 0.65rem 1rem;
+      margin-bottom: 1.25rem;
+    }
+    .question-card label {
+      font-size: 0.88rem; font-weight: 500; color: #374151;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .question-card input[type="text"] {
+      flex: 1; padding: 5px 10px;
+      border: 1px solid #D1D5DB; border-radius: 6px;
+      font-size: 0.88rem; font-family: 'Inter', sans-serif;
+      color: #1B2B4A; background: #fff;
+    }
+    .question-card input:focus { outline: none; border-color: #C0603A; }
+
+    /* ── Plan tables ─────────────────────────────── */
+    .plan-header-dark {
+      background: #1B2B4A; color: #fff;
+      font-weight: 700; font-family: 'Outfit', sans-serif; font-size: 0.82rem;
+      padding: 0.55rem 0.75rem;
+      border-radius: 6px 6px 0 0;
+      margin-top: 1.5rem; margin-bottom: 0;
+      text-transform: uppercase; letter-spacing: 0.06em;
+    }
+
+    .plan-table {
+      width: 100%; border-collapse: collapse;
+      margin-bottom: 0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+    }
+    .plan-table + .plan-table { margin-top: 1.5rem; }
+    .plan-table tr { border-bottom: 1px solid #F0F0F0; }
+    .plan-table tr:last-child { border-bottom: none; }
+    .plan-table td {
+      padding: 0 10px;
+      height: 36px;
+      font-size: 0.87rem;
+      font-family: 'Inter', sans-serif;
+      vertical-align: middle;
+    }
+    /* Label column */
+    .plan-table td:first-child {
+      color: #374151; font-weight: 500;
+      width: 62%;
+    }
+    /* Value column — white, no dark bg */
+    .plan-table td:last-child {
+      background: #fff; color: #1B2B4A;
+      font-weight: 600; text-align: right;
+      width: 38%; min-width: 130px;
+    }
+    /* Input cells */
+    .plan-table td.input-cell { padding: 4px 4px; }
+    .plan-table td.input-cell input {
+      width: 100%; border: 1px solid #D1D5DB;
+      border-radius: 5px; padding: 2px 8px;
+      height: 28px; box-sizing: border-box;
+      font-size: 0.87rem; font-family: 'Inter', sans-serif;
+      background: #fff; text-align: right; color: #1B2B4A;
+    }
+    .plan-table td.input-cell input:focus { outline: none; border-color: #C0603A; }
+    /* Result rows (highlighted) */
+    .plan-table tr.result-row td:last-child {
+      background: #1B2B4A; color: #C0603A;
+      font-weight: 700; font-size: 0.95rem;
+    }
+    /* Result rows — header colour */
+    .plan-table tr.result-row-header td:last-child {
+      background: #1B2B4A; color: #fff;
+      font-weight: 700; font-size: 0.95rem;
+    }
+    /* Summary rows (bilan sections) */
+    .plan-table tr.summary-row td:first-child { font-style: italic; color: #1B2B4A; }
+    .plan-table tr.summary-row td:last-child { color: #1B2B4A; font-style: italic; }
+    /* Taux link row */
+    .plan-table td.link-cell { font-size: 0.78rem; color: #6B7280; padding: 4px 10px; }
+    .plan-table td.link-cell a { color: #C0603A; text-decoration: none; }
+    .plan-table td.link-cell a:hover { text-decoration: underline; }
+    /* Inline taux link */
+    .taux-link { color: #C0603A; font-size: 0.78rem; font-weight: 400; text-decoration: none; margin-left: 0.4rem; }
+    .taux-link:hover { text-decoration: underline; }
+
+    /* ── Validate button ─────────────────────────── */
+    .btn-validate { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 2.5rem auto 1rem; padding: 14px 36px; background: #C0603A; color: white; border: none; border-radius: 10px; font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s, transform 0.1s; box-shadow: 0 2px 8px rgba(192,96,58,0.3); }
+    .btn-validate:hover { background: #A8522F; transform: translateY(-1px); }
+    .btn-validate:active { transform: translateY(0); }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ── SECTION 1 : Mesurez vos progrès ─────────────────── -->
+  <h2 class="section-title" style="margin-top:1.5rem">1 — Mesurez vos progrès</h2>
+
+  <table class="prog-table">
+    <thead>
+      <tr>
+        <th>IMMOBILIER</th>
+        <th style="text-align:center">OUI / NON</th>
+        <th>COMMENTAIRES</th>
+      </tr>
+    </thead>
+    <tbody id="progres-tbody"></tbody>
+  </table>
+
+  <!-- ── SECTION 2 : Plan Immobilier ─────────────────────── -->
+
+  <!-- No data -->
+  <div id="no-data" style="display:none;text-align:center;padding:2rem 0;">
+    <p style="color:#6B7280;">Aucune donnée trouvée. Remplis d'abord ton bilan patrimonial.</p>
+  </div>
+
+  <!-- LOCATAIRE -->
+  <div id="plan-locataire" style="display:none">
+    <h2 class="section-title" style="margin-top:3rem">2 — Quand pourrez-vous acheter votre résidence principale ?</h2>
+
+    <!-- CAS 1 + BUDGET SOUHAITÉ merged -->
+    <div class="plan-header-dark">CAS 1 — AVEC VOS FINANCES ACTUELLES</div>
+    <table class="plan-table">
+      <tr><td>Revenus nets mensuels</td><td id="l-revenus">—</td></tr>
+      <tr><td>Loyer mensuel</td><td class="input-cell"><input type="number" id="l-loyer" value="1000" min="0"></td></tr>
+      <tr><td>Épargne mensuelle</td><td id="l-epargne">—</td></tr>
+      <tr><td>Dépenses hors loyer</td><td id="l-depenses">—</td></tr>
+      <tr><td>Capacité de remboursement (1/3 revenus)</td><td id="l-cap-remb">—</td></tr>
+      <tr><td>Saut de charge (capacité de remboursement − loyer)</td><td id="l-saut">—</td></tr>
+      <tr><td>Nombre d'années de l'emprunt</td><td class="input-cell"><input type="number" id="l-annees" value="25" min="1" max="30"></td></tr>
+      <tr><td>Taux d'intérêt de l'emprunt (%)</td><td class="input-cell"><input type="number" id="l-taux" value="4" step="0.1" min="0"></td></tr>
+      <tr><td>Capacité d'endettement</td><td id="l-cap-endet">—</td></tr>
+      <tr><td>Apport actuel</td><td id="l-apport">—</td></tr>
+      <tr><td>Budget total (apport + capacité d'endettement)</td><td id="l-budget-total">—</td></tr>
+      <tr><td>Budget résidence principale (hors frais 10%)</td><td id="l-budget-rp" style="font-weight:700">—</td></tr>
+      <tr><td>Budget souhaité pour votre résidence principale</td><td class="input-cell"><input type="number" id="l-budget-souhaite" value="200000" min="0"></td></tr>
+      <tr><td>Apport supplémentaire requis</td><td id="l-apport-supp">—</td></tr>
+      <tr class="result-row-header"><td>Années pour constituer cet apport</td><td id="l-annees-apport">—</td></tr>
+      <tr><td>Manque à gagner / an (coût opportunité)</td><td id="l-manque">—</td></tr>
+    </table>
+
+    <div class="plan-header-dark" style="margin-top:1.75rem">CAS 2 — VOUS AUGMENTEZ VOTRE ÉPARGNE</div>
+    <table class="plan-table">
+      <tr><td>Épargne supplémentaire / mois</td><td class="input-cell"><input type="number" id="l-epargne-supp" value="100" min="0"></td></tr>
+      <tr><td>Nouvelle épargne totale</td><td id="l-nouvelle-epargne">—</td></tr>
+      <tr class="result-row-header"><td>Années pour constituer cet apport</td><td id="l-annees-apport-2">—</td></tr>
+    </table>
+  </div>
+
+  <!-- PROPRIÉTAIRE -->
+  <div id="plan-proprio" style="display:none">
+    <h2 class="section-title" style="margin-top:3rem">2 — Définissez votre Plan Immobilier</h2>
+
+    <!-- ① Taux d'endettement actuel -->
+    <div class="plan-header-dark">Quel est votre taux d'endettement actuel ?</div>
+    <table class="plan-table">
+      <tr><td>Valeur résidence principale</td><td id="p1-valeur-rp">—</td></tr>
+      <tr><td>Capital restant dû</td><td id="p1-crd">—</td></tr>
+      <tr><td>Patrimoine immobilier net</td><td id="p1-pat-immo">—</td></tr>
+      <tr><td>Montant emprunté</td><td id="p1-emprunt">—</td></tr>
+      <tr><td>Taux</td><td id="p1-taux">—</td></tr>
+      <tr><td>Début de l'emprunt</td><td id="p1-debut">—</td></tr>
+      <tr><td>Durée (années)</td><td id="p1-duree">—</td></tr>
+      <tr><td>Mensualités</td><td id="p1-mensualites">—</td></tr>
+      <tr><td>Revenus nets mensuels</td><td id="p1-revenus">—</td></tr>
+      <tr class="result-row"><td>Taux d'endettement actuel</td><td id="p1-taux-endet">—</td></tr>
+    </table>
+
+    <!-- ② Nouvelle RP -->
+    <div class="plan-header-dark" style="margin-top:1.75rem">Quel est votre budget pour acheter une nouvelle RP ? <span style="text-transform:none;font-weight:400;font-size:0.78rem;opacity:0.85">(hypothèse : vous vendez votre RP actuelle)</span></div>
+    <table class="plan-table">
+      <tr><td>Endettement max (%)</td><td class="input-cell"><input type="number" id="p2-endet-max" value="33" step="1" min="1" max="50"></td></tr>
+      <tr><td>Revenus nets mensuels</td><td id="p2-revenus">—</td></tr>
+      <tr><td>Remboursements possibles</td><td id="p2-remb-poss">—</td></tr>
+      <tr><td>Nombre d'années</td><td class="input-cell"><input type="number" id="p2-annees" value="25" min="1" max="30"></td></tr>
+      <tr><td>
+        Taux (%) — <a href="https://www.meilleurtaux.com/credit-immobilier/barometre-des-taux.html" target="_blank" class="taux-link">Baromètre des taux meilleurtaux.com</a>
+      </td><td class="input-cell"><input type="number" id="p2-taux" value="3.15" step="0.05" min="0"></td></tr>
+      <tr><td>Emprunt max</td><td id="p2-emprunt-max">—</td></tr>
+      <tr><td>Mensualités</td><td id="p2-mensualites">—</td></tr>
+      <tr><td>Apport max (vente RP + cash + bourse)</td><td id="p2-apport-max">—</td></tr>
+      <tr><td>Frais d'achat (10%)</td><td id="p2-frais">—</td></tr>
+      <tr class="result-row-header"><td>Valeur de votre nouvelle RP</td><td id="p2-valeur-rp">—</td></tr>
+    </table>
+
+    <!-- ③ Locatif -->
+    <div class="plan-header-dark" style="margin-top:1.75rem">Quel est votre budget pour un investissement locatif ? <span style="text-transform:none;font-weight:400;font-size:0.78rem;opacity:0.85">(hypothèse : vous gardez votre RP actuelle)</span></div>
+    <table class="plan-table">
+      <tr><td>Endettement max (%)</td><td class="input-cell"><input type="number" id="p3-endet-max" value="33" step="1" min="1" max="50"></td></tr>
+      <tr><td>Apport disponible (cash + bourse)</td><td id="p3-apport">—</td></tr>
+      <tr><td>Nombre d'années</td><td class="input-cell"><input type="number" id="p3-annees" value="20" min="1" max="30"></td></tr>
+      <tr><td>
+        Taux (%) — <a href="https://www.meilleurtaux.com/credit-immobilier/barometre-des-taux.html" target="_blank" class="taux-link">Baromètre des taux meilleurtaux.com</a>
+      </td><td class="input-cell"><input type="number" id="p3-taux" value="3.5" step="0.05" min="0"></td></tr>
+      <tr><td>Emprunt max</td><td id="p3-emprunt-max">—</td></tr>
+      <tr><td>Frais d'achat (10%)</td><td id="p3-frais">—</td></tr>
+      <tr class="result-row-header"><td>Valeur investissement locatif</td><td id="p3-valeur-loc">—</td></tr>
+    </table>
+  </div>
+
+  <!-- ── SECTION 3 : Valider ──────────────────────────────── -->
+  <div style="text-align:center">
+    <button id="btn-valider" class="btn-validate" onclick="ouvrirPopup()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+      </svg>
+      Posez-moi vos questions
+    </button>
+  </div>
+
+</div>
+
+<script>
+// ── URL params ────────────────────────────────────────────
+const params = new URLSearchParams(window.location.search);
+const PRENOM = params.get('prenom') || '';
+const NOM    = params.get('nom')    || '';
+
+// ── Progress items ────────────────────────────────────────
+const PROGRES_ITEMS = [
+  "Vous êtes convaincu de l'intérêt d'acheter un bien immobilier",
+  "Vous avez un projet immobilier dans les 5 prochaines années",
+  "Vous savez quel type de bien acheter (lieu, taille, budget approximatif…)",
+  "Vous avez calculé l'apport nécessaire",
+  "Vous avez obtenu le financement",
+  "Si vous n'avez pas encore le financement, vous avez calculé quand vous pourrez l'avoir",
+  "Vous avez réfléchi à des alternatives pour vous constituer votre apport plus rapidement",
+];
+
+const progTbody = document.getElementById('progres-tbody');
+PROGRES_ITEMS.forEach((item, i) => {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td>${item}</td>
+    <td><select class="oui-non" id="prog-sel-${i}">
+      <option value="">—</option>
+      <option value="Oui">Oui</option>
+      <option value="Non">Non</option>
+    </select></td>
+    <td><input class="comment-input" type="text" id="prog-com-${i}"></td>`;
+  progTbody.appendChild(tr);
+});
+
+// ── bilan_donnees ─────────────────────────────────────────
+const bilanRaw = localStorage.getItem('bilan_donnees');
+if (!bilanRaw) {
+  document.getElementById('no-data').style.display = 'block';
+} else {
+  const d = JSON.parse(bilanRaw);
+  const g  = k => parseFloat(d[k]) || 0;
+  const gs = k => d[k] || '';
+
+  // ── Helpers ────────────────────────────────────────────
+  function fmt(n)     { return Math.round(n).toLocaleString('fr-FR') + ' €'; }
+  function fmtPct(n)  { return (n * 100).toFixed(1) + ' %'; }
+  function fmtYears(n){ return n <= 0 ? '0 an' : n.toFixed(1) + ' ans'; }
+
+  function fmtDate(dateStr) {
+    if (!dateStr) return '—';
+    const parts = dateStr.split('-');
+    if (parts.length < 3) return dateStr;
+    const months = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+    const dd  = parts[2].substring(0, 2);
+    const mmm = months[parseInt(parts[1]) - 1] || parts[1];
+    const yy  = parts[0].slice(-2);
+    return `${dd} / ${mmm} / ${yy}`;
+  }
+
+  function mc(annualRate, years) {
+    if (annualRate === 0 || years === 0) return years > 0 ? 1 / (years * 12) : 0;
+    const pow = Math.pow(1 + annualRate, years);
+    return annualRate * pow / (pow - 1) / 12;
+  }
+
+  // Capital restant dû — utilise date_evaluation comme référence
+  function crdMonthly(principal, annualRate, years, startDate) {
+    if (!principal || !years || !startDate) return 0;
+    const start = new Date(startDate);
+    const evalDate = gs('date_evaluation');
+    const today = evalDate ? new Date(evalDate) : new Date();
+    if (start > today) return principal;
+    let months = (today.getFullYear() - start.getFullYear()) * 12 + (today.getMonth() - start.getMonth());
+    if (today.getDate() < start.getDate()) months--;
+    months = Math.max(0, months);
+    const totalMonths = years * 12;
+    if (months >= totalMonths) return 0;
+    const r = (annualRate / 100) / 12;
+    if (r === 0) return principal - (principal / totalMonths) * months;
+    const pmt = principal * r / (1 - Math.pow(1+r, -totalMonths));
+    let bal = principal;
+    for (let i = 0; i < months; i++) bal -= pmt - bal * r;
+    return Math.max(0, bal);
+  }
+
+  // Principal mensuel — amortissement annuel (cohérent avec Excel CUMPRINC)
+  function principalMensuel(principal, annualRate, years, startDate) {
+    if (!principal || !years || !startDate) return 0;
+    const evalDate = gs('date_evaluation');
+    const now = evalDate ? new Date(evalDate) : new Date();
+    const start = new Date(startDate);
+    const yearNum = Math.max(1, now.getFullYear() - start.getFullYear());
+    const r = annualRate / 100;
+    function balAtYear(n) {
+      if (n <= 0) return principal;
+      if (n >= years) return 0;
+      if (r === 0) return principal - (principal / years) * n;
+      const pmt = principal * r / (1 - Math.pow(1 + r, -years));
+      const growth = Math.pow(1 + r, n);
+      return Math.max(0, principal * growth - pmt * (growth - 1) / r);
+    }
+    const annualPrinc = Math.max(0, balAtYear(yearNum - 1) - balAtYear(Math.min(yearNum, years)));
+    return annualPrinc / 12;
+  }
+
+  // ── Données patrimoniales ─────────────────────────────
+  const salaire  = g('salaire_net') + g('bonus_net');
+  const epargne  = g('epargne_mensuelle');
+  const cashBrut = g('comptes_cheques') + g('cel') + g('pel') + g('livret_a') + g('ldd') + g('lep') + g('divers_liquidites');
+  const detteDirect = g('dette_capital_du_direct');
+  const detteCRD = detteDirect > 0 ? detteDirect :
+    crdMonthly(g('dette_montant'), g('dette_taux'), g('dette_duree'), gs('dette_debut'));
+  const patrimoineCash   = cashBrut - detteCRD;
+  const patrimoineBourse = g('cto') + g('pea') + g('per') + g('pee') + g('av_fonds_euros') + g('av_uc') + g('autres_invests');
+
+  const rpValeur  = g('rp_valeur');
+  const rpEmprunt = g('rp_emprunt_initial');
+  const rpTauxPct = g('rp_taux');
+  const rpTaux    = rpTauxPct / 100;
+  const rpDuree   = g('rp_duree');
+  const rpDebut   = gs('rp_debut');
+  const rpCRD     = crdMonthly(rpEmprunt, rpTauxPct, rpDuree, rpDebut);
+  const rpPatNet  = rpValeur - rpCRD;
+  const rpPrincipalMens = principalMensuel(rpEmprunt, rpTauxPct, rpDuree, rpDebut);
+
+  function rpMensualitesCalc(principal, annualRate, years) {
+    if (!principal || !years) return 0;
+    if (annualRate === 0) return principal / (years * 12);
+    return mc(annualRate, years) * principal;
+  }
+  const rpMensualites = rpMensualitesCalc(rpEmprunt, rpTaux, rpDuree);
+  const depensesAnnuelles = (salaire - epargne - rpPrincipalMens) * 12;
+
+  const isProprietaire = rpValeur > 0;
+
+  if (isProprietaire) {
+    document.getElementById('plan-proprio').style.display = 'block';
+    calcProprio();
+  } else {
+    document.getElementById('plan-locataire').style.display = 'block';
+    calcLocataire();
+  }
+
+  // ── LOCATAIRE ─────────────────────────────────────────
+  function calcLocataire() {
+    const loyer          = parseFloat(document.getElementById('l-loyer').value) || 0;
+    const annees         = parseFloat(document.getElementById('l-annees').value) || 25;
+    const tauxPct        = parseFloat(document.getElementById('l-taux').value) || 4;
+    const taux           = tauxPct / 100;
+    const budgetSouhaite = parseFloat(document.getElementById('l-budget-souhaite').value) || 0;
+    const epargneSupp    = parseFloat(document.getElementById('l-epargne-supp').value) || 0;
+
+    const depenses  = salaire - loyer - epargne;
+    const capRemb   = salaire / 3;
+    const sautCharge = capRemb - loyer;
+    const mcVal     = mc(taux, annees);
+    const capEndet  = capRemb <= 0 || mcVal <= 0 ? 0 : capRemb / mcVal;
+    const apport       = patrimoineCash + patrimoineBourse;
+    const budgetTotal  = capEndet + apport;
+    const budgetRP     = budgetTotal / 1.1;
+    const apportSupp   = budgetSouhaite - budgetRP;
+    const anneesApport = epargne > 0 ? Math.max(0, apportSupp / epargne / 12) : Infinity;
+    const manque = Math.max(0, apportSupp) * 0.05;
+    const nouvelleEpargne = epargne + epargneSupp;
+    const anneesApport2   = nouvelleEpargne > 0 ? Math.max(0, apportSupp / nouvelleEpargne / 12) : Infinity;
+
+    document.getElementById('l-revenus').textContent       = fmt(salaire);
+    document.getElementById('l-epargne').textContent       = fmt(epargne);
+    document.getElementById('l-depenses').textContent      = fmt(depenses);
+    document.getElementById('l-cap-remb').textContent      = fmt(capRemb);
+    document.getElementById('l-saut').textContent          = fmt(sautCharge);
+    document.getElementById('l-cap-endet').textContent     = fmt(capEndet);
+    document.getElementById('l-apport').textContent        = fmt(apport);
+    document.getElementById('l-budget-total').textContent  = fmt(budgetTotal);
+    document.getElementById('l-budget-rp').textContent     = fmt(budgetRP);
+    document.getElementById('l-apport-supp').textContent   = fmt(Math.max(0, apportSupp));
+    document.getElementById('l-annees-apport').textContent = isFinite(anneesApport) ? fmtYears(anneesApport) : '—';
+    document.getElementById('l-manque').textContent        = fmt(manque) + ' / an';
+    document.getElementById('l-nouvelle-epargne').textContent  = fmt(nouvelleEpargne);
+    document.getElementById('l-annees-apport-2').textContent   = isFinite(anneesApport2) ? fmtYears(anneesApport2) : '—';
+
+    notifyHeight();
+  }
+
+  ['l-loyer','l-annees','l-taux','l-budget-souhaite','l-epargne-supp'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', calcLocataire);
+  });
+
+  // ── PROPRIÉTAIRE ──────────────────────────────────────
+  function calcProprio() {
+    // ① Actuel
+    const tauxEndetActuel = salaire > 0 ? rpMensualites / salaire : 0;
+    document.getElementById('p1-valeur-rp').textContent   = fmt(rpValeur);
+    document.getElementById('p1-crd').textContent         = fmt(rpCRD);
+    document.getElementById('p1-pat-immo').textContent    = fmt(rpPatNet);
+    document.getElementById('p1-emprunt').textContent     = fmt(rpEmprunt);
+    document.getElementById('p1-taux').textContent        = rpTauxPct.toFixed(2) + ' %';
+    document.getElementById('p1-debut').textContent       = fmtDate(rpDebut);
+    document.getElementById('p1-duree').textContent       = rpDuree ? rpDuree + ' ans' : '—';
+    document.getElementById('p1-mensualites').textContent = fmt(rpMensualites);
+    document.getElementById('p1-revenus').textContent     = fmt(salaire);
+    const tauEl = document.getElementById('p1-taux-endet');
+    tauEl.textContent = fmtPct(tauxEndetActuel);
+    tauEl.style.color = '#fff';
+
+    // ②
+    const p2EndetMax = (parseFloat(document.getElementById('p2-endet-max').value) || 33) / 100;
+    const p2Annees   = parseFloat(document.getElementById('p2-annees').value) || 25;
+    const p2TauxPct  = parseFloat(document.getElementById('p2-taux').value) || 3.15;
+    const p2Taux     = p2TauxPct / 100;
+    const p2RembPoss   = p2EndetMax * salaire;
+    const p2EmpruntMax = p2RembPoss / mc(p2Taux, p2Annees);
+    const p2Mensualites = mc(p2Taux, p2Annees) * p2EmpruntMax;
+    const p2ApportMax  = rpPatNet + patrimoineCash + patrimoineBourse - depensesAnnuelles / 2;
+    const p2Frais      = 0.1 * (p2ApportMax + p2EmpruntMax);
+    const p2ValeurRP   = p2ApportMax + p2EmpruntMax - p2Frais;
+    document.getElementById('p2-revenus').textContent     = fmt(salaire);
+    document.getElementById('p2-remb-poss').textContent   = fmt(p2RembPoss);
+    document.getElementById('p2-emprunt-max').textContent = fmt(p2EmpruntMax);
+    document.getElementById('p2-mensualites').textContent = fmt(p2Mensualites);
+    document.getElementById('p2-apport-max').textContent  = fmt(p2ApportMax);
+    document.getElementById('p2-frais').textContent       = fmt(p2Frais);
+    document.getElementById('p2-valeur-rp').textContent   = fmt(p2ValeurRP);
+
+    // ③
+    const p3EndetMax    = (parseFloat(document.getElementById('p3-endet-max').value) || 33) / 100;
+    const p3Annees      = parseFloat(document.getElementById('p3-annees').value) || 20;
+    const p3TauxPct     = parseFloat(document.getElementById('p3-taux').value) || 3.5;
+    const p3Taux        = p3TauxPct / 100;
+    const p3Rentabilite = 0.04; // 4% par défaut (simplifié)
+    const ratio = 0.7;
+    const p3Apport      = patrimoineCash + patrimoineBourse - depensesAnnuelles / 2;
+    const mcP3          = mc(p3Taux, p3Annees);
+    const rentFactor    = p3Rentabilite * ratio * 0.9 / 12;
+    const p3EmpruntMax  = Math.max(0,
+      (p3Apport * rentFactor * p3EndetMax + salaire * p3EndetMax - rpMensualites) /
+      (mcP3 - rentFactor * p3EndetMax)
+    );
+    const p3Frais    = 0.1 * (p3Apport + p3EmpruntMax);
+    const p3ValeurLoc = p3Apport + p3EmpruntMax - p3Frais;
+    document.getElementById('p3-apport').textContent      = fmt(p3Apport);
+    document.getElementById('p3-emprunt-max').textContent = fmt(p3EmpruntMax);
+    document.getElementById('p3-frais').textContent       = fmt(p3Frais);
+    document.getElementById('p3-valeur-loc').textContent  = fmt(p3ValeurLoc);
+
+    notifyHeight();
+  }
+
+  ['p2-endet-max','p2-annees','p2-taux',
+   'p3-endet-max','p3-annees','p3-taux'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', calcProprio);
+  });
+}
+
+// ── Save / Restore ────────────────────────────────────────
+const SAVE_INPUTS = ['l-loyer','l-annees','l-taux','l-budget-souhaite','l-epargne-supp',
+  'p2-endet-max','p2-annees','p2-taux',
+  'p3-endet-max','p3-annees','p3-taux'];
+
+function saveData() {
+  const data = {};
+  SAVE_INPUTS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) data[id] = el.value;
+  });
+  PROGRES_ITEMS.forEach((_,i) => {
+    data[`prog-sel-${i}`] = document.getElementById(`prog-sel-${i}`)?.value || '';
+    data[`prog-com-${i}`] = document.getElementById(`prog-com-${i}`)?.value || '';
+  });
+  localStorage.setItem('plan_immo_data', JSON.stringify(data));
+}
+
+function restoreData() {
+  try {
+    const raw = localStorage.getItem('plan_immo_data');
+    if (!raw) return;
+    const saved = JSON.parse(raw);
+    SAVE_INPUTS.forEach(id => {
+      if (saved[id] !== undefined) {
+        const el = document.getElementById(id);
+        if (el) el.value = saved[id];
+      }
+    });
+    PROGRES_ITEMS.forEach((_,i) => {
+      if (saved[`prog-sel-${i}`]) document.getElementById(`prog-sel-${i}`).value = saved[`prog-sel-${i}`];
+      if (saved[`prog-com-${i}`]) document.getElementById(`prog-com-${i}`).value = saved[`prog-com-${i}`];
+    });
+  } catch(e) {}
+}
+
+document.addEventListener('input',  saveData);
+document.addEventListener('change', saveData);
+restoreData();
+
+// ── Auto-resize iframe ────────────────────────────────────
+function notifyHeight() {
+  window.parent.postMessage({ type: 'iframeHeight', height: document.documentElement.scrollHeight }, '*');
+}
+window.addEventListener('load', notifyHeight);
+new MutationObserver(() => setTimeout(notifyHeight, 50)).observe(document.body, { childList: true, subtree: true });
+
+// ── Email ─────────────────────────────────────────────────
+function buildEmailBody() {
+
+  const prenom = PRENOM || '[Prénom]';
+  const nom    = NOM    || '[Nom]';
+
+  let txt = 'MESUREZ VOS PROGRÈS — IMMOBILIER\n' + '─'.repeat(42) + '\n\n';
+  PROGRES_ITEMS.forEach((item, i) => {
+    const sel = document.getElementById(`prog-sel-${i}`)?.value || '—';
+    const com = document.getElementById(`prog-com-${i}`)?.value.trim() || '';
+    txt += `${item}\n  → ${sel}${com ? '  |  ' + com : ''}\n\n`;
+  });
+
+  const bilanRaw2 = localStorage.getItem('bilan_donnees');
+  if (bilanRaw2) {
+    const d2 = JSON.parse(bilanRaw2);
+    const rpVal = parseFloat(d2['rp_valeur']) || 0;
+    const isP   = rpVal > 0;
+    txt += '\n' + '─'.repeat(42) + '\n';
+    txt += isP ? 'PLAN IMMOBILIER — PROPRIÉTAIRE\n\n' : 'PLAN IMMOBILIER — LOCATAIRE\n\n';
+
+    if (!isP) {
+      txt += `Loyer mensuel : ${document.getElementById('l-loyer')?.value || '—'} €\n`;
+      txt += `Budget souhaité : ${document.getElementById('l-budget-souhaite')?.value || '—'} €\n`;
+      txt += `Budget RP calculé : ${document.getElementById('l-budget-rp')?.textContent || '—'}\n`;
+      txt += `Années pour cet apport (CAS 1) : ${document.getElementById('l-annees-apport')?.textContent || '—'}\n`;
+      txt += `Épargne supplémentaire : ${document.getElementById('l-epargne-supp')?.value || '—'} €/mois\n`;
+      txt += `Années pour cet apport (CAS 2) : ${document.getElementById('l-annees-apport-2')?.textContent || '—'}\n`;
+    } else {
+      txt += `Valeur RP actuelle : ${document.getElementById('p1-valeur-rp')?.textContent || '—'}\n`;
+      txt += `Taux d'endettement actuel : ${document.getElementById('p1-taux-endet')?.textContent || '—'}\n`;
+      txt += `Budget nouvelle RP (②) : ${document.getElementById('p2-valeur-rp')?.textContent || '—'}\n`;
+      txt += `Budget locatif (③) : ${document.getElementById('p3-valeur-loc')?.textContent || '—'}\n`;
+    }
   }
-
-  function mc(annualRate, years) {
-    if (annualRate === 0 || years === 0) return years > 0 ? 1 / (years * 12) : 0;
-    const pow = Math.pow(1 + annualRate, years);
-    return annualRate * pow / (pow - 1) / 12;
-  }
-
-  // Capital restant dû — utilise date_evaluation comme référence
-  function crdMonthly(principal, annualRate, years, startDate) {
-    if (!principal || !years || !startDate) return 0;
-    const start = new Date(startDate);
-    const evalDate = gs('date_evaluation');
-    const today = evalDate ? new Date(evalDate) : new Date();
-    if (start > today) return principal;
-    let months = (today.getFullYear() - start.getFullYear()) * 12 + (today.getMonth() - start.getMonth());
-    if (today.getDate() < start.getDate()) months--;
-    months = Math.max(0, months);
-    const totalMonths = years * 12;
-    if (months >= totalMonths) return 0;
-    const r = (annualRate / 100) / 12;
-    if (r === 0) return principal - (principal / totalMonths) * months;
-    const pmt = principal * r / (1 - Math.pow(1+r, -totalMonths));
-    let bal = principal;
-    for (let i = 0; i < months; i++) bal -= pmt - bal * r;
-    return Math.max(0, bal);
-  }
-
-  // Principal mensuel — amortissement annuel (cohérent avec Excel CUMPRINC)
-  function principalMensuel(principal, annualRate, years, startDate) {
-    if (!principal || !years || !startDate) return 0;
-    const evalDate = gs('date_evaluation');
-    const now = evalDate ? new Date(evalDate) : new Date();
-    const start = new Date(startDate);
-    const yearNum = Math.max(1, now.getFullYear() - start.getFullYear());
-    const r = annualRate / 100;
-    function balAtYear(n) {
-      if (n <= 0) return principal;
-      if (n >= years) return 0;
-      if (r === 0) return principal - (principal / years) * n;
-      const pmt = principal * r / (1 - Math.pow(1 + r, -years));
-      const growth = Math.pow(1 + r, n);
-      return Math.max(0, principal * growth - pmt * (growth - 1) / r);
-    }
-    const annualPrinc = Math.max(0, balAtYear(yearNum - 1) - balAtYear(Math.min(yearNum, years)));
-    return annualPrinc / 12;
-  }
-
-  // ── Données patrimoniales ─────────────────────────────
-  const salaire  = g('salaire_net') + g('bonus_net');
-  const epargne  = g('epargne_mensuelle');
-  const cashBrut = g('comptes_cheques') + g('cel') + g('pel') + g('livret_a') + g('ldd') + g('lep') + g('divers_liquidites');
-  const detteDirect = g('dette_capital_du_direct');
-  const detteCRD = detteDirect > 0 ? detteDirect :
-    crdMonthly(g('dette_montant'), g('dette_taux'), g('dette_duree'), gs('dette_debut'));
-  const patrimoineCash   = cashBrut - detteCRD;
-  const patrimoineBourse = g('cto') + g('pea') + g('per') + g('pee') + g('av_fonds_euros') + g('av_uc') + g('autres_invests');
-
-  const rpValeur  = g('rp_valeur');
-  const rpEmprunt = g('rp_emprunt_initial');
-  const rpTauxPct = g('rp_taux');
-  const rpTaux    = rpTauxPct / 100;
-  const rpDuree   = g('rp_duree');
-  const rpDebut   = gs('rp_debut');
-  const rpCRD     = crdMonthly(rpEmprunt, rpTauxPct, rpDuree, rpDebut);
-  const rpPatNet  = rpValeur - rpCRD;
-  const rpPrincipalMens = principalMensuel(rpEmprunt, rpTauxPct, rpDuree, rpDebut);
-
-  function rpMensualitesCalc(principal, annualRate, years) {
-    if (!principal || !years) return 0;
-    if (annualRate === 0) return principal / (years * 12);
-    return mc(annualRate, years) * principal;
-  }
-  const rpMensualites = rpMensualitesCalc(rpEmprunt, rpTaux, rpDuree);
-  const depensesAnnuelles = (salaire - epargne - rpPrincipalMens) * 12;
-
-  const isProprietaire = rpValeur > 0;
-
-  if (isProprietaire) {
-    document.getElementById('plan-proprio').style.display = 'block';
-    calcProprio();
-  } else {
-    document.getElementById('plan-locataire').style.display = 'block';
-    calcLocataire();
-  }
-
-  // ── LOCATAIRE ─────────────────────────────────────────
-  function calcLocataire() {
-    const loyer          = parseFloat(document.getElementById('l-loyer').value) || 0;
-    const annees         = parseFloat(document.getElementById('l-annees').value) || 25;
-    const tauxPct        = parseFloat(document.getElementById('l-taux').value) || 4;
-    const taux           = tauxPct / 100;
-    const budgetSouhaite = parseFloat(document.getElementById('l-budget-souhaite').value) || 0;
-    const epargneSupp    = parseFloat(document.getElementById('l-epargne-supp').value) || 0;
-
-    const depenses  = salaire - loyer - epargne;
-    const capRemb   = salaire / 3;
-    const sautCharge = capRemb - loyer;
-    const mcVal     = mc(taux, annees);
-    const capEndet  = capRemb <= 0 || mcVal <= 0 ? 0 : capRemb / mcVal;
-    const apport       = patrimoineCash + patrimoineBourse;
-    const budgetTotal  = capEndet + apport;
-    const budgetRP     = budgetTotal / 1.1;
-    const apportSupp   = budgetSouhaite - budgetRP;
-    const anneesApport = epargne > 0 ? Math.max(0, apportSupp / epargne / 12) : Infinity;
-    const manque = Math.max(0, apportSupp) * 0.05;
-    const nouvelleEpargne = epargne + epargneSupp;
-    const anneesApport2   = nouvelleEpargne > 0 ? Math.max(0, apportSupp / nouvelleEpargne / 12) : Infinity;
-
-    document.getElementById('l-revenus').textContent       = fmt(salaire);
-    document.getElementById('l-epargne').textContent       = fmt(epargne);
-    document.getElementById('l-depenses').textContent      = fmt(depenses);
-    document.getElementById('l-cap-remb').textContent      = fmt(capRemb);
-    document.getElementById('l-saut').textContent          = fmt(sautCharge);
-    document.getElementById('l-cap-endet').textContent     = fmt(capEndet);
-    document.getElementById('l-apport').textContent        = fmt(apport);
-    document.getElementById('l-budget-total').textContent  = fmt(budgetTotal);
-    document.getElementById('l-budget-rp').textContent     = fmt(budgetRP);
-    document.getElementById('l-apport-supp').textContent   = fmt(Math.max(0, apportSupp));
-    document.getElementById('l-annees-apport').textContent = isFinite(anneesApport) ? fmtYears(anneesApport) : '—';
-    document.getElementById('l-manque').textContent        = fmt(manque) + ' / an';
-    document.getElementById('l-nouvelle-epargne').textContent  = fmt(nouvelleEpargne);
-    document.getElementById('l-annees-apport-2').textContent   = isFinite(anneesApport2) ? fmtYears(anneesApport2) : '—';
-
-    notifyHeight();
-  }
-
-  ['l-loyer','l-annees','l-taux','l-budget-souhaite','l-epargne-supp'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('input', calcLocataire);
-  });
-
-  // ── PROPRIÉTAIRE ──────────────────────────────────────
-  function calcProprio() {
-    // ① Actuel
-    const tauxEndetActuel = salaire > 0 ? rpMensualites / salaire : 0;
-    document.getElementById('p1-valeur-rp').textContent   = fmt(rpValeur);
-    document.getElementById('p1-crd').textContent         = fmt(rpCRD);
-    document.getElementById('p1-pat-immo').textContent    = fmt(rpPatNet);
-    document.getElementById('p1-emprunt').textContent     = fmt(rpEmprunt);
-    document.getElementById('p1-taux').textContent        = rpTauxPct.toFixed(2) + ' %';
-    document.getElementById('p1-debut').textContent       = fmtDate(rpDebut);
-    document.getElementById('p1-duree').textContent       = rpDuree ? rpDuree + ' ans' : '—';
-    document.getElementById('p1-mensualites').textContent = fmt(rpMensualites);
-    document.getElementById('p1-revenus').textContent     = fmt(salaire);
-    const tauEl = document.getElementById('p1-taux-endet');
-    tauEl.textContent = fmtPct(tauxEndetActuel);
-    tauEl.style.color = '#fff';
-
-    // ②
-    const p2EndetMax = (parseFloat(document.getElementById('p2-endet-max').value) || 33) / 100;
-    const p2Annees   = parseFloat(document.getElementById('p2-annees').value) || 25;
-    const p2TauxPct  = parseFloat(document.getElementById('p2-taux').value) || 3.15;
-    const p2Taux     = p2TauxPct / 100;
-    const p2RembPoss   = p2EndetMax * salaire;
-    const p2EmpruntMax = p2RembPoss / mc(p2Taux, p2Annees);
-    const p2Mensualites = mc(p2Taux, p2Annees) * p2EmpruntMax;
-    const p2ApportMax  = rpPatNet + patrimoineCash + patrimoineBourse - depensesAnnuelles / 2;
-    const p2Frais      = 0.1 * (p2ApportMax + p2EmpruntMax);
-    const p2ValeurRP   = p2ApportMax + p2EmpruntMax - p2Frais;
-    document.getElementById('p2-revenus').textContent     = fmt(salaire);
-    document.getElementById('p2-remb-poss').textContent   = fmt(p2RembPoss);
-    document.getElementById('p2-emprunt-max').textContent = fmt(p2EmpruntMax);
-    document.getElementById('p2-mensualites').textContent = fmt(p2Mensualites);
-    document.getElementById('p2-apport-max').textContent  = fmt(p2ApportMax);
-    document.getElementById('p2-frais').textContent       = fmt(p2Frais);
-    document.getElementById('p2-valeur-rp').textContent   = fmt(p2ValeurRP);
-
-    // ③
-    const p3EndetMax    = (parseFloat(document.getElementById('p3-endet-max').value) || 33) / 100;
-    const p3Annees      = parseFloat(document.getElementById('p3-annees').value) || 20;
-    const p3TauxPct     = parseFloat(document.getElementById('p3-taux').value) || 3.5;
-    const p3Taux        = p3TauxPct / 100;
-    const p3Rentabilite = 0.04; // 4% par défaut (simplifié)
-    const ratio = 0.7;
-    const p3Apport      = patrimoineCash + patrimoineBourse - depensesAnnuelles / 2;
-    const mcP3          = mc(p3Taux, p3Annees);
-    const rentFactor    = p3Rentabilite * ratio * 0.9 / 12;
-    const p3EmpruntMax  = Math.max(0,
-      (p3Apport * rentFactor * p3EndetMax + salaire * p3EndetMax - rpMensualites) /
-      (mcP3 - rentFactor * p3EndetMax)
-    );
-    const p3Frais    = 0.1 * (p3Apport + p3EmpruntMax);
-    const p3ValeurLoc = p3Apport + p3EmpruntMax - p3Frais;
-    document.getElementById('p3-apport').textContent      = fmt(p3Apport);
-    document.getElementById('p3-emprunt-max').textContent = fmt(p3EmpruntMax);
-    document.getElementById('p3-frais').textContent       = fmt(p3Frais);
-    document.getElementById('p3-valeur-loc').textContent  = fmt(p3ValeurLoc);
-
-    notifyHeight();
-  }
-
-  ['p2-endet-max','p2-annees','p2-taux',
-   'p3-endet-max','p3-annees','p3-taux'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('input', calcProprio);
-  });
+  return txt;
 }
-
-// ── Save / Restore ────────────────────────────────────────
-const SAVE_INPUTS = ['l-loyer','l-annees','l-taux','l-budget-souhaite','l-epargne-supp',
-  'p2-endet-max','p2-annees','p2-taux',
-  'p3-endet-max','p3-annees','p3-taux'];
-
-function saveData() {
-  const data = {};
-  SAVE_INPUTS.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) data[id] = el.value;
-  });
-  PROGRES_ITEMS.forEach((_,i) => {
-    data[`prog-sel-${i}`] = document.getElementById(`prog-sel-${i}`)?.value || '';
-    data[`prog-com-${i}`] = document.getElementById(`prog-com-${i}`)?.value || '';
-  });
-  localStorage.setItem('plan_immo_data', JSON.stringify(data));
-}
-
-function restoreData() {
-  try {
-    const raw = localStorage.getItem('plan_immo_data');
-    if (!raw) return;
-    const saved = JSON.parse(raw);
-    SAVE_INPUTS.forEach(id => {
-      if (saved[id] !== undefined) {
-        const el = document.getElementById(id);
-        if (el) el.value = saved[id];
-      }
-    });
-    PROGRES_ITEMS.forEach((_,i) => {
-      if (saved[`prog-sel-${i}`]) document.getElementById(`prog-sel-${i}`).value = saved[`prog-sel-${i}`];
-      if (saved[`prog-com-${i}`]) document.getElementById(`prog-com-${i}`).value = saved[`prog-com-${i}`];
-    });
-  } catch(e) {}
-}
-
-document.addEventListener('input',  saveData);
-document.addEventListener('change', saveData);
-restoreData();
-
-// ── Auto-resize iframe ────────────────────────────────────
-function notifyHeight() {
-  window.parent.postMessage({ type: 'iframeHeight', height: document.documentElement.scrollHeight }, '*');
-}
-window.addEventListener('load', notifyHeight);
-new MutationObserver(() => setTimeout(notifyHeight, 50)).observe(document.body, { childList: true, subtree: true });
 
 // ── Email ─────────────────────────────────────────────────
 async function validerPlan(questions) {
   const prenom = PRENOM || '[Prénom]';
   const nom    = NOM    || '[Nom]';
-
-  let txt = 'MESUREZ VOS PROGRÈS — IMMOBILIER\n' + '─'.repeat(42) + '\n\n';
-  PROGRES_ITEMS.forEach((item, i) => {
-    const sel = document.getElementById(`prog-sel-${i}`)?.value || '—';
-    const com = document.getElementById(`prog-com-${i}`)?.value.trim() || '';
-    txt += `${item}\n  → ${sel}${com ? '  |  ' + com : ''}\n\n`;
-  });
-
-  const bilanRaw2 = localStorage.getItem('bilan_donnees');
-  if (bilanRaw2) {
-    const d2 = JSON.parse(bilanRaw2);
-    const rpVal = parseFloat(d2['rp_valeur']) || 0;
-    const isP   = rpVal > 0;
-    txt += '\n' + '─'.repeat(42) + '\n';
-    txt += isP ? 'PLAN IMMOBILIER — PROPRIÉTAIRE\n\n' : 'PLAN IMMOBILIER — LOCATAIRE\n\n';
-
-    if (!isP) {
-      txt += `Loyer mensuel : ${document.getElementById('l-loyer')?.value || '—'} €\n`;
-      txt += `Budget souhaité : ${document.getElementById('l-budget-souhaite')?.value || '—'} €\n`;
-      txt += `Budget RP calculé : ${document.getElementById('l-budget-rp')?.textContent || '—'}\n`;
-      txt += `Années pour cet apport (CAS 1) : ${document.getElementById('l-annees-apport')?.textContent || '—'}\n`;
-      txt += `Épargne supplémentaire : ${document.getElementById('l-epargne-supp')?.value || '—'} €/mois\n`;
-      txt += `Années pour cet apport (CAS 2) : ${document.getElementById('l-annees-apport-2')?.textContent || '—'}\n`;
-    } else {
-      txt += `Valeur RP actuelle : ${document.getElementById('p1-valeur-rp')?.textContent || '—'}\n`;
-      txt += `Taux d'endettement actuel : ${document.getElementById('p1-taux-endet')?.textContent || '—'}\n`;
-      txt += `Budget nouvelle RP (②) : ${document.getElementById('p2-valeur-rp')?.textContent || '—'}\n`;
-      txt += `Budget locatif (③) : ${document.getElementById('p3-valeur-loc')?.textContent || '—'}\n`;
-    }
-  }
-
-  const subject = `Plan Immobilier ${prenom} ${nom}`;
-  const text =
-    `Bonjour Raphael,\n\nVoici mon plan Immobilier, dis-moi ce que tu en penses.\n\n` +
-    `${questions ? questions + '\n\n' : ''}` +
-    `${'═'.repeat(42)}\n\n` + txt +
-    `\n${'═'.repeat(42)}\n\nCordialement,\n${prenom}`;
-
-  const btn = document.getElementById('btn-valider');
-  btn.disabled = true;
-  btn.innerHTML = 'Envoi en cours…';
-
-  try {
-    const res  = await fetch('/api/plan/send-email', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ subject, text }),
-    });
-    const data = await res.json();
-    if (data.success) {
-      btn.innerHTML = '✓ Plan envoyé avec succès !';
-      btn.style.background = '#16A34A';
-      window.parent.postMessage({ type: 'coachd_validated', key: 'plan_immo_data' }, '*');
-    } else {
-      btn.innerHTML = 'Erreur — réessayez';
-      btn.style.background = '#DC2626';
-      btn.disabled = false;
-    }
-  } catch(e) {
-    btn.innerHTML = 'Erreur réseau — réessayez';
-    btn.style.background = '#DC2626';
-    btn.disabled = false;
-  }
-}
+  const emailBody = buildEmailBody();
+  const subject = `Plan Immobilier ${prenom} ${nom}`;
+  const text =
+    `Bonjour Raphael,\n\nVoici mon plan Immobilier, dis-moi ce que tu en penses.\n\n` +
+    `${questions ? questions + '\n\n' : ''}` +
+    `${'═'.repeat(42)}\n\n` + txt +
+    `\n${'═'.repeat(42)}\n\nCordialement,\n${prenom}`;
+
+  const btn = document.getElementById('btn-valider');
+  btn.disabled = true;
+  btn.innerHTML = 'Envoi en cours…';
+
+  try {
+    const res  = await fetch('/api/plan/send-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ subject, text }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      btn.innerHTML = '✓ Plan envoyé avec succès !';
+      btn.style.background = '#16A34A';
+      window.parent.postMessage({ type: 'coachd_validated', key: 'plan_immo_data' }, '*');
+    } else {
+      btn.innerHTML = 'Erreur — réessayez';
+      btn.style.background = '#DC2626';
+      btn.disabled = false;
+    }
+  } catch(e) {
+    btn.innerHTML = 'Erreur réseau — réessayez';
+    btn.style.background = '#DC2626';
+    btn.disabled = false;
+  }
+}
 
 // ── Popup questions ───────────────────────────────
 function ouvrirPopup() {
+  document.getElementById('email-preview').textContent = buildEmailBody();
   const m = document.getElementById('modal-questions');
   m.style.display = 'flex';
   document.getElementById('questions-textarea').focus();
@@ -635,19 +644,23 @@ async function envoyerPlan() {
 document.getElementById('modal-questions').addEventListener('click', function(e) {
   if (e.target === this) fermerPopup();
 });
-</script>
+</script>
 
 <!-- ── Modal questions ────────────────────────────── -->
-<div id="modal-questions" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:1000; align-items:center; justify-content:center;">
-  <div style="background:#fff; border-radius:14px; padding:2rem; max-width:500px; width:92%; box-shadow:0 8px 40px rgba(0,0,0,0.2);">
+<div id="modal-questions" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:1000; align-items:center; justify-content:center; padding:1rem;">
+  <div style="background:#fff; border-radius:14px; padding:2rem; max-width:520px; width:92%; max-height:88vh; overflow-y:auto; box-shadow:0 8px 40px rgba(0,0,0,0.2);">
     <h3 style="font-family:'Outfit',sans-serif; color:#1B2B4A; margin:0 0 0.5rem; font-size:1.05rem; font-weight:700;">Vos questions pour Raphaël</h3>
     <p style="font-size:0.82rem; color:#6B7280; margin:0 0 1rem;">Posez toutes vos questions ci-dessous. Elles seront incluses dans votre email.</p>
-    <textarea id="questions-textarea" placeholder="Écrivez vos questions ici..." style="width:100%; min-height:130px; padding:0.75rem; border:1px solid #E5E7EB; border-radius:8px; font-size:0.88rem; font-family:'Inter',sans-serif; resize:vertical; box-sizing:border-box; outline:none;"></textarea>
+    <textarea id="questions-textarea" placeholder="Écrivez vos questions ici..." style="width:100%; min-height:100px; padding:0.75rem; border:1px solid #E5E7EB; border-radius:8px; font-size:0.88rem; font-family:'Inter',sans-serif; resize:vertical; box-sizing:border-box; outline:none;"></textarea>
+    <div style="margin-top:1.25rem; border-top:1px solid #F3F4F6; padding-top:1rem;">
+      <p style="font-size:0.7rem; color:#9CA3AF; margin:0 0 0.5rem; text-transform:uppercase; letter-spacing:0.08em; font-family:'Outfit',sans-serif; font-weight:600;">Aperçu de l'email</p>
+      <pre id="email-preview" style="font-size:0.75rem; color:#6B7280; white-space:pre-wrap; max-height:220px; overflow-y:auto; background:#F9FAFB; border:1px solid #E5E7EB; border-radius:8px; padding:0.75rem; font-family:'Inter',sans-serif; line-height:1.5; margin:0;"></pre>
+    </div>
     <div style="display:flex; gap:0.75rem; margin-top:1rem; justify-content:flex-end;">
       <button onclick="fermerPopup()" style="padding:9px 20px; border:1px solid #E5E7EB; border-radius:8px; background:#fff; color:#6B7280; cursor:pointer; font-family:'Inter',sans-serif; font-size:0.88rem;">Annuler</button>
       <button onclick="envoyerPlan()" id="btn-envoyer" style="padding:9px 22px; background:#C0603A; color:#fff; border:none; border-radius:8px; font-family:'Outfit',sans-serif; font-weight:600; font-size:0.95rem; cursor:pointer;">Envoyer ✉</button>
     </div>
   </div>
 </div>
-</body>
-</html>
+</body>
+</html>
