@@ -75,32 +75,35 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      {/* Progress card */}
-      <div className="card mb-8 flex items-center gap-6">
-        <div className="flex-1">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-600">Progression globale</span>
-            <span className="text-lg font-bold text-navy">{progressPercent}%</span>
-          </div>
-          <div className="progress-bar">
-            <div className="progress-fill" style={{ width: `${progressPercent}%` }} />
-          </div>
-          <p className="text-xs text-gray-400 mt-1.5">
-            {completedCount} / {totalVideos} vidéos complétées
-          </p>
-        </div>
-
-        {completedCount === 0 ? (
-          <Link href="/bilan/donnees" className="btn-cta shrink-0">
+      {/* CTA button */}
+      {completedCount === 0 ? (
+        <div className="mb-6">
+          <Link href="/bilan/donnees" className="btn-cta">
             <PlayCircle size={18} />
             Commencer
           </Link>
-        ) : resumeVideoId ? (
-          <Link href={`/formation/${resumeVideoId}`} className="btn-cta shrink-0">
+        </div>
+      ) : resumeVideoId ? (
+        <div className="mb-6">
+          <Link href={`/formation/${resumeVideoId}`} className="btn-cta">
             <PlayCircle size={18} />
             Reprendre
           </Link>
-        ) : null}
+        </div>
+      ) : null}
+
+      {/* Progress card */}
+      <div className="card mb-8">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm font-medium text-gray-600">Progression globale</span>
+          <span className="text-lg font-bold text-navy">{progressPercent}%</span>
+        </div>
+        <div className="progress-bar">
+          <div className="progress-fill" style={{ width: `${progressPercent}%` }} />
+        </div>
+        <p className="text-xs text-gray-400 mt-1.5">
+          {completedCount} / {totalVideos} vidéos complétées
+        </p>
       </div>
 
       {/* Bilan section */}
