@@ -15,6 +15,9 @@ export default function AutoResizeFrame({ src, title }: Props) {
       if (e.data?.type === "iframeHeight" && ref.current) {
         ref.current.style.height = e.data.height + "px";
       }
+      if (e.data?.type === "scrollTop") {
+        window.scrollTo({ top: 0, behavior: "instant" });
+      }
     }
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);

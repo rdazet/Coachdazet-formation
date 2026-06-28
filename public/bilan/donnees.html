@@ -301,8 +301,8 @@
             }
         }
 
-        btnNext.addEventListener('click', () => { if (currentStep < totalSteps) { currentStep++; updateUI(); window.scrollTo({ top: 0, behavior: 'instant' }); } });
-        btnPrev.addEventListener('click', () => { if (currentStep > 1) { currentStep--; updateUI(); window.scrollTo({ top: 0, behavior: 'instant' }); } });
+        btnNext.addEventListener('click', () => { if (currentStep < totalSteps) { currentStep++; updateUI(); window.parent.postMessage({ type: 'scrollTop' }, '*'); } });
+        btnPrev.addEventListener('click', () => { if (currentStep > 1) { currentStep--; updateUI(); window.parent.postMessage({ type: 'scrollTop' }, '*'); } });
 
         btnSubmit.addEventListener('click', () => {
             const data = {};
@@ -318,6 +318,15 @@
         });
 
         updateUI();
+    });
+
+    // Auto-resize pour le parent (AutoResizeFrame)
+    function notifyHeight() {
+      window.parent.postMessage({ type: 'iframeHeight', height: document.documentElement.scrollHeight }, '*');
+    }
+    window.addEventListener('load', notifyHeight);
+    new MutationObserver(() => setTimeout(notifyHeight, 100)).observe(document.body, {
+      childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style']
     });
     </script>
 </body>

@@ -1,6 +1,14 @@
 // app_resultat.js — Calcule automatiquement au chargement depuis les données en localStorage
 // Basé sur app.js (Coach Dazet Bilan) — logique de calcul identique
 
+function notifyHeight() {
+    window.parent.postMessage({ type: 'iframeHeight', height: document.documentElement.scrollHeight }, '*');
+}
+window.addEventListener('load', notifyHeight);
+new MutationObserver(() => setTimeout(notifyHeight, 100)).observe(document.body, {
+    childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style']
+});
+
 document.addEventListener('DOMContentLoaded', () => {
     const saved = localStorage.getItem('bilan_donnees');
     if (!saved) return;
@@ -22,6 +30,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         const titleEl = document.getElementById('page-title');
         if (titleEl && stepTitles[n]) titleEl.innerHTML = stepTitles[n];
+        window.parent.postMessage({ type: 'scrollTop' }, '*');
+        setTimeout(notifyHeight, 150);
     }
 
     // Masquer le bouton Vérifications pour les non-admins
