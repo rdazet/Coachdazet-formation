@@ -87,7 +87,7 @@ export default async function PlatformLayout({
         profileName={profile.full_name}
       />
 
-      <main className="flex-1 overflow-y-auto bg-[#F5F5F5] pb-24 lg:pb-0">
+      <main className="flex-1 lg:h-screen lg:overflow-y-auto bg-[#F5F5F5] pb-24 lg:pb-0">
         <div className="pt-14 lg:pt-0">{children}</div>
       </main>
     </div>
