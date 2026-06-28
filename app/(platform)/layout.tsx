@@ -87,7 +87,10 @@ export default async function PlatformLayout({
         profileName={profile.full_name}
       />
 
-      <main className="flex-1 overflow-y-auto bg-[#F5F5F5]">
+      <main
+        className="flex-1 overflow-y-auto bg-[#F5F5F5]"
+        style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+      >
         <div className="pt-14 lg:pt-0">{children}</div>
       </main>
     </div>
