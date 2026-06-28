@@ -2,7 +2,7 @@
 // Basé sur app.js (Coach Dazet Bilan) — logique de calcul identique
 
 function notifyHeight() {
-    window.parent.postMessage({ type: 'iframeHeight', height: document.documentElement.scrollHeight }, '*');
+    window.parent.postMessage({ type: 'iframeHeight', height: document.body.offsetHeight }, '*');
 }
 window.addEventListener('load', notifyHeight);
 new MutationObserver(() => setTimeout(notifyHeight, 100)).observe(document.body, {
