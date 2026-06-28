@@ -195,9 +195,7 @@ header {
         font-size: 1rem;
         font-family: 'Inter', sans-serif;
         line-height: 1.5;
-        height: auto;
-        min-height: 0;
-        display: block;
+        min-height: calc(1.5rem + 2 * 0.75rem + 2px);
     }
 }
 
