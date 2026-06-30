@@ -17,6 +17,8 @@ export default function AutoResizeFrame({ src, title }: Props) {
       }
       if (e.data?.type === "scrollTop") {
         window.scrollTo({ top: 0, behavior: "instant" });
+        const main = document.querySelector("main");
+        if (main) main.scrollTo({ top: 0, behavior: "instant" });
       }
     }
     window.addEventListener("message", onMessage);
