@@ -578,12 +578,15 @@ async function validerPlan(questions) {
 }
 
 // ── Popup questions ───────────────────────────────
-function ouvrirPopup() {
+function ouvrirPopup() {
   document.getElementById('email-preview').textContent = buildEmailBody();
-  window.parent.postMessage({ type: 'scrollTop' }, '*');
-  const m = document.getElementById('modal-questions');
-  m.style.display = 'flex';
-  document.getElementById('questions-textarea').focus();
+  const btn = document.getElementById('btn-valider');
+  if (btn) {
+    window.parent.postMessage({ type: 'scrollToBtn', btnTop: btn.offsetTop, btnHeight: btn.offsetHeight }, '*');
+  }
+  const m = document.getElementById('modal-questions');
+  m.style.display = 'flex';
+  document.getElementById('questions-textarea').focus();
 }
 function fermerPopup() {
   document.getElementById('modal-questions').style.display = 'none';
