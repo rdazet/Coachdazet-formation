@@ -20,18 +20,18 @@ export default function AutoResizeFrame({ src, title }: Props) {
         const main = document.querySelector("main");
         if (main) main.scrollTo({ top: 0, behavior: "instant" });
       }
-      if (e.data?.type === "scrollToBtn" && ref.current) {
-        const iframe = ref.current;
+      if (e.data?.type === "scrollTo" && ref.current) {
+        const iframeContentTop = e.data.top;
         const main = document.querySelector("main");
-        const currentScroll = main ? main.scrollTop : window.scrollY;
-        const iframeTop = iframe.getBoundingClientRect().top + currentScroll;
-        const btnBottom = iframeTop + e.data.btnTop + e.data.btnHeight;
-        // Scroll so button sits at 85% from top of viewport
-        const target = btnBottom - window.innerHeight * 0.85;
         if (main) {
-          main.scrollTo({ top: target, behavior: "smooth" });
+          const iframeTopInMain =
+            ref.current.getBoundingClientRect().top -
+            main.getBoundingClientRect().top +
+            main.scrollTop;
+          main.scrollTo({ top: iframeTopInMain + iframeContentTop, behavior: "smooth" });
         } else {
-          window.scrollTo({ top: target, behavior: "smooth" });
+          const iframeTop = ref.current.getBoundingClientRect().top + window.scrollY;
+          window.scrollTo({ top: iframeTop + iframeContentTop, behavior: "smooth" });
         }
       }
     }

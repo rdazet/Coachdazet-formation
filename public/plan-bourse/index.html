@@ -535,16 +535,38 @@ async function validerPlan(questions) {
 // ── Popup questions ───────────────────────────────
 function ouvrirPopup() {
   document.getElementById('email-preview').textContent = buildEmailBody();
-  const btn = document.getElementById('btn-valider');
-  if (btn) {
-    window.parent.postMessage({ type: 'scrollToBtn', btnTop: btn.offsetTop, btnHeight: btn.offsetHeight }, '*');
-  }
   const m = document.getElementById('modal-questions');
-  m.style.display = 'flex';
+  const box = m.firstElementChild;
+  const btn = document.getElementById('btn-valider');
+  // Use absolute (not fixed) so it works in auto-resize iframes
+  m.style.position = 'absolute';
+  m.style.inset = '0';
+  m.style.height = document.body.offsetHeight + 'px';
+  m.style.display = 'block';
+  m.style.padding = '0';
+  box.style.position = 'absolute';
+  box.style.left = '50%';
+  box.style.transform = 'translateX(-50%)';
+  box.style.maxHeight = '500px';
+  box.style.width = 'min(520px, 92%)';
+  box.style.boxSizing = 'border-box';
+  requestAnimationFrame(() => {
+    const boxH = box.offsetHeight;
+    const top = Math.max(20, btn.offsetTop - boxH - 20);
+    box.style.top = top + 'px';
+    window.parent.postMessage({ type: 'scrollTo', top: top - 20 }, '*');
+  });
   document.getElementById('questions-textarea').focus();
 }
-function fermerPopup() {
-  document.getElementById('modal-questions').style.display = 'none';
+function fermerPopup() {
+  const m = document.getElementById('modal-questions');
+  m.style.display = 'none';
+  m.style.position = '';
+  m.style.inset = '';
+  m.style.height = '';
+  const box = m.firstElementChild;
+  box.style.position = '';
+  box.style.top = '';
 }
 async function envoyerPlan() {
   const questions = document.getElementById('questions-textarea').value.trim();
