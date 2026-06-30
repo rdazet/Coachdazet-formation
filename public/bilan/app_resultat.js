@@ -30,8 +30,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         const titleEl = document.getElementById('page-title');
         if (titleEl && stepTitles[n]) titleEl.innerHTML = stepTitles[n];
-        window.parent.postMessage({ type: 'scrollTop' }, '*');
-        setTimeout(notifyHeight, 150);
+        notifyHeight();
+        setTimeout(() => {
+            notifyHeight();
+            window.parent.postMessage({ type: 'scrollTop' }, '*');
+        }, 200);
     }
 
     // Masquer le bouton Vérifications pour les non-admins
