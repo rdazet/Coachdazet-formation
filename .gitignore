@@ -36,3 +36,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .env*
+
+# Serwist (service worker genere au build)
+public/sw*
+public/swe-worker*
